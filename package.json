@@ -1,10 +1,10 @@
 {
   "name": "api",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "",
   "author": "",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "GPL v3",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -20,13 +20,23 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@apollo/server": "^4.6.0",
+    "@mikro-orm/core": "^5.7.2",
+    "@mikro-orm/nestjs": "^5.1.8",
+    "@mikro-orm/postgresql": "^5.7.2",
+    "@mikro-orm/reflection": "^5.7.2",
     "@nestjs/apollo": "^11.0.4",
     "@nestjs/common": "^9.3.12",
+    "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.3.12",
     "@nestjs/graphql": "^11.0.4",
+    "@nestjs/jwt": "^10.0.3",
+    "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.3.12",
+    "bcrypt": "^5.1.0",
     "graphql": "^16.6.0",
+    "jsonwebtoken": "^9.0.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0"
   },

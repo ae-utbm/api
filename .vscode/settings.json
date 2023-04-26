@@ -8,7 +8,11 @@
     "**/Thumbs.db": true,
     "**/node_modules": true
   },
-  "cSpell.words": [],
+  "cSpell.words": [
+    "mikro",
+    "postgres",
+    "postgresql"
+  ],
   "files.eol": "\n",
   "editor.formatOnSave": true,
   "editor.fontLigatures": true,
