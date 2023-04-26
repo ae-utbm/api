@@ -6,7 +6,6 @@ import { join } from 'path';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import configuration from './config/configuration';
-import { AuthResolver } from './modules/auth/auth.resolver';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 
