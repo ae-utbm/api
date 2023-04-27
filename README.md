@@ -61,6 +61,8 @@ Then you can use [pgAdmin](https://www.pgadmin.org/) to create a server with the
 
 ## Running the app
 
+As we are using GraphQL, while in development, you can access the GraphQL playground at `http://localhost:3000/graphql`.
+
 ```bash
 # development
 pnpm run start

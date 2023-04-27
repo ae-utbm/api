@@ -1,5 +1,4 @@
-import { InjectRepository } from '@mikro-orm/nestjs';
-import { EntityRepository } from '@mikro-orm/core';
+import { UseRequestContext, MikroORM } from '@mikro-orm/core';
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { TokenExpiredError } from 'jsonwebtoken';
@@ -11,12 +10,9 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-	constructor(
-		private usersService: UsersService,
-		private jwtService: JwtService,
-		@InjectRepository(RefreshToken) private refreshTokenRepository: EntityRepository<RefreshToken>,
-	) {}
+	constructor(private usersService: UsersService, private jwtService: JwtService, private readonly orm: MikroORM) {}
 
+	@UseRequestContext()
 	async validateUser(email: string, pass: string): Promise<null | Omit<User, 'password'>> {
 		const user = await this.usersService.findOne({ email });
 		if (!user) return null;
@@ -28,21 +24,24 @@ export class AuthService {
 		return null;
 	}
 
+	@UseRequestContext()
 	async generateAccessToken(user: Pick<User, 'id'>) {
 		const payload = { sub: String(user.id) };
 		return this.jwtService.signAsync(payload);
 	}
 
+	@UseRequestContext()
 	async createRefreshToken(user: Pick<User, 'id'>, expiresIn: number) {
 		const expires = new Date();
 		expires.setTime(expires.getTime() + expiresIn);
 
-		const token = this.refreshTokenRepository.create({ user, expires });
-		await this.refreshTokenRepository.persistAndFlush(token);
+		const token = this.orm.em.create(RefreshToken, { user, expires });
+		await this.orm.em.persistAndFlush(token);
 
 		return token;
 	}
 
+	@UseRequestContext()
 	async generateRefreshToken(user: Pick<User, 'id'>, expiresIn: number) {
 		const payload = { sub: String(user.id) };
 		const token = await this.createRefreshToken(user, expiresIn);
@@ -53,12 +52,13 @@ export class AuthService {
 		});
 	}
 
+	@UseRequestContext()
 	async resolveRefreshToken(encoded: string) {
 		try {
 			const payload = await this.jwtService.verify(encoded);
 			if (!payload.sub || !payload.jwtId) throw new UnprocessableEntityException('Refresh token malformed');
 
-			const token = await this.refreshTokenRepository.findOne({ id: payload.jwtId });
+			const token = await this.orm.em.findOne(RefreshToken, { id: payload.jwtId });
 			if (!token) throw new UnprocessableEntityException('Refresh token not found');
 			if (token.revoked) throw new UnprocessableEntityException('Refresh token revoked');
 
@@ -72,6 +72,7 @@ export class AuthService {
 		}
 	}
 
+	@UseRequestContext()
 	async createAccessTokenFromRefreshToken(refresh: string) {
 		const { user } = await this.resolveRefreshToken(refresh);
 		const token = await this.generateAccessToken(user);
@@ -79,6 +80,7 @@ export class AuthService {
 		return { user, token };
 	}
 
+	@UseRequestContext()
 	async register(email: string, pass: string) {
 		if (await this.usersService.findOne({ email })) return null;
 
