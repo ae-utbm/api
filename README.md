@@ -1,61 +1,88 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+<!-- <img align="left" src="https://user-images.githubusercontent.com/49886317/167401362-923cd69b-3beb-4e02-856e-d32872eaa5f4.png" height="128"> -->
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# AE UTBM - API
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/XK9WfPsUFm)
+[![GitHub issues](https://img.shields.io/github/issues/ae-utbm/api?style=for-the-badge)](https://GitHub.com/ae-utbm/api/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/ae-utbm/api?style=for-the-badge)](https://GitHub.com/ae-utbm/api/issues)
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+<br/>
 
 ## Installation
 
+### Project
+
+To run this project, you will need to install [Node.js](https://nodejs.org/en/) and [pnpm](https://pnpm.io/).
+
 ```bash
-$ pnpm install
+# clone the repository
+git clone 'https://github.com/ae-utbm/api.git'
+
+# install dependencies
+pnpm install
 ```
+
+### Database
+
+We are using [PostgreSQL](https://www.postgresql.org/) as our database ecosystem. You can install it on your machine or use a docker container.
+
+#### 🐳 Docker
+
+> TODO
+
+#### 🐧 Linux
+
+> TODO
+
+#### 🪟 Windows
+
+> TODO
+
+####  MacOS
+
+The easiest way to install PostgreSQL is to use [Homebrew](https://brew.sh/).
+
+```bash
+brew install postgresql@13
+brew services start postgresql@13 # start postgresql service
+```
+
+Then you can use [pgAdmin](https://www.pgadmin.org/) to create a server with the following parameters:
+
+|      pgAdmin 4       | `.env` variable name | value                                                                                     |
+|:--------------------:|:--------------------:|:------------------------------------------------------------------------------------------|
+|         Host         |      `DB_HOST`       | `localhost`                                                                               |
+|         Port         |      `DB_PORT`       | `5432`                                                                                    |
+|       Username       |    `DB_USERNAME`     | Should be the username you used to install postgresql or any user you have created for it |
+|       Password       |    `DB_PASSWORD`     | leave it empty, unless you have set a password for your postgresql user                   |
+| Maintenance database |    `DB_DATABASE`     | `postgres`                                                                                |
+
+**Once you have setup the server, create a database with the name you have set in the `.env` file for the `DB_DATABASE` variable.**
 
 ## Running the app
 
 ```bash
 # development
-$ pnpm run start
+pnpm run start
 
 # watch mode
-$ pnpm run start:dev
+pnpm run start:dev
 
 # production mode
-$ pnpm run start:prod
+pnpm run start:prod
 ```
 
 ## Test
 
 ```bash
 # unit tests
-$ pnpm run test
+pnpm run test
 
 # e2e tests
-$ pnpm run test:e2e
+pnpm run test:e2e
 
 # test coverage
-$ pnpm run test:cov
+pnpm run test:cov
 ```
 
 ## Support

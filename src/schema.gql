@@ -2,6 +2,56 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input LoginUserInput {
+  email: String!
+  password: String!
+}
+
+type LoginUserPayload {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
+}
+
+type Mutation {
+  login(input: LoginUserInput!): LoginUserPayload!
+  refreshToken(input: RefreshTokenInput!): RefreshTokenPayload!
+  register(input: RegisterUserInput!): RegisterUserPayload!
+}
+
 type Query {
-  hello: String!
+  user(email: String, id: Int): User!
+}
+
+input RefreshTokenInput {
+  refreshToken: String!
+}
+
+type RefreshTokenPayload {
+  accessToken: String!
+  user: User!
+}
+
+input RegisterUserInput {
+  email: String!
+  password: String!
+}
+
+type RegisterUserPayload {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
+}
+
+type User {
+  birthday: DateTime!
+  email: String!
+  firstName: String
+  id: Int!
+  lastName: String
 }

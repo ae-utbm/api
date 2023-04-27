@@ -17,10 +17,13 @@ import { AuthModule } from './modules/auth/auth.module';
 		}),
 		MikroOrmModule.forRoot({
 			type: 'postgresql',
-			dbName: 'ae_db.postgres',
+			dbName: process.env.DB_NAME,
+			port: parseInt(process.env.DB_PORT, 10),
+			host: process.env.DB_HOST,
+			user: process.env.DB_USER,
 			entities: ['./dist/modules/auth/entities', './dist/modules/user/entities'],
 			entitiesTs: ['./src/modules/auth/entities', './src/modules/user/entities'],
-			debug: true,
+			debug: process.env.DEBUG === 'true',
 			metadataProvider: TsMorphMetadataProvider,
 		}),
 		GraphQLModule.forRoot<ApolloDriverConfig>({
