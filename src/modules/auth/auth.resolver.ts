@@ -38,8 +38,14 @@ export class AuthResolver {
 	 * @returns {Promise<TokenObject>} a promise with the token object containing an access token and a refresh token
 	 */
 	@Mutation(() => TokenObject)
-	async register(@Args('email') email: string, @Args('password') password: string): Promise<TokenObject> {
-		const user = await this.authService.register({ email, password });
+	async register(
+		@Args('email') email: string,
+		@Args('password') password: string,
+		@Args('first_name') firstName: string,
+		@Args('last_name') lastName: string,
+		@Args('birthday') birthday: Date,
+	): Promise<TokenObject> {
+		const user = await this.authService.register({ email, password, firstName, lastName, birthday });
 		if (!user) throw new UserInputError(`User with email ${email} already exists.`);
 
 		const accessToken = await this.authService.generateAccessToken(

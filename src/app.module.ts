@@ -7,6 +7,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import configuration from './config/configuration';
+import { PermissionsModule } from './modules/perms/perms.module';
 
 @Module({
 	imports: [
@@ -24,6 +25,7 @@ import configuration from './config/configuration';
 		}),
 		UsersModule,
 		AuthModule,
+		PermissionsModule,
 	],
 	providers: [],
 })

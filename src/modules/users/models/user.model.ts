@@ -2,7 +2,7 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { User } from '../entities/user.entity';
 
 @ObjectType('User')
-export class UserObject implements Omit<User, 'password' | 'refreshTokens'> {
+export class UserObject implements Omit<User, 'password' | 'refreshTokens' | 'permissions'> {
 	@Field(() => Int)
 	readonly id: number;
 

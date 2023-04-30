@@ -8,6 +8,8 @@ import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 
 import * as bcrypt from 'bcrypt';
+import { UserObject } from '../users/models/user.model';
+import { BaseEntity } from 'src/database/entities/base.entity';
 
 @Injectable()
 export class AuthService {
@@ -142,7 +144,7 @@ export class AuthService {
 	 * @param {Partial<User> & Required<Pick<User, 'password' | 'email'>>} input the user's data with at least the password and email
 	 * @returns {Promise<Omit<User, 'password'>>} a promise with the created user
 	 */
-	async register(input: Partial<User> & Required<Pick<User, 'password' | 'email'>>): Promise<Omit<User, 'password'>> {
+	async register(input: Omit<UserObject, keyof BaseEntity> & { password: string }): Promise<Omit<User, 'password'>> {
 		if (await this.usersService.findOne({ email: input.email })) return null;
 
 		const hashed = await bcrypt.hash(input.password, 10);
