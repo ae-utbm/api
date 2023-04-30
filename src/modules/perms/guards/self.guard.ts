@@ -5,36 +5,35 @@ import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/modules/users/entities/user.entity';
-import { TPermission } from '../decorators/perms.decorator';
+import { PermissionGuard } from './perms.guard';
 
 @Injectable()
-export class PermissionGuard implements CanActivate {
+export class PermissionOrSelfGuard extends PermissionGuard implements CanActivate {
 	constructor(
 		protected readonly reflector: Reflector,
 		@Inject(JwtService) protected readonly jwtService: JwtService,
 		@Inject(ConfigService) protected readonly configService: ConfigService,
 		@Inject(MikroORM) protected readonly orm: MikroORM,
-	) {}
+	) {
+		super(reflector, jwtService, configService, orm);
+	}
 
 	@UseRequestContext()
 	async canActivate(ctx: ExecutionContext): Promise<boolean> {
 		const context = GqlExecutionContext.create(ctx);
-		const permsToValidate = this.reflector.get<Array<TPermission>>('permissions', context.getHandler());
-		if (!permsToValidate) return true;
+		const idParam = this.reflector.get<string>('id_param', context.getHandler());
+
+		// if there is no id_param, then this guard is not needed.
+		if (!idParam) return super.canActivate(ctx);
 
 		const token = context.getContext().req.headers.authorization;
+		const id = context.getArgs()[idParam];
+
+		// check if the user is trying to access their own data.
+		// if not, then this guard is not needed.
 		const payload = await this.jwtService.verify(token, { secret: this.configService.get<string>('auth.jwtKey') });
-
 		const user = await this.orm.em.findOne(User, { id: payload.subject });
-		const perms = (await user.permissions.loadItems()).filter((p) => p.expires > new Date() && p.revoked === false);
 
-		// If the user has the ROOT permission, they have all permissions.
-		if (perms.map((p) => p.name).includes('ROOT') && perms.map((p) => p.expires < new Date())) return true;
-
-		// If the user has any of the required permissions, they have permission.
-		if (perms.map((p) => p.name).some((p) => permsToValidate.includes(p))) return true;
-
-		// Otherwise, they don't have permission.
-		return false;
+		return user.id === id || super.canActivate(ctx);
 	}
 }
