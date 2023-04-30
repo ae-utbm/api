@@ -7,8 +7,8 @@ export class UsersService {
 	constructor(private readonly orm: MikroORM) {}
 
 	@UseRequestContext()
-	async create(createUserInput: Partial<User>) {
-		const user = this.orm.em.create(User, createUserInput);
+	async create(input: Partial<User> & Required<Pick<User, 'password' | 'email'>>): Promise<User> {
+		const user = this.orm.em.create(User, input);
 		await this.orm.em.persistAndFlush(user);
 		return user;
 	}

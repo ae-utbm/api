@@ -1,6 +1,7 @@
+import { MikroORMOptions, IDatabaseDriver, Connection } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
-export default () => ({
+export default (): Partial<MikroORMOptions<IDatabaseDriver<Connection>>> => ({
 	type: 'postgresql',
 	dbName: process.env.DB_NAME,
 	port: parseInt(process.env.DB_PORT, 10),

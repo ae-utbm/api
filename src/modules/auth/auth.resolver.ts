@@ -1,58 +1,76 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
-import { LoginUserPayload } from './dto/login-user.payload';
-import { LoginUserInput } from './dto/login-user.input';
 import { UserInputError } from '@nestjs/apollo';
-import { RefreshTokenInput } from './dto/refresh-token.input';
-import { RefreshTokenPayload } from './dto/refresh-token.payload';
-import { RegisterUserInput } from './dto/register-user.input';
-import { RegisterUserPayload } from './dto/register-user.payload';
+import { TokenObject } from './models/token.model';
+import { ConfigService } from '@nestjs/config';
 
 @Resolver()
 export class AuthResolver {
-	constructor(private authService: AuthService) {}
+	constructor(private authService: AuthService, private configService: ConfigService) {}
 
-	@Mutation(() => LoginUserPayload)
-	async login(@Args('input') input: LoginUserInput) {
-		const user = await this.authService.validateUser(input.email, input.password);
+	/**
+	 * Validates a user's credentials and returns a token object containing an access token and a refresh token.
+	 * @param {string} email email address of the user
+	 * @param {string} password user's password
+	 * @returns {Promise<TokenObject>} a promise with the token object containing an access token and a refresh token
+	 *
+	 * @throws {UserInputError} if the user's credentials are invalid
+	 */
+	@Mutation(() => TokenObject)
+	async login(@Args('email') email: string, @Args('password') password: string): Promise<TokenObject> {
+		const user = await this.authService.validateUser(email, password);
+		if (!user) throw new UserInputError('Invalid email or password');
 
-		if (!user) return new UserInputError('Invalid email or password');
+		const accessToken = await this.authService.generateAccessToken(user.id, 60 * 60 * 24 * 1);
+		const refreshToken = await this.authService.generateRefreshToken(user.id, 60 * 60 * 24 * 30);
 
-		const accessToken = await this.authService.generateAccessToken(user);
-		const refreshToken = await this.authService.generateRefreshToken(user, 60 * 60 * 24 * 30);
+		const tokenObject = new TokenObject();
+		tokenObject.accessToken = accessToken;
+		tokenObject.refreshToken = refreshToken;
 
-		const payload = new LoginUserPayload();
-		payload.user = user;
-		payload.accessToken = accessToken;
-		payload.refreshToken = refreshToken;
-
-		return payload;
+		return tokenObject;
 	}
 
-	@Mutation(() => RefreshTokenPayload)
-	async refreshToken(@Args('input') input: RefreshTokenInput) {
-		const { user, token } = await this.authService.createAccessTokenFromRefreshToken(input.refreshToken);
+	/**
+	 * Registers a new user and returns a token object containing an access token and a refresh token.
+	 * @param {string} email main email address of the user
+	 * @param {string} password user's password
+	 * @returns {Promise<TokenObject>} a promise with the token object containing an access token and a refresh token
+	 */
+	@Mutation(() => TokenObject)
+	async register(@Args('email') email: string, @Args('password') password: string): Promise<TokenObject> {
+		const user = await this.authService.register({ email, password });
+		if (!user) throw new UserInputError(`User with email ${email} already exists.`);
 
-		const payload = new RefreshTokenPayload();
-		payload.user = user;
-		payload.accessToken = token;
+		const accessToken = await this.authService.generateAccessToken(
+			user.id,
+			this.configService.get<number>('auth.jwtAccessExpirationTime'),
+		);
+		const refreshToken = await this.authService.generateRefreshToken(
+			user.id,
+			this.configService.get<number>('auth.jwtRefreshExpirationTime'),
+		);
 
-		return payload;
+		const tokenObject = new TokenObject();
+		tokenObject.accessToken = accessToken;
+		tokenObject.refreshToken = refreshToken;
+
+		return tokenObject;
 	}
 
-	@Mutation(() => RegisterUserPayload)
-	async register(@Args('input') input: RegisterUserInput) {
-		const user = await this.authService.register(input.email, input.password);
-		if (!user) return new UserInputError(`User with email ${input.email} already exists.`);
+	/**
+	 * Refreshes the access token using the refresh token.
+	 * @param {string} refresh the refresh token to use
+	 * @returns {Promise<TokenObject>} a promise with the token object containing an access token and a refresh token
+	 */
+	@Mutation(() => TokenObject)
+	async refreshToken(@Args('refreshToken') refresh: string): Promise<TokenObject> {
+		const { accessToken, refreshToken } = await this.authService.createAccessTokenFromRefreshToken(refresh);
 
-		const accessToken = await this.authService.generateAccessToken(user);
-		const refreshToken = await this.authService.generateRefreshToken(user, 60 * 60 * 24 * 30);
+		const tokenObject = new TokenObject();
+		tokenObject.accessToken = accessToken;
+		tokenObject.refreshToken = refreshToken;
 
-		const payload = new RegisterUserPayload();
-		payload.user = user;
-		payload.accessToken = accessToken;
-		payload.refreshToken = refreshToken;
-
-		return payload;
+		return tokenObject;
 	}
 }

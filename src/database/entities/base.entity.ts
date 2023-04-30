@@ -8,6 +8,6 @@ export abstract class BaseEntity {
 	@Property({ type: 'date', onCreate: () => new Date() })
 	createdAt = new Date();
 
-	@Property({ type: 'date', onUpdate: () => new Date() })
+	@Property({ type: 'date', onCreate: () => new Date(), onUpdate: () => new Date() })
 	updatedAt = new Date();
 }

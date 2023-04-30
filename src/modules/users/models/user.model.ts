@@ -1,7 +1,8 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { User } from '../entities/user.entity';
 
 @ObjectType('User')
-export class UserObject {
+export class UserObject implements Omit<User, 'password' | 'refreshTokens'> {
 	@Field(() => Int)
 	readonly id: number;
 
@@ -16,4 +17,10 @@ export class UserObject {
 
 	@Field()
 	readonly birthday: Date;
+
+	@Field()
+	readonly createdAt: Date;
+
+	@Field()
+	readonly updatedAt: Date;
 }
