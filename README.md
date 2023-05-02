@@ -51,13 +51,23 @@ Then you can use [pgAdmin](https://www.pgadmin.org/) to create a server with the
 
 |      pgAdmin 4       | `.env` variable name | value                                                                                     |
 |:--------------------:|:--------------------:|:------------------------------------------------------------------------------------------|
-|         Host         |      `DB_HOST`       | `localhost`                                                                               |
+|         Host         |      `DB_HOST`       | `127.0.0.1`                                                                               |
 |         Port         |      `DB_PORT`       | `5432`                                                                                    |
 |       Username       |    `DB_USERNAME`     | Should be the username you used to install postgresql or any user you have created for it |
 |       Password       |    `DB_PASSWORD`     | leave it empty, unless you have set a password for your postgresql user                   |
 | Maintenance database |    `DB_DATABASE`     | `postgres`                                                                                |
 
 **Once you have setup the server, create a database with the name you have set in the `.env` file for the `DB_DATABASE` variable.**
+
+## First time setup of the database
+
+```bash
+# create the database (will drop if already exists and create it again)
+pnpm run db:create
+
+# run the seeders (to populate the database with some base data)
+pnpm run db:seed
+```
 
 ## Running the app
 
@@ -87,16 +97,6 @@ pnpm run test:e2e
 pnpm run test:cov
 ```
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This API is [MIT licensed](LICENSE).

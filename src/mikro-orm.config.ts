@@ -4,8 +4,7 @@ import { Logger } from '@nestjs/common';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 
 const logger = new Logger('MikroORM');
-
-export default (): Partial<MikroORMOptions<IDatabaseDriver<Connection>>> => ({
+const config: Partial<MikroORMOptions<IDatabaseDriver<Connection>>> = {
 	type: 'postgresql',
 	dbName: process.env.DB_NAME,
 	port: parseInt(process.env.DB_PORT, 10),
@@ -16,11 +15,19 @@ export default (): Partial<MikroORMOptions<IDatabaseDriver<Connection>>> => ({
 	entitiesTs: ['./src/modules/**/entities/*.entity.ts'],
 	highlighter: new SqlHighlighter(),
 	migrations: {
-		snapshot: false,
 		transactional: true,
 		path: './dist/database/migrations',
 		pathTs: './src/database/migrations',
+		glob: '!(*.d).{js,ts}',
+	},
+	seeder: {
+		defaultSeeder: 'DatabaseSeeder',
+		path: './dist/database/seeders',
+		pathTs: './src/database/seeders',
+		glob: '!(*.d).{js,ts}',
 	},
 	logger: logger.log.bind(logger),
 	metadataProvider: TsMorphMetadataProvider,
-});
+};
+
+export default config;
