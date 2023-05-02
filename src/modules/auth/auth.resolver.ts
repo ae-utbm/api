@@ -70,7 +70,7 @@ export class AuthResolver {
 	 * @returns {Promise<TokenObject>} a promise with the token object containing an access token and a refresh token
 	 */
 	@Mutation(() => TokenObject)
-	async refreshToken(@Args('refreshToken') refresh: string): Promise<TokenObject> {
+	async refreshToken(@Args('refresh_token') refresh: string): Promise<TokenObject> {
 		const { accessToken, refreshToken } = await this.authService.createAccessTokenFromRefreshToken(refresh);
 
 		const tokenObject = new TokenObject();

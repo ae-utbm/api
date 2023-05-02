@@ -5,23 +5,20 @@ import { TPermission } from '../decorators/perms.decorator';
 @ObjectType()
 export class PermissionObject implements Omit<Permission, 'user'> {
 	@Field()
-	name: TPermission;
+	readonly name: TPermission;
 
 	@Field()
-	value: number;
+	readonly revoked: boolean;
 
 	@Field()
-	revoked: boolean;
+	readonly expires: Date;
 
 	@Field()
-	expires: Date;
+	readonly id: number;
 
 	@Field()
-	id: number;
+	readonly createdAt: Date;
 
 	@Field()
-	createdAt: Date;
-
-	@Field()
-	updatedAt: Date;
+	readonly updatedAt: Date;
 }

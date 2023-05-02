@@ -23,14 +23,14 @@ export class PermissionOrSelfGuard extends PermissionGuard implements CanActivat
 		const context = GqlExecutionContext.create(ctx);
 		const idParam = this.reflector.get<string>('id_param', context.getHandler());
 
-		// if there is no id_param, then this guard is not needed.
+		// if there is no id_param, then we should refer to permission guard
 		if (!idParam) return super.canActivate(ctx);
 
 		const token = context.getContext().req.headers.authorization;
 		const id = context.getArgs()[idParam];
 
 		// check if the user is trying to access their own data.
-		// if not, then this guard is not needed.
+		// if not, then this guard is not needed and we should refer to permission guard
 		const payload = await this.jwtService.verify(token, { secret: this.configService.get<string>('auth.jwtKey') });
 		const user = await this.orm.em.findOne(User, { id: payload.subject });
 

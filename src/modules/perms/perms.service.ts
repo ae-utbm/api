@@ -8,6 +8,13 @@ import { PERMISSIONS, TPermission } from './decorators/perms.decorator';
 export class PermissionsService {
 	constructor(private readonly orm: MikroORM) {}
 
+	/**
+	 * Add a permission to a user
+	 * @param {TPermission} name The permission name in caps
+	 * @param {number} user_id To which user the permission should be added
+	 * @param {Date} expires When the permission should expire
+	 * @returns {Promise<Permission>} The created permission
+	 */
 	@UseRequestContext()
 	async addPermission(name: TPermission, user_id: number, expires: Date) {
 		const user = await this.orm.em.findOneOrFail(User, { id: user_id });
@@ -16,5 +23,16 @@ export class PermissionsService {
 		const permission = this.orm.em.create(Permission, { ...perm, user, expires });
 		await this.orm.em.persistAndFlush(permission);
 		return permission;
+	}
+
+	@UseRequestContext()
+	async getPermissions(user_id: number, showExpired = false, showRevoked = false): Promise<Permission[]> {
+		const user = await this.orm.em.findOneOrFail(User, { id: user_id });
+		const perms = await user.permissions.loadItems();
+
+		if (!showExpired) perms.filter((p) => p.expires > new Date());
+		if (!showRevoked) perms.filter((p) => p.revoked === false);
+
+		return perms;
 	}
 }

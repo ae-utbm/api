@@ -5,18 +5,19 @@ import { TPermission } from '../decorators/perms.decorator';
 
 @Entity({ tableName: 'permissions' })
 export class Permission extends BaseEntity {
+	/** Name of the permission, in caps */
 	@Property()
 	name: TPermission;
 
-	@Property()
-	value: number;
-
+	/** Determine wether the permission is still active */
 	@Property({ name: 'is_revoked', onCreate: () => false })
 	revoked = false;
 
+	/** Specify when the permission should expires */
 	@Property({ name: 'expires_at' })
 	expires: Date;
 
+	/** Specify to which user the permission is attached */
 	@ManyToOne(() => User, { onDelete: 'cascade', joinColumn: 'user_id' })
 	user: User;
 }
