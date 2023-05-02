@@ -1,11 +1,11 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { Permission } from '../entities/permission.entity';
-import { TPermission } from '../decorators/perms.decorator';
+import { PermissionName } from '../decorators/perms.decorator';
 
 @ObjectType()
 export class PermissionObject implements Omit<Permission, 'user'> {
 	@Field()
-	readonly name: TPermission;
+	readonly name: PermissionName;
 
 	@Field()
 	readonly revoked: boolean;

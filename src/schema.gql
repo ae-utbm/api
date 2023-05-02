@@ -8,10 +8,13 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 scalar DateTime
 
 type Mutation {
-  addPermission(expires: DateTime!, name: String!, user_id: Int!): PermissionObject!
+  addPermissionToUser(expires: DateTime!, name: String!, user_id: Int!): PermissionObject!
+  createUser(email: String!, password: String!): User!
+  deleteUser(id: Int!): Boolean!
   login(email: String!, password: String!): TokenObject!
-  refreshToken(refreshToken: String!): TokenObject!
+  refreshToken(refresh_token: String!): TokenObject!
   register(birthday: DateTime!, email: String!, first_name: String!, last_name: String!, password: String!): TokenObject!
+  updateUser(input: UserEditInput!): User!
 }
 
 type PermissionObject {
@@ -21,11 +24,18 @@ type PermissionObject {
   name: String!
   revoked: Boolean!
   updatedAt: DateTime!
-  value: Float!
 }
 
 type Query {
+  getAllPermissions: [RawPermission!]!
+  getPermissionsOfUser(showExpired: Boolean, showRevoked: Boolean, user_id: Int!): [PermissionObject!]!
   user(id: Int!): User!
+  users: [User!]!
+}
+
+type RawPermission {
+  description: String!
+  name: String!
 }
 
 type TokenObject {
@@ -41,4 +51,8 @@ type User {
   id: Int!
   lastName: String
   updatedAt: DateTime!
+}
+
+input UserEditInput {
+  password: String
 }

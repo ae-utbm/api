@@ -4,9 +4,9 @@ import { Field, ObjectType } from '@nestjs/graphql';
 export class TokenObject {
 	/** The access token, used to identify ourself */
 	@Field()
-	readonly accessToken: string;
+	accessToken: string;
 
 	/** The refresh token, used to get a new access token when it expires */
 	@Field()
-	readonly refreshToken: string;
+	refreshToken: string;
 }

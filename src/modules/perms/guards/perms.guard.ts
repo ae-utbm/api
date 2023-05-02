@@ -5,7 +5,7 @@ import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/modules/users/entities/user.entity';
-import { TPermission } from '../decorators/perms.decorator';
+import { PermissionName } from '../decorators/perms.decorator';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
@@ -19,7 +19,7 @@ export class PermissionGuard implements CanActivate {
 	@UseRequestContext()
 	async canActivate(ctx: ExecutionContext): Promise<boolean> {
 		const context = GqlExecutionContext.create(ctx);
-		const permsToValidate = this.reflector.get<Array<TPermission>>('permissions', context.getHandler());
+		const permsToValidate = this.reflector.get<Array<PermissionName>>('permissions', context.getHandler());
 		if (!permsToValidate) return true;
 
 		const token = context.getContext().req.headers.authorization;

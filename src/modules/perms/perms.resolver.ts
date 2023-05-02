@@ -1,9 +1,10 @@
 import { Args, Int, Mutation, Resolver, Query } from '@nestjs/graphql';
 import { PermissionsService } from './perms.service';
 import { PermissionObject } from './models/perms.model';
-import { Permissions, TPermission } from './decorators/perms.decorator';
+import { Permissions, PermissionName } from './decorators/perms.decorator';
 import { UseGuards } from '@nestjs/common';
 import { PermissionGuard } from './guards/perms.guard';
+import { RawPermissionObject } from './models/raw-perms.model';
 
 @Resolver()
 @UseGuards(PermissionGuard)
@@ -12,21 +13,27 @@ export class PermissionsResolver {
 
 	@Mutation(() => PermissionObject)
 	@Permissions('CAN_MANAGE_USER_PERMISSIONS')
-	addPermission(
-		@Args('name') name: TPermission,
+	addPermissionToUser(
+		@Args('name') name: PermissionName,
 		@Args('user_id', { type: () => Int }) user_id: number,
 		@Args('expires') expires: Date,
 	) {
-		return this.permissionsService.addPermission(name, user_id, expires);
+		return this.permissionsService.addPermissionToUser(name, user_id, expires);
 	}
 
 	@Query(() => [PermissionObject])
 	@Permissions('CAN_READ_USER_PERMISSIONS')
-	getPermissions(
+	getPermissionsOfUser(
 		@Args('user_id', { type: () => Int }) user_id: number,
 		@Args('showExpired', { nullable: true }) showExpired?: boolean,
 		@Args('showRevoked', { nullable: true }) showRevoked?: boolean,
 	) {
-		return this.permissionsService.getPermissions(user_id, showExpired, showRevoked);
+		return this.permissionsService.getPermissionsOfUser(user_id, showExpired, showRevoked);
+	}
+
+	@Query(() => [RawPermissionObject])
+	@Permissions('CAN_READ_ALL_PERMISSIONS')
+	getAllPermissions() {
+		return this.permissionsService.getAllPermissions();
 	}
 }
