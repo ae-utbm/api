@@ -1,17 +1,20 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { Permission } from '../entities/permission.entity';
+import { Role } from '../entities/role.entity';
 import { PermissionName } from '@/modules/auth/decorators/perms.decorator';
 
-@ObjectType('PermissionObject')
-export class PermissionObject implements Omit<Permission, 'user'> {
-	@Field()
-	readonly name: PermissionName;
+@ObjectType('RoleObject')
+export class RoleObject implements Omit<Role, 'users'> {
+	@Field(() => String)
+	readonly name: Uppercase<string>;
 
 	@Field()
 	readonly revoked: boolean;
 
 	@Field()
 	readonly expires: Date;
+
+	@Field(() => [String])
+	readonly permissions: PermissionName[];
 
 	@Field()
 	readonly id: number;

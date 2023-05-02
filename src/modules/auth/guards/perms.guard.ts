@@ -24,15 +24,25 @@ export class PermissionGuard implements CanActivate {
 
 		const token = context.getContext().req.headers.authorization;
 		const payload = await this.jwtService.verify(token, { secret: this.configService.get<string>('auth.jwtKey') });
-
 		const user = await this.orm.em.findOne(User, { id: payload.subject });
-		const perms = (await user.permissions.loadItems()).filter((p) => p.expires > new Date() && p.revoked === false);
+		if (!user) return false;
+
+		const perms = (await user.permissions.loadItems())
+			.filter((p) => p.expires > new Date() && p.revoked === false)
+			.map((p) => p.name);
+
+		const roles = (await user.roles.loadItems())
+			.filter((p) => p.expires > new Date() && p.revoked === false)
+			.map((p) => p.permissions)
+			.flat();
+
+		const acquiredPerms = [...perms, ...roles];
 
 		// If the user has the ROOT permission, they have all permissions.
-		if (perms.map((p) => p.name).includes('ROOT') && perms.map((p) => p.expires < new Date())) return true;
+		if (acquiredPerms.includes('ROOT')) return true;
 
 		// If the user has any of the required permissions, they have permission.
-		if (perms.map((p) => p.name).some((p) => permsToValidate.includes(p))) return true;
+		if (acquiredPerms.some((p) => permsToValidate.includes(p))) return true;
 
 		// Otherwise, they don't have permission.
 		return false;

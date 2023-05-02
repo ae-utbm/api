@@ -1,4 +1,5 @@
-import { Cascade, Collection, Entity, OneToMany, Property } from '@mikro-orm/core';
+import { Role } from '@/modules/roles/entities/role.entity';
+import { Cascade, Collection, Entity, ManyToMany, ManyToOne, OneToMany, Property } from '@mikro-orm/core';
 import { BaseEntity } from 'src/database/entities/base.entity';
 import { RefreshToken } from 'src/modules/auth/entities/refresh-token.entity';
 import { Permission } from 'src/modules/perms/entities/permission.entity';
@@ -14,7 +15,7 @@ export class User extends BaseEntity {
 	lastName: string;
 
 	/** The email of the user, @example 'example@domain.net' */
-	@Property()
+	@Property({ unique: true })
 	email: string;
 
 	/** The encrypted user password */
@@ -32,4 +33,8 @@ export class User extends BaseEntity {
 	/** Linked permissions to the user */
 	@OneToMany(() => Permission, (permission) => permission.user, { cascade: [Cascade.REMOVE] })
 	permissions = new Collection<Permission>(this);
+
+	/** Linked roles to the user */
+	@ManyToMany({ entity: () => Role, mappedBy: 'users' })
+	roles = new Collection<Role>(this);
 }

@@ -1,9 +1,9 @@
 import { Args, Int, Mutation, Resolver, Query } from '@nestjs/graphql';
 import { PermissionsService } from './perms.service';
 import { PermissionObject } from './models/perms.model';
-import { Permissions, PermissionName } from './decorators/perms.decorator';
+import { Permissions, PermissionName } from '@/modules/auth/decorators/perms.decorator';
 import { UseGuards } from '@nestjs/common';
-import { PermissionGuard } from './guards/perms.guard';
+import { PermissionGuard } from '../auth/guards/perms.guard';
 import { RawPermissionObject } from './models/raw-perms.model';
 
 @Resolver()

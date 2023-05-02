@@ -1,4 +1,4 @@
-import { Loaded, MikroORM, UseRequestContext } from '@mikro-orm/core';
+import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { UserObject } from './models/user.model';

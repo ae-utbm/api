@@ -5,6 +5,7 @@ export const PERMISSIONS = [
 		name: 'ROOT',
 		description: 'Can do anything',
 	},
+
 	{
 		name: 'CAN_MANAGE_USERS',
 		description: 'Can manage users',
@@ -25,6 +26,7 @@ export const PERMISSIONS = [
 		name: 'CAN_READ_USERS',
 		description: 'Can read users data',
 	},
+
 	{
 		name: 'CAN_READ_ALL_PERMISSIONS',
 		description: 'Can see all available permissions',
@@ -36,6 +38,31 @@ export const PERMISSIONS = [
 	{
 		name: 'CAN_READ_USER_PERMISSIONS',
 		description: 'Can read what permissions a user has',
+	},
+
+	{
+		name: 'CAN_READ_ALL_ROLES',
+		description: 'Can see all available roles',
+	},
+	{
+		name: 'CAN_MANAGE_USER_ROLES',
+		description: 'Can manage user roles',
+	},
+	{
+		name: 'CAN_READ_USER_ROLES',
+		description: 'Can read what roles a user has',
+	},
+	{
+		name: 'CAN_CREATE_ROLE',
+		description: 'Can create a new role',
+	},
+	{
+		name: 'CAN_UPDATE_ROLE',
+		description: 'Can update a role',
+	},
+	{
+		name: 'CAN_DELETE_ROLE',
+		description: 'Can delete a role',
 	},
 ] as const;
 

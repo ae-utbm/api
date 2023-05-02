@@ -1,7 +1,7 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
-import { BaseEntity } from 'src/database/entities/base.entity';
-import { User } from 'src/modules/users/entities/user.entity';
-import { PermissionName } from '../decorators/perms.decorator';
+import { BaseEntity } from '@/database/entities/base.entity';
+import { User } from '@/modules/users/entities/user.entity';
+import { PermissionName } from '@/modules/auth/decorators/perms.decorator';
 
 @Entity({ tableName: 'permissions' })
 export class Permission extends BaseEntity {

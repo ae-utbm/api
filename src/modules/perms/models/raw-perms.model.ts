@@ -1,7 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { PermissionObject } from '../decorators/perms.decorator';
+import { PermissionObject } from '@/modules/auth/decorators/perms.decorator';
 
-@ObjectType('RawPermission')
+@ObjectType('RawPermissionObject')
 export class RawPermissionObject implements PermissionObject {
 	@Field(() => String)
 	name: Uppercase<string>;

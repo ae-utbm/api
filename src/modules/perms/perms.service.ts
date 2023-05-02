@@ -2,7 +2,7 @@ import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { User } from '../users/entities/user.entity';
 import { Permission } from './entities/permission.entity';
-import { PERMISSIONS, PermissionName } from './decorators/perms.decorator';
+import { PERMISSIONS, PermissionName } from '@/modules/auth/decorators/perms.decorator';
 
 @Injectable()
 export class PermissionsService {

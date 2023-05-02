@@ -2,14 +2,14 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { User } from '../entities/user.entity';
 
 @ObjectType('User')
-export class UserObject implements Omit<User, 'password' | 'refreshTokens' | 'permissions'> {
+export class UserObject implements Omit<User, 'password' | 'refreshTokens' | 'permissions' | 'roles'> {
 	@Field(() => Int)
 	readonly id: number;
 
-	@Field({ nullable: true })
+	@Field()
 	readonly firstName: string;
 
-	@Field({ nullable: true })
+	@Field()
 	readonly lastName: string;
 
 	@Field()

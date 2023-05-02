@@ -3,9 +3,9 @@ import { UserObject } from './models/user.model';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { UseGuards } from '@nestjs/common';
-import { Permissions } from '../perms/decorators/perms.decorator';
-import { PermissionOrSelfGuard } from '../perms/guards/self.guard';
-import { Self } from '../perms/decorators/self.decorator';
+import { Permissions } from '@/modules/auth/decorators/perms.decorator';
+import { PermissionOrSelfGuard } from '../auth/guards/self.guard';
+import { Self } from '@/modules/auth/decorators/self.decorator';
 import { UserEditInput } from './models/user-edit.model';
 
 @Resolver(() => User)

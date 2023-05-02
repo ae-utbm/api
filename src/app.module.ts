@@ -8,6 +8,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import configuration from './config/configuration';
 import { PermissionsModule } from './modules/perms/perms.module';
+import { RolesModule } from './modules/roles/roles.module';
 
 @Module({
 	imports: [
@@ -26,6 +27,7 @@ import { PermissionsModule } from './modules/perms/perms.module';
 		UsersModule,
 		AuthModule,
 		PermissionsModule,
+		RolesModule,
 	],
 	providers: [],
 })
