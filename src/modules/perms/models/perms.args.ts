@@ -1,5 +1,5 @@
 import { BaseArgs } from '@database/models/base.args';
-import { ArgsType, Field } from '@nestjs/graphql';
+import { ArgsType, Field, OmitType } from '@nestjs/graphql';
 
 /**
  * Arguments used to filter permissions.
@@ -17,10 +17,4 @@ export class PermissionArgs extends BaseArgs {
  * Arguments used to filter permissions, but without the id field.
  */
 @ArgsType()
-export class PermissionArgsNoId implements Omit<PermissionArgs, 'id'> {
-	@Field(() => Boolean, { nullable: true })
-	show_revoked = false;
-
-	@Field(() => Boolean, { nullable: true })
-	show_expired = false;
-}
+export class PermissionArgsNoId extends OmitType(PermissionArgs, ['id']) {}

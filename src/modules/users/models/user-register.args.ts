@@ -1,10 +1,8 @@
-import { ArgsType, Field } from '@nestjs/graphql';
+import { ArgsType, Field, OmitType } from '@nestjs/graphql';
 import { UserEditArgs } from './user-edit.args';
 
 @ArgsType()
-export class UserRegisterArgs extends UserEditArgs {
-	id: never;
-
+export class UserRegisterArgs extends OmitType(UserEditArgs, ['id']) {
 	@Field(() => String)
 	password: string;
 
