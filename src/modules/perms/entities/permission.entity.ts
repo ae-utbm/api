@@ -1,8 +1,13 @@
-import { Entity, ManyToOne, Property } from '@mikro-orm/core';
-import { BaseEntity } from '@/database/entities/base.entity';
-import { User } from '@/modules/users/entities/user.entity';
-import { PermissionName } from '@/modules/auth/decorators/perms.decorator';
+import type { PermissionName } from '@types';
 
+import { Entity, ManyToOne, Property } from '@mikro-orm/core';
+import { BaseEntity } from '@database/entities/base.entity';
+import { User } from '@modules/users/entities/user.entity';
+
+/**
+ * Entity used to store permissions attached to users
+ * (used to check if a user has the required permissions to access a route)
+ */
 @Entity({ tableName: 'permissions' })
 export class Permission extends BaseEntity {
 	/** Name of the permission, in caps */

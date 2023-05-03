@@ -1,12 +1,15 @@
 import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { UserObject } from './models/user.model';
+import { UserObject } from './models/user.object';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { UseGuards } from '@nestjs/common';
-import { Permissions } from '@/modules/auth/decorators/perms.decorator';
+import { Permissions } from '@modules/auth/decorators/perms.decorator';
 import { PermissionOrSelfGuard } from '../auth/guards/self.guard';
-import { Self } from '@/modules/auth/decorators/self.decorator';
-import { UserEditInput } from './models/user-edit.model';
+import { Self } from '@modules/auth/decorators/self.decorator';
+import { UserGroupedObject } from './models/user-grouped.object';
+import { UserEditArgs } from './models/user-edit.args';
+import { PermissionGuard } from '../auth/guards/perms.guard';
+import { UserRegisterArgs } from './models/user-register.args';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -14,38 +17,40 @@ export class UsersResolver {
 
 	@Query(() => UserObject)
 	@Self('id')
-	@Permissions('CAN_READ_USERS')
+	@Permissions('CAN_READ_USER')
 	@UseGuards(PermissionOrSelfGuard)
 	user(@Args('id', { type: () => Int }) id: number) {
 		return this.usersService.findOne({ id });
 	}
 
-	@Query(() => [UserObject])
-	@Permissions('CAN_READ_USERS')
-	users() {
+	@Query(() => [UserGroupedObject])
+	@Permissions('CAN_READ_USER')
+	@UseGuards(PermissionGuard)
+	async users() {
 		return this.usersService.findAll();
 	}
 
 	@Mutation(() => UserObject)
-	@Permissions('CAN_CREATE_USERS')
-	async createUser(@Args('email') email: string, @Args('password') password: string) {
-		return this.usersService.create({ email, password });
+	@Permissions('CAN_CREATE_USER')
+	@UseGuards(PermissionGuard)
+	async createUser(@Args() input: UserRegisterArgs) {
+		return this.usersService.create(input);
 	}
 
 	@Mutation(() => UserObject)
 	@Self('id')
-	@Permissions('CAN_UPDATE_USERS')
+	@Permissions('CAN_UPDATE_USER')
 	@UseGuards(PermissionOrSelfGuard)
-	async updateUser(@Args('input') input: UserEditInput) {
+	async updateUser(@Args() input: UserEditArgs) {
 		return this.usersService.update(input);
 	}
 
 	@Mutation(() => Boolean)
 	@Self('id')
-	@Permissions('CAN_DELETE_USERS')
+	@Permissions('CAN_DELETE_USER')
 	@UseGuards(PermissionOrSelfGuard)
 	async deleteUser(@Args('id', { type: () => Int }) id: number) {
-		const user = await this.usersService.findOne({ id });
+		const user = await this.usersService.findOne({ id }, false);
 		await this.usersService.delete(user);
 		return true;
 	}

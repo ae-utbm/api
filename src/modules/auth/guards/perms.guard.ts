@@ -1,12 +1,25 @@
+import type { PermissionName } from '@types';
+
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/modules/users/entities/user.entity';
-import { PermissionName } from '../decorators/perms.decorator';
+import { User } from '@modules/users/entities/user.entity';
 
+/**
+ * Guard used to check if the user has the required permissions
+ * to access a route, based on the permissions attached to the route
+ *
+ * Usage:
+ * - `@UseGuards(PermissionGuard)` on top of a route/resolver
+ * - `@Permissions('PERM1', 'PERM2')` on top of the route/resolver
+ *
+ * @see [PERMISSIONS](../../perms/perms.ts) for the list of permissions
+ * @see [Self](../decorators/self.decorator.ts)
+ * @see [Permissions](../decorators/perms.decorator.ts)
+ */
 @Injectable()
 export class PermissionGuard implements CanActivate {
 	constructor(

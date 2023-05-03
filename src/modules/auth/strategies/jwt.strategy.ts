@@ -5,6 +5,9 @@ import { ConfigService } from '@nestjs/config';
 import { UsersService } from 'src/modules/users/users.service';
 import { User } from 'src/modules/users/entities/user.entity';
 
+/**
+ * Strategy used to validate the user from the JWT payload
+ */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
 	constructor(configService: ConfigService, private usersService: UsersService) {
@@ -23,6 +26,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	 */
 	async validate(payload: { sub: number }): Promise<User> {
 		const { sub: id } = payload;
-		return await this.usersService.findOne({ id });
+		return await this.usersService.findOne({ id }, false);
 	}
 }

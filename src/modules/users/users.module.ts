@@ -4,9 +4,10 @@ import { UsersResolver } from './users.resolver';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
+import { UserVisibility } from './entities/user-visibility.entity';
 
 @Module({
-	imports: [MikroOrmModule.forFeature([User])],
+	imports: [MikroOrmModule.forFeature([User, UserVisibility])],
 	providers: [UsersResolver, UsersService, JwtService],
 	exports: [UsersService],
 })

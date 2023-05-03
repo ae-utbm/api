@@ -8,7 +8,7 @@ import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 
 import * as bcrypt from 'bcrypt';
-import { UserObject } from '../users/models/user.model';
+import { UserObject } from '../users/models/user.object';
 import { BaseEntity } from 'src/database/entities/base.entity';
 
 @Injectable()
@@ -24,11 +24,11 @@ export class AuthService {
 	 * Checks if the user's credentials are valid.
 	 * @param {User['email']} email the user's main email address
 	 * @param {User['password']} pass  the user's password
-	 * @returns {Promise<null | Omit<User, 'password'>>} a promise with the user's data (without the
+	 * @returns {Promise<null | UserObject>} a promise with the user's data (without the
 	 * password) if the credentials are valid, null otherwise
 	 */
-	async validateUser(email: User['email'], pass: User['password']): Promise<null | Omit<User, 'password'>> {
-		const user = await this.usersService.findOne({ email });
+	async validateUser(email: User['email'], pass: User['password']): Promise<null | UserObject> {
+		const user = await this.usersService.findOne({ email }, false);
 		if (!user) return null;
 
 		const { password, ...result } = user;

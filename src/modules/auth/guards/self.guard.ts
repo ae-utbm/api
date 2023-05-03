@@ -4,9 +4,22 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/modules/users/entities/user.entity';
+import { User } from '@modules/users/entities/user.entity';
 import { PermissionGuard } from './perms.guard';
 
+/**
+ * Guard used to check if the user has the required permissions or if they are themselves the target user
+ * to access a route, based on the permissions attached to the route
+ *
+ * Usage:
+ * - `@UseGuards(PermissionOrSelfGuard)` on top of a route/resolver
+ * - `@Permissions('PERM1', 'PERM2')` on top of the route/resolver
+ * - `@Self('id')` on top of the route/resolver, where `id` is the name of the parameter containing the id of the target user
+ *
+ * @see [PERMISSIONS](../../perms/perms.ts) for the list of permissions
+ * @see [Self](../decorators/self.decorator.ts)
+ * @see [Permissions](../decorators/perms.decorator.ts)
+ */
 @Injectable()
 export class PermissionOrSelfGuard extends PermissionGuard implements CanActivate {
 	constructor(

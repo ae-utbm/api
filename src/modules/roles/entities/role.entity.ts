@@ -1,8 +1,12 @@
+import type { PermissionName } from '@types';
+
 import { Collection, Entity, ManyToMany, Property } from '@mikro-orm/core';
 import { BaseEntity } from 'src/database/entities/base.entity';
-import { PermissionName } from '@/modules/auth/decorators/perms.decorator';
-import { User } from '@/modules/users/entities/user.entity';
+import { User } from '@modules/users/entities/user.entity';
 
+/**
+ * Entity used to store roles, which are a collection of permissions
+ */
 @Entity({ tableName: 'roles' })
 export class Role extends BaseEntity {
 	/** Name of the role, in caps */

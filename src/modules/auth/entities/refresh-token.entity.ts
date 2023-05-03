@@ -2,6 +2,10 @@ import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { BaseEntity } from 'src/database/entities/base.entity';
 import { User } from 'src/modules/users/entities/user.entity';
 
+/**
+ * Entity used to store refresh tokens
+ * (used to generate new access tokens when they expire)
+ */
 @Entity({ tableName: 'refresh_tokens' })
 export class RefreshToken extends BaseEntity {
 	/** Determine wether or not the refresh token has been revoked (used or expired) */
