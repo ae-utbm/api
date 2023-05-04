@@ -24,16 +24,11 @@ export class AuthResolver {
 
 		const accessToken = await this.authService.generateAccessToken(
 			user.id,
-			this.configService.get<number>('auth.jwtAccessExpirationTime'),
-		);
-		const refreshToken = await this.authService.generateRefreshToken(
-			user.id,
-			this.configService.get<number>('auth.jwtRefreshExpirationTime'),
+			this.configService.get<number>('auth.jwtExpirationTime'),
 		);
 
 		const tokenObject = new TokenObject();
-		tokenObject.accessToken = accessToken;
-		tokenObject.refreshToken = refreshToken;
+		tokenObject.token = accessToken;
 		tokenObject.user_id = user.id;
 
 		return tokenObject;
@@ -51,28 +46,13 @@ export class AuthResolver {
 
 		const accessToken = await this.authService.generateAccessToken(
 			user.id,
-			this.configService.get<number>('auth.jwtAccessExpirationTime'),
-		);
-		const refreshToken = await this.authService.generateRefreshToken(
-			user.id,
-			this.configService.get<number>('auth.jwtRefreshExpirationTime'),
+			this.configService.get<number>('auth.jwtExpirationTime'),
 		);
 
 		const tokenObject = new TokenObject();
-		tokenObject.accessToken = accessToken;
-		tokenObject.refreshToken = refreshToken;
+		tokenObject.token = accessToken;
 		tokenObject.user_id = user.id;
 
 		return tokenObject;
-	}
-
-	/**
-	 * Refreshes the access token using the refresh token.
-	 * @param {string} refresh the refresh token to use
-	 * @returns {Promise<TokenObject>} a promise with the token object containing an access token and a refresh token
-	 */
-	@Mutation(() => TokenObject)
-	async refreshToken(@Args('refresh_token') refresh: string): Promise<TokenObject> {
-		return await this.authService.createAccessTokenFromRefreshToken(refresh);
 	}
 }
