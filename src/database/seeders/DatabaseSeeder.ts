@@ -8,6 +8,7 @@ import { User } from '@modules/users/entities/user.entity';
 import { Role } from '@modules/roles/entities/role.entity';
 
 import * as bcrypt from 'bcrypt';
+import { Promotion } from '@modules/promotions/entities/promotion.entity';
 
 /**
  * This class is used to populate the database with some base data
@@ -16,7 +17,7 @@ import * as bcrypt from 'bcrypt';
 export class DatabaseSeeder extends Seeder {
 	async run(em: EntityManager): Promise<void> {
 		// Create root user
-		const user = em.create(User, {
+		const user_root = em.create(User, {
 			email: 'ae.info@utbm.fr',
 			password: await bcrypt.hash('root', 10),
 			first_name: 'root',
@@ -24,17 +25,17 @@ export class DatabaseSeeder extends Seeder {
 			birthday: new Date('2000-01-01'),
 		});
 
-		em.create(UserVisibility, { user });
+		em.create(UserVisibility, { user: user_root });
 
 		// Add root permission to the root user
 		em.create(Permission, {
 			name: 'ROOT',
 			expires: new Date('2100-01-01'),
-			user,
+			user: user_root,
 		});
 
 		// Create 1 user which would have the admin role
-		const user2 = em.create(User, {
+		const user_admin = em.create(User, {
 			email: 'ae@utbm.fr',
 			password: await bcrypt.hash('root', 10),
 			first_name: 'ae',
@@ -42,7 +43,7 @@ export class DatabaseSeeder extends Seeder {
 			birthday: new Date('2000-01-01'),
 		});
 
-		em.create(UserVisibility, { user: user2 });
+		em.create(UserVisibility, { user: user_admin });
 
 		// Create admin role (all permissions except ROOT)
 		const admin = em.create(Role, {
@@ -52,7 +53,15 @@ export class DatabaseSeeder extends Seeder {
 		});
 
 		// Add admin role to user2
-		user2.roles.add(admin);
-		em.persistAndFlush([user2]);
+		user_admin.roles.add(admin);
+
+		for (let i = 0; i < 30; i++) {
+			em.create(Promotion, { number: i + 1 });
+		}
+
+		user_root.promotion = 1;
+		user_admin.promotion = 21;
+
+		em.persistAndFlush([user_root, user_admin]);
 	}
 }

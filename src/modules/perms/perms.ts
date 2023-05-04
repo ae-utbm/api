@@ -69,4 +69,10 @@ export const PERMISSIONS = [
 		name: 'CAN_READ_USER',
 		description: 'Can read an existing user',
 	},
+
+	// PROMOTIONS
+	{
+		name: 'CAN_VIEW_USERS_IN_PROMOTION',
+		description: 'Can view all users in a promotion',
+	},
 ] as const;

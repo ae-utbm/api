@@ -10,5 +10,8 @@ export class UserGroupedObject extends BaseObject {
 	last_name: string;
 
 	@Field({ nullable: true })
+	nickname?: string;
+
+	@Field({ nullable: true })
 	promotion?: number;
 }

@@ -4,6 +4,7 @@ import { User } from './entities/user.entity';
 import { UserVisibility } from './entities/user-visibility.entity';
 import { UserGroupedObject } from './models/user-grouped.object';
 import { UserEditArgs } from './models/user-edit.args';
+import { UserRegisterArgs } from './models/user-register.args';
 
 @Injectable()
 export class UsersService {
@@ -52,8 +53,9 @@ export class UsersService {
 		});
 	}
 
+	// TODO: send a confirmation email to the user
 	@UseRequestContext()
-	async create(input: Partial<User> & Required<Pick<User, 'password' | 'email'>>): Promise<User> {
+	async create(input: UserRegisterArgs): Promise<User> {
 		const user = this.orm.em.create(User, input);
 		this.orm.em.create(UserVisibility, { user });
 

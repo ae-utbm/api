@@ -1,8 +1,9 @@
 import { Role } from '@modules/roles/entities/role.entity';
-import { Cascade, Collection, Entity, ManyToMany, OneToMany, Property } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, Property } from '@mikro-orm/core';
 import { BaseEntity } from 'src/database/entities/base.entity';
 import { RefreshToken } from 'src/modules/auth/entities/refresh-token.entity';
 import { Permission } from 'src/modules/perms/entities/permission.entity';
+import { Promotion } from '@modules/promotions/entities/promotion.entity';
 
 @Entity({ tableName: 'users' })
 export class User extends BaseEntity {
@@ -51,7 +52,7 @@ export class User extends BaseEntity {
 	nickname?: string;
 
 	/** Gender of the user */
-	// TODO: use an enum ?
+	// TODO: use an enum ? or an entity relation (dynamic) ?
 	@Property({ nullable: true })
 	gender?: string;
 
@@ -61,8 +62,7 @@ export class User extends BaseEntity {
 	cursus?: string;
 
 	/** Promotion of the user */
-	// TODO: use an entity relation ?
-	@Property({ nullable: true })
+	@ManyToOne(() => Promotion, { nullable: true })
 	promotion?: number;
 
 	/** Linked refresh tokens to the user */

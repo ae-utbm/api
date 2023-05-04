@@ -9,6 +9,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import configuration from './config/configuration';
 import { PermissionsModule } from './modules/perms/perms.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { PromotionsModule } from '@modules/promotions/promotions.module';
 
 @Module({
 	imports: [
@@ -28,6 +29,7 @@ import { RolesModule } from './modules/roles/roles.module';
 		AuthModule,
 		PermissionsModule,
 		RolesModule,
+		PromotionsModule,
 	],
 	providers: [],
 })

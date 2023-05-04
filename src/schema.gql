@@ -30,14 +30,23 @@ type PermissionObject {
   updated: DateTime!
 }
 
+type PromotionObject {
+  created: DateTime!
+  id: Int!
+  number: Float!
+  updated: DateTime!
+}
+
 type Query {
   getAllPermissions: [RawPermissionObject!]!
   getAllRoles(show_expired: Boolean = false, show_revoked: Boolean = false): [RoleObject!]!
   getPermissionsOfRole(role_id: Int!): [RawPermissionObject!]!
   getPermissionsOfUser(id: Int!, show_expired: Boolean = false, show_revoked: Boolean = false): [PermissionObject!]!
   getUserRoles(id: Int!, show_expired: Boolean = false, show_revoked: Boolean = false): [RoleObject!]!
+  promotions: [PromotionObject!]!
   user(id: Int!): UserObject!
   users: [UserGroupedObject!]!
+  usersInPromotion(number: Int!): [UserGroupedObject!]!
 }
 
 type RawPermissionObject {
@@ -65,6 +74,7 @@ type UserGroupedObject {
   first_name: String!
   id: Int!
   last_name: String!
+  nickname: String
   promotion: Float
   updated: DateTime!
 }

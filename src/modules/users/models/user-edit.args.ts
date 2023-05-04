@@ -29,7 +29,6 @@ export class UserEditArgs extends BaseArgs {
 	@Field(() => String, { nullable: true })
 	cursus?: string;
 
-	// TODO: might be replaced by an entity relation ?
 	@Field(() => Int, { nullable: true })
 	promotion?: number;
 }
