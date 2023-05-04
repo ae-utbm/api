@@ -1,15 +1,22 @@
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { UserVisibility } from './entities/user-visibility.entity';
 import { UserGroupedObject } from './models/user-grouped.object';
 import { UserEditArgs } from './models/user-edit.args';
 import { UserRegisterArgs } from './models/user-register.args';
+import { UserEditImageArgs } from './models/user-edit-picture.args';
+import { createWriteStream } from 'fs';
+import { ConfigService } from '@nestjs/config';
+import { join } from 'path';
+import { UserPicture } from './entities/user-picture.entity';
+import { UserBanner } from './entities/user-banner.entity';
 
 @Injectable()
 export class UsersService {
-	constructor(private readonly orm: MikroORM) {}
+	constructor(private readonly configService: ConfigService, private readonly orm: MikroORM) {}
 
+	// TODO update the user visibility (fields have been added)
 	@UseRequestContext()
 	private async filterUser(user: User): Promise<Partial<User>> {
 		const visibility = await this.orm.em.findOneOrFail(UserVisibility, { user });
@@ -66,9 +73,60 @@ export class UsersService {
 	@UseRequestContext()
 	async update(input: UserEditArgs) {
 		const user = await this.findOne({ id: input.id });
-		Object.assign(user, input); // TODO: use merge ?
+		Object.assign(user, input);
 		await this.orm.em.persistAndFlush(user);
 		return user;
+	}
+
+	// TODO: verify that the image is a supported format
+	// TODO: verify that the image is square
+	// TODO: fails if the last image is less than 7d old
+	// TODO: should erase the last image
+	// TODO: compress the image
+	@UseRequestContext()
+	async updatePicture(input: UserEditImageArgs) {
+		const { createReadStream, filename, mimetype } = await input.image;
+
+		return new Promise(async (resolve) => {
+			createReadStream()
+				.pipe(createWriteStream(join(this.configService.get('USERS_PICTURES_PATH'), filename)))
+				.on('finish', async () => {
+					this.orm.em.create(UserPicture, {
+						filename,
+						mimetype,
+						path: join(this.configService.get('USERS_PICTURES_PATH'), filename),
+						user: await this.orm.em.findOneOrFail(User, { id: input.id }),
+					});
+
+					resolve({ filename, mimetype });
+				})
+				.on('error', () => new HttpException('Error while saving the picture', HttpStatus.BAD_REQUEST));
+		});
+	}
+
+	// TODO: verify that the image is a supported format
+	// TODO: verify that the image is square
+	// TODO: should erase the last image
+	// TODO: compress the image
+	@UseRequestContext()
+	async updateBanner(input: UserEditImageArgs) {
+		const { createReadStream, filename, mimetype } = await input.image;
+
+		return new Promise(async (resolve) => {
+			createReadStream()
+				.pipe(createWriteStream(join(this.configService.get('USERS_PICTURES_PATH'), filename)))
+				.on('finish', async () => {
+					this.orm.em.create(UserBanner, {
+						filename,
+						mimetype,
+						path: join(this.configService.get('USERS_PICTURES_PATH'), filename),
+						user: await this.orm.em.findOneOrFail(User, { id: input.id }),
+					});
+
+					resolve({ filename, mimetype });
+				})
+				.on('error', () => new HttpException('Error while saving the picture', HttpStatus.BAD_REQUEST));
+		});
 	}
 
 	@UseRequestContext()

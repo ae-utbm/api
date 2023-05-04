@@ -61,6 +61,9 @@ dependencies:
   graphql:
     specifier: ^16.6.0
     version: 16.6.0
+  graphql-upload-minimal:
+    specifier: ^1.5.4
+    version: 1.5.4(graphql@16.6.0)
   jsonwebtoken:
     specifier: ^9.0.0
     version: 9.0.0
@@ -3795,6 +3798,16 @@ packages:
     dependencies:
       graphql: 16.6.0
       tslib: 2.5.0
+    dev: false
+
+  /graphql-upload-minimal@1.5.4(graphql@16.6.0):
+    resolution: {integrity: sha512-bBZ2J1kg6Guq++IkAhyyyd5QThHa9Mrl2NRqIumrSi2T/7SdoqduhIEdqZ+U4oniZP9jLzcIOyo+l8b+NuSgCw==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      graphql: 0.13.1 - 16
+    dependencies:
+      busboy: 1.6.0
+      graphql: 16.6.0
     dev: false
 
   /graphql-ws@5.12.1(graphql@16.6.0):

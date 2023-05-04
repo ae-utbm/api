@@ -10,6 +10,7 @@ import { UserGroupedObject } from './models/user-grouped.object';
 import { UserEditArgs } from './models/user-edit.args';
 import { PermissionGuard } from '../auth/guards/perms.guard';
 import { UserRegisterArgs } from './models/user-register.args';
+import { UserEditImageArgs } from './models/user-edit-picture.args';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -43,6 +44,22 @@ export class UsersResolver {
 	@UseGuards(PermissionOrSelfGuard)
 	async updateUser(@Args() input: UserEditArgs) {
 		return this.usersService.update(input);
+	}
+
+	@Mutation(() => UserObject)
+	@Self('id')
+	@Permissions('CAN_UPDATE_USER')
+	@UseGuards(PermissionOrSelfGuard)
+	async updateUserPicture(@Args() input: UserEditImageArgs) {
+		return this.usersService.updatePicture(input);
+	}
+
+	@Mutation(() => UserObject)
+	@Self('id')
+	@Permissions('CAN_UPDATE_USER')
+	@UseGuards(PermissionOrSelfGuard)
+	async updateUserBanner(@Args() input: UserEditImageArgs) {
+		return this.usersService.updateBanner(input);
 	}
 
 	@Mutation(() => Boolean)

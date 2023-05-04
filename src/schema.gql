@@ -19,6 +19,8 @@ type Mutation {
   register(birthday: DateTime!, cursus: String, email: String!, first_name: String!, gender: String, last_name: String!, nickname: String, password: String!, promotion: Int): TokenObject!
   revokeRole(role_id: Int!): RoleObject!
   updateUser(cursus: String, email: String, first_name: String, gender: String, id: Int!, last_name: String, nickname: String, password: String, promotion: Int): UserObject!
+  updateUserBanner(id: Int!, image: Upload!, name: String!): UserObject!
+  updateUserPicture(id: Int!, image: Upload!, name: String!): UserObject!
 }
 
 type PermissionObject {
@@ -68,6 +70,9 @@ type TokenObject {
   accessToken: String!
   refreshToken: String!
 }
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 type UserGroupedObject {
   created: DateTime!
