@@ -7,6 +7,7 @@ import { Promotion } from '@modules/promotions/entities/promotion.entity';
 
 @Entity({ tableName: 'users' })
 export class User extends BaseEntity {
+	//* INFORMATIONS
 	/** The first name of the user, @example 'John' */
 	@Property()
 	first_name: string;
@@ -21,7 +22,7 @@ export class User extends BaseEntity {
 		return `${this.first_name} ${this.last_name}`;
 	}
 
-	/** The email of the user, @example 'example@domain.net' */
+	/** The main email of the user, used to login, @example 'example@domain.net' */
 	@Property({ unique: true })
 	email: string;
 
@@ -65,6 +66,20 @@ export class User extends BaseEntity {
 	@ManyToOne(() => Promotion, { nullable: true })
 	promotion?: number;
 
+	//* CONTACT
+	/** The secondary email of the user, used for communications emails */
+	@Property({ nullable: true })
+	secondary_email?: string;
+
+	/** The phone number of the user */
+	@Property({ nullable: true })
+	phone?: string;
+
+	/** Parent contact (for minors only) */
+	@Property({ nullable: true })
+	parent_contact?: string;
+
+	//* PERMISSIONS & AUTHENTIFICATION
 	/** Linked refresh tokens to the user */
 	@OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user, { cascade: [Cascade.REMOVE] })
 	refresh_tokens = new Collection<RefreshToken>(this);

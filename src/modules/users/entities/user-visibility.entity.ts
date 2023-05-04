@@ -12,6 +12,10 @@ export class UserVisibility extends BaseEntity {
 	@Property({ onCreate: () => false })
 	email = false;
 
+	/** Wether the user email should be visible or not */
+	@Property({ onCreate: () => false })
+	secondary_email = false;
+
 	/** Wether the user birthday should be visible or not */
 	@Property({ onCreate: () => true })
 	birthday = true;
@@ -23,4 +27,20 @@ export class UserVisibility extends BaseEntity {
 	/** Wether the user gender should be visible or not */
 	@Property({ onCreate: () => false })
 	gender = false;
+
+	/** Wether the user cursus should be visible or not */
+	@Property({ onCreate: () => true })
+	cursus = true;
+
+	/** Wether the user promotion should be visible or not */
+	@Property({ onCreate: () => true })
+	promotion = true;
+
+	/** Wether the user phone should be visible or not */
+	@Property({ onCreate: () => false })
+	phone = false;
+
+	/** Wether the user parent's contact should be visible or not */
+	@Property({ onCreate: () => false })
+	parent_contact = false;
 }
