@@ -69,6 +69,7 @@ type RoleObject {
 type TokenObject {
   accessToken: String!
   refreshToken: String!
+  user_id: Int!
 }
 
 """The `Upload` scalar type represents a file upload."""
@@ -80,20 +81,20 @@ type UserGroupedObject {
   id: Int!
   last_name: String!
   nickname: String
-  promotion: Float
+  promotion: Int
   updated: DateTime!
 }
 
 type UserObject {
-  birthday: DateTime!
+  birthday: DateTime
   created: DateTime!
   cursus: String
-  email: String!
+  email: String
   first_name: String!
   gender: String
   id: Int!
   last_name: String!
   nickname: String
-  promotion: Float
+  promotion: Int
   updated: DateTime!
 }

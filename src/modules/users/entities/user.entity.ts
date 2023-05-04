@@ -25,12 +25,12 @@ export class User extends BaseEntity {
 	}
 
 	/** The user profile picture */
-	@OneToOne(() => UserPicture, (picture) => picture.user, { cascade: [Cascade.ALL] })
-	picture: UserPicture;
+	@OneToOne(() => UserPicture, (picture) => picture.user, { cascade: [Cascade.ALL], nullable: true })
+	picture?: UserPicture;
 
 	/** The user profile banner */
-	@OneToOne(() => UserBanner, (banner) => banner.user, { cascade: [Cascade.ALL] })
-	banner: UserBanner;
+	@OneToOne(() => UserBanner, (banner) => banner.user, { cascade: [Cascade.ALL], nullable: true })
+	banner?: UserBanner;
 
 	/** The main email of the user, used to login, @example 'example@domain.net' */
 	@Property({ unique: true })
@@ -74,7 +74,7 @@ export class User extends BaseEntity {
 
 	/** Promotion of the user */
 	@ManyToOne(() => Promotion, { nullable: true })
-	promotion?: number;
+	promotion?: Promotion;
 
 	//* CONTACT
 	/** The secondary email of the user, used for communications emails */

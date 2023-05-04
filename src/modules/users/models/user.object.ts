@@ -1,5 +1,5 @@
 import { BaseObject } from '@database/models/base.object';
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
 
 @ObjectType()
 export class UserObject extends BaseObject {
@@ -9,11 +9,11 @@ export class UserObject extends BaseObject {
 	@Field()
 	last_name: string;
 
-	@Field()
-	email: string;
+	@Field({ nullable: true })
+	email?: string;
 
-	@Field()
-	birthday: Date;
+	@Field({ nullable: true })
+	birthday?: Date;
 
 	@Field({ nullable: true })
 	nickname?: string;
@@ -24,6 +24,6 @@ export class UserObject extends BaseObject {
 	@Field({ nullable: true })
 	cursus?: string;
 
-	@Field({ nullable: true })
+	@Field(() => Int, { nullable: true })
 	promotion?: number;
 }

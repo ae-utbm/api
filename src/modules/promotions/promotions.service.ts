@@ -3,11 +3,11 @@ import { Injectable } from '@nestjs/common';
 import { Promotion } from './entities/promotion.entity';
 import { PromotionObject } from './models/promotion.object';
 import { UserGroupedObject } from '@modules/users/models/user-grouped.object';
-import { User } from '@modules/users/entities/user.entity';
+import { UsersService } from '@modules/users/users.service';
 
 @Injectable()
 export class PromotionsService {
-	constructor(private readonly orm: MikroORM) {}
+	constructor(private readonly orm: MikroORM, private readonly usersService: UsersService) {}
 
 	@UseRequestContext()
 	async findAll(): Promise<PromotionObject[]> {
@@ -15,18 +15,10 @@ export class PromotionsService {
 	}
 
 	@UseRequestContext()
-	async findUsersInPromotion(number: number): Promise<UserGroupedObject[]> {
-		return this.orm.em.findOneOrFail(Promotion, { number }, { fields: ['users'] }).then((promotion: Promotion) =>
-			promotion.users.getItems().map((user) => {
-				const u = new UserGroupedObject();
-				u.id = user.id;
-				u.first_name = user.first_name;
-				u.last_name = user.last_name;
-				u.nickname = user.nickname;
-				u.promotion = user.promotion;
+	async findUsersInPromotion(number: number) {
+		const promotion = await this.orm.em.findOneOrFail(Promotion, { number }, { fields: ['users'] });
+		const users = promotion.users.getItems().map((user) => this.usersService.convertToUserGrouped(user));
 
-				return u;
-			}),
-		);
+		return users;
 	}
 }

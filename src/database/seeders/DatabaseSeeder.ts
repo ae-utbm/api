@@ -59,8 +59,8 @@ export class DatabaseSeeder extends Seeder {
 			em.create(Promotion, { number: i + 1 });
 		}
 
-		user_root.promotion = 1;
-		user_admin.promotion = 21;
+		user_root.promotion = await em.findOneOrFail(Promotion, { number: 1 });
+		user_admin.promotion = await em.findOneOrFail(Promotion, { number: 21 });
 
 		em.persistAndFlush([user_root, user_admin]);
 	}

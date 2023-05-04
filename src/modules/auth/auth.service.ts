@@ -9,7 +9,8 @@ import { User } from '../users/entities/user.entity';
 
 import * as bcrypt from 'bcrypt';
 import { UserObject } from '../users/models/user.object';
-import { BaseEntity } from 'src/database/entities/base.entity';
+import { TokenObject } from './models/token.model';
+import { UserRegisterArgs } from '@modules/users/models/user-register.args';
 
 @Injectable()
 export class AuthService {
@@ -31,10 +32,8 @@ export class AuthService {
 		const user = await this.usersService.findOne({ email }, false);
 		if (!user) return null;
 
-		const { password, ...result } = user;
-		const match = await bcrypt.compare(pass, password);
-
-		return match ? result : null;
+		const match = await bcrypt.compare(pass, user.password);
+		return match ? this.usersService.convertToUserObject(user) : null;
 	}
 
 	/**
@@ -119,16 +118,16 @@ export class AuthService {
 	/**
 	 * Creates a new access token from the given refresh token.
 	 * @param {string} refresh the supposed encoded refresh token
-	 * @returns {Promise<{ accessToken: string; refreshToken: string }>} a promise with the new access token and the refresh token (a new one if the old one was revoked)
+	 * @returns {Promise<TokenObject>} a promise with the new access token and the refresh token (a new one if the old one was revoked)
 	 */
-	async createAccessTokenFromRefreshToken(refresh: string): Promise<{ accessToken: string; refreshToken: string }> {
+	async createAccessTokenFromRefreshToken(refresh: string): Promise<TokenObject> {
 		const currRefresh = await this.resolveRefreshToken(refresh);
 		const accessToken = await this.generateAccessToken(
 			currRefresh.user.id,
 			this.configService.get<number>('auth.jwtRefreshExpirationTime'),
 		);
 
-		if (!currRefresh.revoked) return { accessToken, refreshToken: refresh };
+		if (!currRefresh.revoked) return { accessToken, refreshToken: refresh, user_id: currRefresh.user.id };
 		else
 			return {
 				accessToken,
@@ -136,6 +135,7 @@ export class AuthService {
 					currRefresh.user.id,
 					this.configService.get<number>('auth.jwtAccessExpirationTime'),
 				),
+				user_id: currRefresh.user.id,
 			};
 	}
 
@@ -144,7 +144,7 @@ export class AuthService {
 	 * @param {Partial<User> & Required<Pick<User, 'password' | 'email'>>} input the user's data with at least the password and email
 	 * @returns {Promise<Omit<User, 'password'>>} a promise with the created user
 	 */
-	async register(input: Omit<UserObject, keyof BaseEntity> & { password: string }): Promise<Omit<User, 'password'>> {
+	async register(input: UserRegisterArgs): Promise<Omit<User, 'password'>> {
 		if (await this.usersService.findOne({ email: input.email })) return null;
 
 		const hashed = await bcrypt.hash(input.password, 10);

@@ -19,7 +19,7 @@ export class PromotionsResolver {
 	@Query(() => [UserGroupedObject])
 	@UseGuards(PermissionGuard)
 	@Permissions('CAN_VIEW_USERS_IN_PROMOTION')
-	async usersInPromotion(@Args('number', { type: () => Int }) number: number): Promise<UserGroupedObject[]> {
+	async usersInPromotion(@Args('number', { type: () => Int }) number: number) {
 		return this.promotionsService.findUsersInPromotion(number);
 	}
 }

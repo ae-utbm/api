@@ -34,6 +34,7 @@ export class AuthResolver {
 		const tokenObject = new TokenObject();
 		tokenObject.accessToken = accessToken;
 		tokenObject.refreshToken = refreshToken;
+		tokenObject.user_id = user.id;
 
 		return tokenObject;
 	}
@@ -60,6 +61,7 @@ export class AuthResolver {
 		const tokenObject = new TokenObject();
 		tokenObject.accessToken = accessToken;
 		tokenObject.refreshToken = refreshToken;
+		tokenObject.user_id = user.id;
 
 		return tokenObject;
 	}
@@ -71,12 +73,6 @@ export class AuthResolver {
 	 */
 	@Mutation(() => TokenObject)
 	async refreshToken(@Args('refresh_token') refresh: string): Promise<TokenObject> {
-		const { accessToken, refreshToken } = await this.authService.createAccessTokenFromRefreshToken(refresh);
-
-		const tokenObject = new TokenObject();
-		tokenObject.accessToken = accessToken;
-		tokenObject.refreshToken = refreshToken;
-
-		return tokenObject;
+		return await this.authService.createAccessTokenFromRefreshToken(refresh);
 	}
 }

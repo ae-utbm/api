@@ -1,5 +1,5 @@
 import { BaseObject } from '@database/models/base.object';
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
 
 @ObjectType()
 export class UserGroupedObject extends BaseObject {
@@ -12,6 +12,6 @@ export class UserGroupedObject extends BaseObject {
 	@Field({ nullable: true })
 	nickname?: string;
 
-	@Field({ nullable: true })
+	@Field(() => Int, { nullable: true })
 	promotion?: number;
 }
