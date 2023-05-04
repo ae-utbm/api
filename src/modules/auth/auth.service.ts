@@ -1,25 +1,15 @@
-import { UseRequestContext, MikroORM } from '@mikro-orm/core';
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { TokenExpiredError } from 'jsonwebtoken';
-import { RefreshToken } from './entities/refresh-token.entity';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 
 import * as bcrypt from 'bcrypt';
 import { UserObject } from '../users/models/user.object';
-import { TokenObject } from './models/token.model';
 import { UserRegisterArgs } from '@modules/users/models/user-register.args';
 
 @Injectable()
 export class AuthService {
-	constructor(
-		private usersService: UsersService,
-		private jwtService: JwtService,
-		private configService: ConfigService,
-		private readonly orm: MikroORM,
-	) {}
+	constructor(private usersService: UsersService, private jwtService: JwtService) {}
 
 	/**
 	 * Checks if the user's credentials are valid.
@@ -45,98 +35,6 @@ export class AuthService {
 	async generateAccessToken(id: User['id'], expiresIn: number): Promise<string> {
 		const payload = { subject: String(id), expiresIn };
 		return this.jwtService.signAsync(payload);
-	}
-
-	/**
-	 * Creates a refresh token in the database for the user with the given id.
-	 * @param {User['id']} id the user's id
-	 * @param {number} expiresIn the time in seconds for the token to expire
-	 * @returns {Promise<RefreshToken>} a promise with the refresh token
-	 */
-	@UseRequestContext()
-	async createRefreshToken(id: User['id'], expiresIn: number): Promise<RefreshToken> {
-		const expires = new Date();
-		expires.setTime(expires.getTime() + expiresIn);
-
-		const token = this.orm.em.create(RefreshToken, { expires, user: id }, { managed: true });
-		await this.orm.em.persistAndFlush(token);
-
-		return token;
-	}
-
-	/**
-	 * Generate a refresh token based on its id in the database.
-	 * @param {User['id']} id user's id to whom the token belongs
-	 * @param {number} expiresIn the time in seconds for the token to expire
-	 * @returns {Promise<string>} a promise with the refresh token
-	 */
-	async generateRefreshToken(id: User['id'], expiresIn: number): Promise<string> {
-		const payload = { subject: String(id) };
-		const token = await this.createRefreshToken(id, expiresIn);
-		return await this.jwtService.signAsync({
-			...payload,
-			expiresIn,
-			jwtId: String(token.id),
-		});
-	}
-
-	/**
-	 * Resolves a refresh token from the database.
-	 * @param {string} encoded the supposed encoded refresh token
-	 * @returns {Promise<RefreshToken>} a promise with the 'decoded' refresh token (if it exists in the database and it's valid)
-	 */
-	@UseRequestContext()
-	async resolveRefreshToken(encoded: string): Promise<RefreshToken> {
-		try {
-			// decode token
-			const payload = await this.jwtService.verify(encoded);
-			if (!payload.subject || !payload.jwtId) throw new UnprocessableEntityException('Refresh token malformed');
-
-			// get token from database
-			const refreshToken = await this.orm.em.findOne(RefreshToken, { id: payload.jwtId });
-			if (!refreshToken) throw new UnprocessableEntityException('Refresh token not found');
-			if (refreshToken.revoked) throw new UnprocessableEntityException('Refresh token revoked');
-
-			// get user from database
-			const user = await this.usersService.findOne({ id: payload.subject });
-			if (!user) throw new UnprocessableEntityException('Refresh token malformed');
-
-			// revoke token if it's expired
-			const date = new Date();
-			if (date.getTime() >= refreshToken.expires.getTime()) {
-				refreshToken.revoked = true;
-				await this.orm.em.persistAndFlush(refreshToken);
-			}
-
-			return refreshToken;
-		} catch (e) {
-			if (e instanceof TokenExpiredError) throw new UnprocessableEntityException('Refresh token expired');
-			else throw new UnprocessableEntityException('Refresh token malformed');
-		}
-	}
-
-	/**
-	 * Creates a new access token from the given refresh token.
-	 * @param {string} refresh the supposed encoded refresh token
-	 * @returns {Promise<TokenObject>} a promise with the new access token and the refresh token (a new one if the old one was revoked)
-	 */
-	async createAccessTokenFromRefreshToken(refresh: string): Promise<TokenObject> {
-		const currRefresh = await this.resolveRefreshToken(refresh);
-		const accessToken = await this.generateAccessToken(
-			currRefresh.user.id,
-			this.configService.get<number>('auth.jwtRefreshExpirationTime'),
-		);
-
-		if (!currRefresh.revoked) return { accessToken, refreshToken: refresh, user_id: currRefresh.user.id };
-		else
-			return {
-				accessToken,
-				refreshToken: await this.generateRefreshToken(
-					currRefresh.user.id,
-					this.configService.get<number>('auth.jwtAccessExpirationTime'),
-				),
-				user_id: currRefresh.user.id,
-			};
 	}
 
 	/**

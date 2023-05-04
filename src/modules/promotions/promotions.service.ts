@@ -2,7 +2,6 @@ import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Promotion } from './entities/promotion.entity';
 import { PromotionObject } from './models/promotion.object';
-import { UserGroupedObject } from '@modules/users/models/user-grouped.object';
 import { UsersService } from '@modules/users/users.service';
 
 @Injectable()

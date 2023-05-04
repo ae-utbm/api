@@ -1,9 +1,7 @@
-import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { AuthResolver } from './auth.resolver';
 import { AuthService } from './auth.service';
-import { RefreshToken } from './entities/refresh-token.entity';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
@@ -21,7 +19,6 @@ import { UsersModule } from '../users/users.module';
 			inject: [ConfigService],
 		}),
 		UsersModule,
-		MikroOrmModule.forFeature([RefreshToken]),
 	],
 	providers: [AuthService, AuthResolver, JwtStrategy],
 })
