@@ -10,6 +10,7 @@ const config: Partial<MikroORMOptions<IDatabaseDriver<Connection>>> = {
 	port: parseInt(process.env.DB_PORT, 10),
 	host: process.env.DB_HOST,
 	user: process.env.DB_USER,
+	password: process.env.DB_PASSWORD,
 	debug: process.env.DEBUG === 'true',
 	entities: ['./dist/modules/**/entities/*.entity.js'],
 	entitiesTs: ['./src/modules/**/entities/*.entity.ts'],
