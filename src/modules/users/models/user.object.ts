@@ -26,4 +26,7 @@ export class UserObject extends BaseObject {
 
 	@Field(() => Int, { nullable: true })
 	promotion?: number;
+
+	@Field({ nullable: true })
+	subscriber_account?: string;
 }

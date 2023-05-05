@@ -4,8 +4,9 @@ import { UserInputError } from '@nestjs/apollo';
 import { TokenObject } from './models/token.model';
 import { ConfigService } from '@nestjs/config';
 import { UserRegisterArgs } from '../users/models/user-register.args';
+import { User } from '@modules/users/entities/user.entity';
 
-@Resolver(() => TokenObject)
+@Resolver(() => User)
 export class AuthResolver {
 	constructor(private authService: AuthService, private configService: ConfigService) {}
 
