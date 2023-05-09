@@ -34,7 +34,7 @@ type PermissionObject {
 type PromotionObject {
   created: DateTime!
   id: Int!
-  number: Float!
+  number: Int!
   updated: DateTime!
 }
 

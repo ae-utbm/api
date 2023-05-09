@@ -46,6 +46,7 @@ export class PermissionOrSelfGuard extends PermissionGuard implements CanActivat
 		// if not, then this guard is not needed and we should refer to permission guard
 		const payload = await this.jwtService.verify(token, { secret: this.configService.get<string>('auth.jwtKey') });
 		const user = await this.orm.em.findOne(User, { id: payload.subject });
+		if (!user) return super.canActivate(ctx);
 
 		return user.id === id || super.canActivate(ctx);
 	}

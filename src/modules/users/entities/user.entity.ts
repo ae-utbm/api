@@ -1,7 +1,6 @@
 import { Role } from '@modules/roles/entities/role.entity';
 import { Cascade, Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, Property } from '@mikro-orm/core';
 import { BaseEntity } from 'src/database/entities/base.entity';
-import { RefreshToken } from 'src/modules/auth/entities/refresh-token.entity';
 import { Permission } from 'src/modules/perms/entities/permission.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
 import { UserPicture } from './user-picture.entity';
@@ -90,10 +89,6 @@ export class User extends BaseEntity {
 	parent_contact?: string;
 
 	//* PERMISSIONS & AUTHENTIFICATION
-	/** Linked refresh tokens to the user */
-	@OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user, { cascade: [Cascade.REMOVE] })
-	refresh_tokens = new Collection<RefreshToken>(this);
-
 	/** Linked permissions to the user */
 	@OneToMany(() => Permission, (permission) => permission.user, { cascade: [Cascade.REMOVE] })
 	permissions = new Collection<Permission>(this);
