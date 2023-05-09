@@ -2,14 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
-
-import * as bcrypt from 'bcrypt';
 import { UserObject } from '../users/models/user.object';
 import { UserRegisterArgs } from '@modules/users/models/user-register.args';
+import { UseRequestContext, MikroORM } from '@mikro-orm/core';
+
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-	constructor(private usersService: UsersService, private jwtService: JwtService) {}
+	constructor(private usersService: UsersService, private jwtService: JwtService, private readonly orm: MikroORM) {}
 
 	/**
 	 * Checks if the user's credentials are valid.
@@ -39,11 +40,12 @@ export class AuthService {
 
 	/**
 	 * Registers a new user in the database.
-	 * @param {Partial<User> & Required<Pick<User, 'password' | 'email'>>} input the user's data with at least the password and email
+	 * @param {UserRegisterArgs} input the user's data with at least the password and email
 	 * @returns {Promise<Omit<User, 'password'>>} a promise with the created user
 	 */
-	async register(input: UserRegisterArgs): Promise<Omit<User, 'password'>> {
-		if (await this.usersService.findOne({ email: input.email })) return null;
+	@UseRequestContext()
+	async register(input: UserRegisterArgs): Promise<Omit<User, 'password'> | null> {
+		if (await this.orm.em.findOne(User, { email: input.email })) return null;
 
 		const hashed = await bcrypt.hash(input.password, 10);
 		return await this.usersService.create({ ...input, password: hashed });

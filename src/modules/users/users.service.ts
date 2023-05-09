@@ -43,8 +43,9 @@ export class UsersService {
 			id: user.id,
 			created: user.created,
 			updated: user.updated,
+			subscriber_account: user.subscriber_account,
 			cursus: visibility.cursus ? user.cursus : undefined,
-			promotion: visibility.promotion ? user.promotion.id : undefined,
+			promotion: visibility.promotion && user.promotion ? user.promotion.id : undefined,
 			email: visibility.email ? user.email : undefined,
 			birthday: visibility.birthday ? user.birthday : undefined,
 			nickname: visibility.nickname ? user.nickname : undefined,
@@ -98,7 +99,10 @@ export class UsersService {
 	async updatePicture(input: UserEditImageArgs) {
 		const user = await this.orm.em.findOneOrFail(User, { id: input.id });
 
-		if (user.picture && user.picture.updated < new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
+		if (
+			user.picture &&
+			user.picture.updated < new Date(Date.now() - this.configService.get<number>('files.usersPicturesDelay') * 1000)
+		)
 			throw new HttpException('You can only change your picture once a week', HttpStatus.FORBIDDEN);
 
 		const { createReadStream, filename, mimetype } = await input.image;

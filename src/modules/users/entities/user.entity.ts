@@ -71,6 +71,10 @@ export class User extends BaseEntity {
 	@Property({ nullable: true })
 	cursus?: string;
 
+	/** Subscriber account number */
+	@Property({ nullable: true })
+	subscriber_account?: string;
+
 	/** Promotion of the user */
 	@ManyToOne(() => Promotion, { nullable: true })
 	promotion?: Promotion;

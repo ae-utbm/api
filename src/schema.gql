@@ -94,5 +94,6 @@ type UserObject {
   last_name: String!
   nickname: String
   promotion: Int
+  subscriber_account: String
   updated: DateTime!
 }
