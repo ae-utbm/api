@@ -44,12 +44,12 @@ export class PermissionGuard implements CanActivate {
 			.filter((p) => p.expires > new Date() && p.revoked === false)
 			.map((p) => p.name);
 
-		const roles = (await user.roles.loadItems())
+		const rolesPerms = (await user.roles.loadItems())
 			.filter((p) => p.expires > new Date() && p.revoked === false)
 			.map((p) => p.permissions)
 			.flat();
 
-		const acquiredPerms = [...perms, ...roles];
+		const acquiredPerms = [...perms, ...rolesPerms];
 
 		// If the user has the ROOT permission, they have all permissions.
 		if (acquiredPerms.includes('ROOT')) return true;
