@@ -22,6 +22,7 @@ export class DatabaseSeeder extends Seeder {
 			password: await bcrypt.hash('root', 10),
 			first_name: 'root',
 			last_name: 'root',
+			nickname: 'noot noot',
 			birthday: new Date('2000-01-01'),
 		});
 

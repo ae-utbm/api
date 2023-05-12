@@ -29,4 +29,16 @@ export class UserObject extends BaseObject {
 
 	@Field({ nullable: true })
 	subscriber_account?: string;
+
+	@Field({ nullable: true })
+	specialty?: string;
+
+	@Field({ nullable: true })
+	pronouns?: string;
+
+	@Field({ nullable: true })
+	last_seen?: Date;
+
+	@Field({ nullable: true })
+	subscription?: Date;
 }

@@ -33,8 +33,15 @@ export class AuthService {
 	 * @param {number} expiresIn the time in seconds for the token to expire
 	 * @returns {Promise<string>} a promise with the access token
 	 */
+	@UseRequestContext()
 	async generateAccessToken(id: User['id'], expiresIn: number): Promise<string> {
 		const payload = { subject: String(id), expiresIn };
+
+		// update the user's last seen date
+		const user = await this.usersService.findOne({ id }, false);
+		user.last_seen = new Date();
+		await this.orm.em.persistAndFlush(user);
+
 		return this.jwtService.signAsync(payload);
 	}
 

@@ -5,4 +5,7 @@ import { Int, Field, ObjectType } from '@nestjs/graphql';
 export class PromotionObject extends BaseObject {
 	@Field(() => Int)
 	number: number;
+
+	@Field(() => String, { nullable: true })
+	picture?: string;
 }

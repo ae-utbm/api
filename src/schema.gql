@@ -35,6 +35,7 @@ type PromotionObject {
   created: DateTime!
   id: Int!
   number: Int!
+  picture: String
   updated: DateTime!
 }
 
@@ -44,6 +45,7 @@ type Query {
   getPermissionsOfRole(role_id: Int!): [RawPermissionObject!]!
   getPermissionsOfUser(id: Int!, show_expired: Boolean = false, show_revoked: Boolean = false): [PermissionObject!]!
   getUserRoles(id: Int!, show_expired: Boolean = false, show_revoked: Boolean = false): [RoleObject!]!
+  promotion(number: Int!): PromotionObject!
   promotions: [PromotionObject!]!
   user(id: Int!): UserObject!
   users: [UserGroupedObject!]!
@@ -92,8 +94,12 @@ type UserObject {
   gender: String
   id: Int!
   last_name: String!
+  last_seen: DateTime
   nickname: String
   promotion: Int
+  pronouns: String
+  specialty: String
   subscriber_account: String
+  subscription: DateTime
   updated: DateTime!
 }

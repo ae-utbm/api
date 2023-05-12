@@ -28,9 +28,17 @@ export class UserVisibility extends BaseEntity {
 	@Property({ onCreate: () => false })
 	gender = false;
 
+	/** Wether the user gender should be visible or not */
+	@Property({ onCreate: () => false })
+	pronouns = false;
+
 	/** Wether the user cursus should be visible or not */
 	@Property({ onCreate: () => true })
 	cursus = true;
+
+	/** Wether the user cursus should be visible or not */
+	@Property({ onCreate: () => true })
+	specialty = true;
 
 	/** Wether the user promotion should be visible or not */
 	@Property({ onCreate: () => true })

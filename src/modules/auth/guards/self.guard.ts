@@ -40,7 +40,21 @@ export class PermissionOrSelfGuard extends PermissionGuard implements CanActivat
 		if (!idParam) return super.canActivate(ctx);
 
 		const token = context.getContext().req.headers.authorization;
-		const id = context.getArgs()[idParam];
+		let id: number = undefined;
+
+		// allow dot notation to access nested objects
+		if (idParam.includes('.')) {
+			const keys = idParam.split('.');
+			let value = context.getArgs();
+
+			for (const key of keys) {
+				if (value && typeof value === 'object' && key in value) value = value[key];
+			}
+
+			id = value;
+		}
+		// direct access to the object
+		else id = context.getArgs()[idParam];
 
 		// check if the user is trying to access their own data.
 		// if not, then this guard is not needed and we should refer to permission guard

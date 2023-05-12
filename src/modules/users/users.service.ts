@@ -43,6 +43,7 @@ export class UsersService {
 			id: user.id,
 			created: user.created,
 			updated: user.updated,
+			last_seen: user.last_seen,
 			subscriber_account: user.subscriber_account,
 			cursus: visibility.cursus ? user.cursus : undefined,
 			promotion: visibility.promotion && user.promotion ? user.promotion.id : undefined,
@@ -50,6 +51,9 @@ export class UsersService {
 			birthday: visibility.birthday ? user.birthday : undefined,
 			nickname: visibility.nickname ? user.nickname : undefined,
 			gender: visibility.gender ? user.gender : undefined,
+			pronouns: visibility.pronouns ? user.pronouns : undefined,
+			specialty: visibility.specialty ? user.specialty : undefined,
+			subscription: user.current_subscription ? user.current_subscription.expires : undefined,
 		};
 
 		return output;

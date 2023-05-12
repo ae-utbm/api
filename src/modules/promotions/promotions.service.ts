@@ -10,7 +10,14 @@ export class PromotionsService {
 
 	@UseRequestContext()
 	async findAll(): Promise<PromotionObject[]> {
-		return this.orm.em.find(Promotion, {});
+		const promotions = await this.orm.em.find(Promotion, {});
+		return promotions.map((promotion) => ({ ...promotion, picture: promotion.picture?.path }));
+	}
+
+	@UseRequestContext()
+	async findOne(number: number): Promise<PromotionObject> {
+		const promotion = await this.orm.em.findOneOrFail(Promotion, { number });
+		return { ...promotion, picture: promotion.picture?.path };
 	}
 
 	@UseRequestContext()
