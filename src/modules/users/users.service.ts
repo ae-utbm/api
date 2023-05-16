@@ -105,7 +105,9 @@ export class UsersService {
 
 		if (
 			user.picture &&
-			user.picture.updated < new Date(Date.now() - this.configService.get<number>('files.usersPicturesDelay') * 1000)
+			0 <
+				this.configService.get<number>('files.usersPicturesDelay') * 1000 -
+					(new Date().getTime() - new Date(user.picture.updated).getTime())
 		)
 			throw new HttpException('You can only change your picture once a week', HttpStatus.FORBIDDEN);
 
@@ -142,6 +144,7 @@ export class UsersService {
 		else {
 			user.picture.filename = filename;
 			user.picture.mimetype = mimetype;
+			user.picture.updated = new Date();
 			user.picture.path = imagePath.replace(extension, '.webp');
 		}
 

@@ -12,11 +12,14 @@ export class UsersController {
 	@Post('picture/:id')
 	@UseInterceptors(FileInterceptor('file'))
 	async editPicture(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
-		this.usersService.updatePicture({ id, file });
+		return this.usersService.updatePicture({ id, file });
 	}
 
 	@Get('picture/:id')
 	async getPicture(@Param('id') id: number) {
+		// TODO: add a fallback if the picture is requested while being edited
+		// ! because if the picture is being edited, it will be deleted and the request will fail
+
 		const picture = await this.usersService.getPicture(id);
 		return new StreamableFile(createReadStream(picture.path));
 	}
@@ -24,11 +27,14 @@ export class UsersController {
 	@Post('banner/:id')
 	@UseInterceptors(FileInterceptor('file'))
 	async editBanner(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
-		this.usersService.updateBanner({ id, file });
+		return this.usersService.updateBanner({ id, file });
 	}
 
 	@Get('banner/:id')
 	async getBanner(@Param('id') id: number) {
+		// TODO: add a fallback if the picture is requested while being edited
+		// ! because if the picture is being edited, it will be deleted and the request will fail
+
 		const banner = await this.usersService.getBanner(id);
 		return new StreamableFile(createReadStream(banner.path));
 	}
