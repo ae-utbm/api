@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { createReadStream } from 'fs';
@@ -37,5 +37,10 @@ export class UsersController {
 
 		const banner = await this.usersService.getBanner(id);
 		return new StreamableFile(createReadStream(banner.path));
+	}
+
+	@Delete('banner/:id')
+	async deleteBanner(@Param('id') id: number) {
+		return this.usersService.deleteBanner(id);
 	}
 }

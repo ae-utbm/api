@@ -212,6 +212,17 @@ export class UsersService {
 	}
 
 	@UseRequestContext()
+	async deleteBanner(id: number): Promise<void> {
+		const user = await this.orm.em.findOneOrFail(User, { id });
+		await user.banner.init();
+
+		if (user.banner) {
+			fs.unlinkSync(user.banner.path);
+			await this.orm.em.removeAndFlush(user.banner);
+		}
+	}
+
+	@UseRequestContext()
 	async delete(user: User) {
 		await this.orm.em.removeAndFlush(user);
 	}
