@@ -22,10 +22,3 @@ export interface PermissionObject {
  * List of available permissions throughout the API
  */
 export type PermissionName = (typeof PERMISSIONS)[number]['name'];
-
-export interface FileUpload {
-	filename: string;
-	mimetype: string;
-	encoding: string;
-	createReadStream: () => NodeJS.ReadableStream;
-}

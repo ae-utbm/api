@@ -14,7 +14,8 @@
     "inversed",
     "mikro",
     "postgres",
-    "postgresql"
+    "postgresql",
+    "Streamable"
   ],
   "files.eol": "\n",
   "editor.formatOnSave": true,

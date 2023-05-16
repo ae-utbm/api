@@ -35,9 +35,13 @@ export async function convertToWebp(imagePath: string): Promise<string> {
 	const newPath = imagePath.replace(/\.[^/.]+$/, '.webp');
 
 	// convert the image to webp
-	await sharp(imagePath).webp({ quality: 80 }).toFile(newPath);
+	const buffer = await sharp(imagePath).toBuffer();
+	sharp(buffer)
+		.webp()
+		.toFile(newPath, (err, info) => {
+			// delete the old image
+			if (!err && info) fs.unlinkSync(imagePath);
+		});
 
-	// delete the old image
-	fs.unlinkSync(imagePath);
 	return newPath;
 }

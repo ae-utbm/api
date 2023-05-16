@@ -5,7 +5,6 @@ import { UserVisibility } from './entities/user-visibility.entity';
 import { UserGroupedObject } from './models/user-grouped.object';
 import { UserEditArgs } from './models/user-edit.args';
 import { UserRegisterArgs } from './models/user-register.args';
-import { UserEditImageArgs } from './models/user-edit-picture.args';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
 import { UserPicture } from './entities/user-picture.entity';
@@ -100,8 +99,9 @@ export class UsersService {
 	}
 
 	@UseRequestContext()
-	async updatePicture(input: UserEditImageArgs) {
-		const user = await this.orm.em.findOneOrFail(User, { id: input.id });
+	async updatePicture({ id, file }: { id: number; file: Express.Multer.File }) {
+		const user = await this.orm.em.findOneOrFail(User, { id });
+		await user.picture.init();
 
 		if (
 			user.picture &&
@@ -109,88 +109,103 @@ export class UsersService {
 		)
 			throw new HttpException('You can only change your picture once a week', HttpStatus.FORBIDDEN);
 
-		const { createReadStream, filename, mimetype } = await input.image;
-		const imagePath = join(
-			process.cwd(),
-			this.configService.get<string>('files.usersPictures'),
-			`${user.full_name}_${filename}`,
-		);
+		const { buffer, mimetype } = file;
+		const imageDir = this.configService.get<string>('files.usersPictures');
+		const extension = mimetype.replace('image/', '.');
+		const filename = `${user.id}${extension}`;
+		const imagePath = join(imageDir, filename);
 
-		return new Promise(async (resolve) => {
-			createReadStream()
-				// Upload default image to manipulate it
-				.pipe(fs.createWriteStream(imagePath))
-				.on('finish', async () => {
-					if (!isSquare(imagePath)) {
-						fs.unlinkSync(imagePath);
-						return new HttpException('The image must be square', HttpStatus.BAD_REQUEST);
-					}
-				})
-				.on('error', () => new HttpException('Error while saving the picture', HttpStatus.BAD_REQUEST))
+		// write the file
+		fs.mkdirSync(imageDir, { recursive: true });
+		fs.writeFileSync(imagePath, buffer);
 
-				// Reupload the image in webp format (or GIF if it's a GIF)
-				.pipe(fs.createWriteStream(await convertToWebp(imagePath)))
-				.on('finish', async () => {
-					if (user.picture) {
-						if (imagePath !== user.picture.path) fs.unlinkSync(user.picture.path); // remove on disk
-						await this.orm.em.removeAndFlush(user.picture); // remove in database
-					}
+		// test if the image is square
+		if (!isSquare(imagePath)) {
+			fs.unlinkSync(imagePath);
+			throw new HttpException('The image must be square', HttpStatus.BAD_REQUEST);
+		}
 
-					this.orm.em.create(UserPicture, {
-						filename,
-						mimetype,
-						path: imagePath,
-						user,
-					});
+		// remove old picture if path differs
+		if (user.picture && user.picture.path && user.picture.path !== imagePath) fs.unlinkSync(user.picture.path);
 
-					resolve({ filename, mimetype });
-				})
-				.on('error', () => new HttpException('Error while saving the picture', HttpStatus.BAD_REQUEST));
-		});
+		// convert to webp
+		fs.createWriteStream(await convertToWebp(imagePath));
+
+		// update database
+		if (!user.picture)
+			user.picture = this.orm.em.create(UserPicture, {
+				filename,
+				mimetype,
+				path: imagePath.replace(extension, '.webp'),
+				user,
+			});
+		else {
+			user.picture.filename = filename;
+			user.picture.mimetype = mimetype;
+			user.picture.path = imagePath.replace(extension, '.webp');
+		}
+
+		await this.orm.em.persistAndFlush(user);
 	}
 
 	@UseRequestContext()
-	async updateBanner(input: UserEditImageArgs) {
-		const user = await this.orm.em.findOneOrFail(User, { id: input.id });
+	async getPicture(id: number): Promise<UserPicture> {
+		const user = await this.orm.em.findOneOrFail(User, { id });
+		await user.picture.init();
 
-		const { createReadStream, filename, mimetype } = await input.image;
-		const imagePath = join(
-			process.cwd(),
-			this.configService.get<string>('files.usersBanners'),
-			`${user.full_name}_${filename}`,
-		);
+		return user.picture;
+	}
 
-		return new Promise(async (resolve) => {
-			createReadStream()
-				// Upload default image to manipulate it
-				.pipe(fs.createWriteStream(imagePath))
-				.on('finish', async () => {
-					if (!isBannerAspectRation(imagePath)) {
-						fs.unlinkSync(imagePath);
-						return new HttpException('The image must have a 1:3 aspect ration', HttpStatus.BAD_REQUEST);
-					}
-				})
-				.on('error', () => new HttpException('Error while saving the banner', HttpStatus.BAD_REQUEST))
+	@UseRequestContext()
+	async updateBanner({ id, file }: { id: number; file: Express.Multer.File }) {
+		const user = await this.orm.em.findOneOrFail(User, { id });
+		await user.picture.init();
 
-				// Reupload the image in webp format (or GIF if it's a GIF)
-				.pipe(fs.createWriteStream(await convertToWebp(imagePath)))
-				.on('finish', async () => {
-					if (user.banner) {
-						if (imagePath !== user.banner.path) fs.unlinkSync(user.banner.path); // remove on disk
-						await this.orm.em.removeAndFlush(user.banner); // remove in database
-					}
+		const { buffer, mimetype } = file;
+		const imageDir = this.configService.get<string>('files.usersBanners');
+		const extension = mimetype.replace('image/', '.');
+		const filename = `${user.id}${extension}`;
+		const imagePath = join(imageDir, filename);
 
-					this.orm.em.create(UserBanner, {
-						filename,
-						mimetype,
-						path: imagePath,
-						user,
-					});
+		// write the file
+		fs.mkdirSync(imageDir, { recursive: true });
+		fs.writeFileSync(imagePath, buffer);
 
-					resolve({ filename, mimetype });
-				})
-				.on('error', () => new HttpException('Error while saving the banner', HttpStatus.BAD_REQUEST));
-		});
+		// test if the image is square
+		if (!isBannerAspectRation(imagePath)) {
+			fs.unlinkSync(imagePath);
+			throw new HttpException('The image must be of 1:3 aspect ratio', HttpStatus.BAD_REQUEST);
+		}
+
+		// remove old banner if path differs
+		if (user.banner && user.banner.path && user.banner.path !== imagePath) fs.unlinkSync(user.banner.path);
+
+		// convert to webp
+		fs.createWriteStream(await convertToWebp(imagePath));
+
+		// update database
+		if (!user.banner)
+			user.banner = this.orm.em.create(UserBanner, {
+				filename,
+				mimetype,
+				path: imagePath.replace(extension, '.webp'),
+				user,
+			});
+		else {
+			user.banner.filename = filename;
+			user.banner.mimetype = mimetype;
+			user.banner.path = imagePath.replace(extension, '.webp');
+		}
+
+		await this.orm.em.persistAndFlush(user);
+	}
+
+	@UseRequestContext()
+	async getBanner(id: number): Promise<UserBanner> {
+		const user = await this.orm.em.findOneOrFail(User, { id });
+		await user.banner.init();
+
+		return user.banner;
 	}
 
 	@UseRequestContext()

@@ -10,6 +10,7 @@ import configuration from './config/configuration';
 import { PermissionsModule } from './modules/perms/perms.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { PromotionsModule } from '@modules/promotions/promotions.module';
+import { UsersController } from '@modules/users/users.controller';
 
 @Module({
 	imports: [
@@ -21,9 +22,9 @@ import { PromotionsModule } from '@modules/promotions/promotions.module';
 		GraphQLModule.forRoot<ApolloDriverConfig>({
 			driver: ApolloDriver,
 			autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-			includeStacktraceInErrorResponses: process.env.DEBUG == 'true',
+			includeStacktraceInErrorResponses: process.env['DEBUG'] == 'true',
 			sortSchema: true,
-			playground: process.env.DEBUG === 'true',
+			playground: process.env['DEBUG'] === 'true',
 		}),
 		UsersModule,
 		AuthModule,

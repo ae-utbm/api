@@ -4,17 +4,17 @@ import { UserEditArgs } from './user-edit.args';
 @ArgsType()
 export class UserRegisterArgs extends OmitType(UserEditArgs, ['id']) {
 	@Field(() => String)
-	password: string;
+	override password: string;
 
 	@Field(() => String)
-	email: string;
+	override email: string;
 
 	@Field(() => Date)
 	birthday: Date;
 
 	@Field(() => String)
-	first_name: string;
+	override first_name: string;
 
 	@Field(() => String)
-	last_name: string;
+	override last_name: string;
 }

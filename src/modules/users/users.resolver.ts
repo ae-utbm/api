@@ -10,7 +10,7 @@ import { UserGroupedObject } from './models/user-grouped.object';
 import { UserEditArgs } from './models/user-edit.args';
 import { PermissionGuard } from '../auth/guards/perms.guard';
 import { UserRegisterArgs } from './models/user-register.args';
-import { UserEditImageArgs } from './models/user-edit-picture.args';
+import { DateObject } from '@database/models/date.object';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -46,20 +46,17 @@ export class UsersResolver {
 		return this.usersService.update(input);
 	}
 
-	@Mutation(() => UserObject)
+	@Query(() => DateObject)
 	@Self('id')
 	@Permissions('CAN_UPDATE_USER')
 	@UseGuards(PermissionOrSelfGuard)
-	async updateUserPicture(@Args() input: UserEditImageArgs) {
-		return this.usersService.updatePicture(input);
-	}
+	async lastPictureUpdate(@Args('id', { type: () => Int }) id: number) {
+		const user = await this.usersService.findOne({ id }, false);
 
-	@Mutation(() => UserObject)
-	@Self('id')
-	@Permissions('CAN_UPDATE_USER')
-	@UseGuards(PermissionOrSelfGuard)
-	async updateUserBanner(@Args() input: UserEditImageArgs) {
-		return this.usersService.updateBanner(input);
+		if (!user || !user.picture) return new DateObject(new Date(0));
+		await user.picture.init();
+
+		return new DateObject(user.picture.updated);
 	}
 
 	@Mutation(() => Boolean)

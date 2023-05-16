@@ -2,6 +2,17 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type DateObject {
+  date: DateTime!
+  day: Int!
+  hour: Int!
+  millisecond: Int!
+  minute: Int!
+  month: Int!
+  second: Int!
+  year: Int!
+}
+
 """
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
@@ -18,8 +29,6 @@ type Mutation {
   register(birthday: DateTime!, cursus: String, email: String!, first_name: String!, gender: String, last_name: String!, nickname: String, password: String!, promotion: Int): TokenObject!
   revokeRole(role_id: Int!): RoleObject!
   updateUser(cursus: String, email: String, first_name: String, gender: String, id: Int!, last_name: String, nickname: String, password: String, promotion: Int): UserObject!
-  updateUserBanner(id: Int!, image: Upload!, name: String!): UserObject!
-  updateUserPicture(id: Int!, image: Upload!, name: String!): UserObject!
 }
 
 type PermissionObject {
@@ -45,6 +54,7 @@ type Query {
   getPermissionsOfRole(role_id: Int!): [RawPermissionObject!]!
   getPermissionsOfUser(id: Int!, show_expired: Boolean = false, show_revoked: Boolean = false): [PermissionObject!]!
   getUserRoles(id: Int!, show_expired: Boolean = false, show_revoked: Boolean = false): [RoleObject!]!
+  lastPictureUpdate(id: Int!): DateObject!
   promotion(number: Int!): PromotionObject!
   promotions: [PromotionObject!]!
   user(id: Int!): UserObject!
@@ -71,9 +81,6 @@ type TokenObject {
   token: String!
   user_id: Int!
 }
-
-"""The `Upload` scalar type represents a file upload."""
-scalar Upload
 
 type UserGroupedObject {
   created: DateTime!

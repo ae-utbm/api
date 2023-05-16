@@ -23,16 +23,16 @@ import { PermissionGuard } from './perms.guard';
 @Injectable()
 export class PermissionOrSelfGuard extends PermissionGuard implements CanActivate {
 	constructor(
-		protected readonly reflector: Reflector,
-		@Inject(JwtService) protected readonly jwtService: JwtService,
-		@Inject(ConfigService) protected readonly configService: ConfigService,
-		@Inject(MikroORM) protected readonly orm: MikroORM,
+		protected override readonly reflector: Reflector,
+		@Inject(JwtService) protected override readonly jwtService: JwtService,
+		@Inject(ConfigService) protected override readonly configService: ConfigService,
+		@Inject(MikroORM) protected override readonly orm: MikroORM,
 	) {
 		super(reflector, jwtService, configService, orm);
 	}
 
 	@UseRequestContext()
-	async canActivate(ctx: ExecutionContext): Promise<boolean> {
+	override async canActivate(ctx: ExecutionContext): Promise<boolean> {
 		const context = GqlExecutionContext.create(ctx);
 		const idParam = this.reflector.get<string>('id_param', context.getHandler());
 
