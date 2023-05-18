@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, Param, Post, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
-import { createReadStream } from 'fs';
+import { getStreamableFile } from '@utils/images';
 
 // TODO: Add guards and decorators to the controller
 
@@ -17,11 +17,8 @@ export class UsersController {
 
 	@Get('picture/:id')
 	async getPicture(@Param('id') id: number) {
-		// TODO: add a fallback if the picture is requested while being edited
-		// ! because if the picture is being edited, it will be deleted and the request will fail
-
 		const picture = await this.usersService.getPicture(id);
-		return new StreamableFile(createReadStream(picture.path));
+		return new StreamableFile(getStreamableFile(picture.path));
 	}
 
 	@Post('banner/:id')
@@ -32,11 +29,8 @@ export class UsersController {
 
 	@Get('banner/:id')
 	async getBanner(@Param('id') id: number) {
-		// TODO: add a fallback if the picture is requested while being edited
-		// ! because if the picture is being edited, it will be deleted and the request will fail
-
 		const banner = await this.usersService.getBanner(id);
-		return new StreamableFile(createReadStream(banner.path));
+		return new StreamableFile(getStreamableFile(banner.path));
 	}
 
 	@Delete('banner/:id')

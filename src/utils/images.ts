@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import fs from 'fs';
+import { createReadStream, ReadStream, unlinkSync } from 'fs';
 
 /**
  * Check if an image is square
@@ -40,8 +40,27 @@ export async function convertToWebp(imagePath: string): Promise<string> {
 		.webp()
 		.toFile(newPath, (err, info) => {
 			// delete the old image
-			if (!err && info) fs.unlinkSync(imagePath);
+			if (!err && info) unlinkSync(imagePath);
 		});
 
 	return newPath;
+}
+
+/**
+ * Create a read stream from a file, with a retry mechanism
+ * @param {string} path The path to the file
+ * @param {number} attempts Number of attempts to try to create the stream @default 10
+ * @returns {ReadStream} The read stream
+ * @throws {Error} If the file can't be read after the attempts
+ */
+export function getStreamableFile(path: string, attempts = 10): ReadStream {
+	try {
+		return createReadStream(path);
+	} catch (error) {
+		if (attempts === 0) throw error;
+
+		setTimeout(() => {
+			return getStreamableFile(path, --attempts);
+		}, 1000);
+	}
 }
