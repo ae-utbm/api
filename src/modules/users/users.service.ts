@@ -168,6 +168,17 @@ export class UsersService {
 	}
 
 	@UseRequestContext()
+	async deletePicture(id: number): Promise<void> {
+		const user = await this.orm.em.findOneOrFail(User, { id });
+		if (user.picture) await user.picture.init();
+
+		if (user.picture) {
+			fs.unlinkSync(user.picture.path);
+			await this.orm.em.removeAndFlush(user.picture);
+		}
+	}
+
+	@UseRequestContext()
 	async updateBanner({ id, file }: { id: number; file: Express.Multer.File }) {
 		const user = await this.orm.em.findOneOrFail(User, { id });
 		await user.picture.init();
