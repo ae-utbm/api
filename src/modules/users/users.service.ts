@@ -1,5 +1,6 @@
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Promotion } from '@modules/promotions/entities/promotion.entity';
 import { User } from './entities/user.entity';
 import { UserVisibility } from './entities/user-visibility.entity';
 import { UserGroupedObject } from './models/user-grouped.object';
@@ -36,6 +37,12 @@ export class UsersService {
 	@UseRequestContext()
 	public async convertToUserObject(user: User): Promise<UserObject> {
 		const visibility = await this.orm.em.findOneOrFail(UserVisibility, { user });
+
+		const promotion: Promotion | undefined =
+			visibility.promotion && user.promotion
+				? await this.orm.em.findOneOrFail(Promotion, { id: user.promotion.id })
+				: undefined;
+
 		const output: Required<UserObject> = {
 			// base user
 			id: user.id,
@@ -53,7 +60,7 @@ export class UsersService {
 			nickname: visibility.nickname ? user.nickname : undefined,
 			parent_contact: visibility.parent_contact ? user.parent_contact : undefined,
 			phone: visibility.phone ? user.phone : undefined,
-			promotion: visibility.promotion && user.promotion ? user.promotion.id : undefined,
+			promotion: promotion ? promotion.number : undefined,
 			pronouns: visibility.pronouns ? user.pronouns : undefined,
 			secondary_email: visibility.secondary_email ? user.secondary_email : undefined,
 			specialty: visibility.specialty ? user.specialty : undefined,
