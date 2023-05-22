@@ -35,13 +35,14 @@ export class UsersService {
 
 	@UseRequestContext()
 	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter = true): Promise<User | Partial<User>> {
-		let user = null;
+		let user: User = null;
 
 		if (id) user = await this.orm.em.findOneOrFail(User, { id });
 		if (email) user = await this.orm.em.findOneOrFail(User, { email });
 
 		if (!id && !email) throw new HttpException('Missing id or email', HttpStatus.BAD_REQUEST);
 
+		if (user.promotion) await user.promotion.init();
 		if (filter) return this.checkVisibility(user);
 		return user;
 	}
