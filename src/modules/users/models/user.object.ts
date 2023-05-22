@@ -41,4 +41,13 @@ export class UserObject extends BaseObject {
 
 	@Field({ nullable: true })
 	subscription?: Date;
+
+	@Field({ nullable: true })
+	secondary_email?: string;
+
+	@Field({ nullable: true })
+	phone?: string;
+
+	@Field({ nullable: true })
+	parent_contact?: string;
 }

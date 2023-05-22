@@ -103,8 +103,11 @@ type UserObject {
   last_name: String!
   last_seen: DateTime
   nickname: String
+  parent_contact: String
+  phone: String
   promotion: Int
   pronouns: String
+  secondary_email: String
   specialty: String
   subscriber_account: String
   subscription: DateTime

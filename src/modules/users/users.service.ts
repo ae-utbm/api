@@ -37,21 +37,27 @@ export class UsersService {
 	public async convertToUserObject(user: User): Promise<UserObject> {
 		const visibility = await this.orm.em.findOneOrFail(UserVisibility, { user });
 		const output: Required<UserObject> = {
+			// base user
+			id: user.id,
 			first_name: user.first_name,
 			last_name: user.last_name,
-			id: user.id,
+			last_seen: user.last_seen,
 			created: user.created,
 			updated: user.updated,
-			last_seen: user.last_seen,
-			subscriber_account: user.subscriber_account,
-			cursus: visibility.cursus ? user.cursus : undefined,
-			promotion: visibility.promotion && user.promotion ? user.promotion.id : undefined,
-			email: visibility.email ? user.email : undefined,
+
+			// user details
 			birthday: visibility.birthday ? user.birthday : undefined,
-			nickname: visibility.nickname ? user.nickname : undefined,
+			cursus: visibility.cursus ? user.cursus : undefined,
+			email: visibility.email ? user.email : undefined,
 			gender: visibility.gender ? user.gender : undefined,
+			nickname: visibility.nickname ? user.nickname : undefined,
+			parent_contact: visibility.parent_contact ? user.parent_contact : undefined,
+			phone: visibility.phone ? user.phone : undefined,
+			promotion: visibility.promotion && user.promotion ? user.promotion.id : undefined,
 			pronouns: visibility.pronouns ? user.pronouns : undefined,
+			secondary_email: visibility.secondary_email ? user.secondary_email : undefined,
 			specialty: visibility.specialty ? user.specialty : undefined,
+			subscriber_account: user.subscriber_account,
 			subscription: user.current_subscription ? user.current_subscription.expires : undefined,
 		};
 
@@ -101,7 +107,7 @@ export class UsersService {
 	@UseRequestContext()
 	async updatePicture({ id, file }: { id: number; file: Express.Multer.File }) {
 		const user = await this.orm.em.findOneOrFail(User, { id });
-		await user.picture.init();
+		if (user.picture) await user.picture.init();
 
 		if (
 			user.picture &&
@@ -154,6 +160,8 @@ export class UsersService {
 	@UseRequestContext()
 	async getPicture(id: number): Promise<UserPicture> {
 		const user = await this.orm.em.findOneOrFail(User, { id });
+		if (!user.picture) throw new HttpException('User has no picture', HttpStatus.NOT_FOUND);
+
 		await user.picture.init();
 
 		return user.picture;
@@ -206,15 +214,16 @@ export class UsersService {
 	@UseRequestContext()
 	async getBanner(id: number): Promise<UserBanner> {
 		const user = await this.orm.em.findOneOrFail(User, { id });
-		await user.banner.init();
+		if (!user.banner) throw new HttpException('User has no banner', HttpStatus.NOT_FOUND);
 
+		await user.banner.init();
 		return user.banner;
 	}
 
 	@UseRequestContext()
 	async deleteBanner(id: number): Promise<void> {
 		const user = await this.orm.em.findOneOrFail(User, { id });
-		await user.banner.init();
+		if (user.banner) await user.banner.init();
 
 		if (user.banner) {
 			fs.unlinkSync(user.banner.path);
