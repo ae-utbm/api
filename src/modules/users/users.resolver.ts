@@ -1,18 +1,16 @@
 import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { UserObject } from './models/user.object';
 import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
 import { UseGuards } from '@nestjs/common';
 import { Permissions } from '@modules/auth/decorators/perms.decorator';
 import { PermissionOrSelfGuard } from '../auth/guards/self.guard';
 import { Self } from '@modules/auth/decorators/self.decorator';
-import { UserGroupedObject } from './models/user-grouped.object';
 import { UserEditArgs } from './models/user-edit.args';
 import { PermissionGuard } from '../auth/guards/perms.guard';
 import { UserRegisterArgs } from './models/user-register.args';
 import { DateObject } from '@database/models/date.object';
+import { UserObject } from './models/user.object';
 
-@Resolver(() => User)
+@Resolver(() => UserObject)
 export class UsersResolver {
 	constructor(private readonly usersService: UsersService) {}
 
@@ -20,18 +18,19 @@ export class UsersResolver {
 	@Self('id')
 	@Permissions('CAN_READ_USER_PUBLIC')
 	@UseGuards(PermissionOrSelfGuard)
-	userPublic(@Args('id', { type: () => Int }) id: number) {
+	async userPublic(@Args('id', { type: () => Int }) id: number) {
 		return this.usersService.findOne({ id });
 	}
 
 	@Query(() => UserObject)
+	@Self('id')
 	@Permissions('CAN_READ_USER_PRIVATE')
-	@Query(() => [UserGroupedObject])
-	userPrivate(@Args('id', { type: () => Int }) id: number) {
+	@UseGuards(PermissionOrSelfGuard)
+	async userPrivate(@Args('id', { type: () => Int }) id: number) {
 		return this.usersService.findOne({ id }, false);
 	}
 
-	@Query(() => UserGroupedObject)
+	@Query(() => [UserObject])
 	@Self('id')
 	@Permissions('CAN_READ_USER_PUBLIC')
 	@UseGuards(PermissionOrSelfGuard)

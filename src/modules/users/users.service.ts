@@ -1,9 +1,7 @@
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { Promotion } from '@modules/promotions/entities/promotion.entity';
 import { User } from './entities/user.entity';
 import { UserVisibility } from './entities/user-visibility.entity';
-import { UserGroupedObject } from './models/user-grouped.object';
 import { UserEditArgs } from './models/user-edit.args';
 import { UserRegisterArgs } from './models/user-register.args';
 import { ConfigService } from '@nestjs/config';
@@ -11,7 +9,6 @@ import { join } from 'path';
 import { UserPicture } from './entities/user-picture.entity';
 import { UserBanner } from './entities/user-banner.entity';
 import { convertToWebp, isBannerAspectRation, isSquare } from '@utils/images';
-import { UserObject } from './models/user.object';
 
 import fs from 'fs';
 
@@ -19,78 +16,42 @@ import fs from 'fs';
 export class UsersService {
 	constructor(private readonly configService: ConfigService, private readonly orm: MikroORM) {}
 
-	public async convertToUserGrouped(user: User): Promise<UserGroupedObject> {
-		const userObj = await this.convertToUserObject(user);
-		const output: Required<UserGroupedObject> = {
-			first_name: userObj.first_name,
-			last_name: userObj.last_name,
-			nickname: userObj.nickname,
-			promotion: userObj.promotion,
-			id: userObj.id,
-			created: userObj.created,
-			updated: userObj.updated,
-		};
-
-		return output;
-	}
-
 	@UseRequestContext()
-	public async convertToUserObject(user: User): Promise<UserObject> {
+	public async checkVisibility(user: User): Promise<Partial<User>> {
 		const visibility = await this.orm.em.findOneOrFail(UserVisibility, { user });
 
-		const promotion: Promotion | undefined =
-			visibility.promotion && user.promotion
-				? await this.orm.em.findOneOrFail(Promotion, { id: user.promotion.id })
-				: undefined;
+		for (const key in visibility) {
+			if (visibility[key] === false) user[key] = undefined;
+		}
 
-		const output: Required<UserObject> = {
-			// base user
-			id: user.id,
-			first_name: user.first_name,
-			last_name: user.last_name,
-			last_seen: user.last_seen,
-			created: user.created,
-			updated: user.updated,
+		user['last_seen'] = undefined;
+		user['password'] = undefined;
 
-			// user details
-			birthday: visibility.birthday ? user.birthday : undefined,
-			cursus: visibility.cursus ? user.cursus : undefined,
-			email: visibility.email ? user.email : undefined,
-			gender: visibility.gender ? user.gender : undefined,
-			nickname: visibility.nickname ? user.nickname : undefined,
-			parent_contact: visibility.parent_contact ? user.parent_contact : undefined,
-			phone: visibility.phone ? user.phone : undefined,
-			promotion: promotion ? promotion.number : undefined,
-			pronouns: visibility.pronouns ? user.pronouns : undefined,
-			secondary_email: visibility.secondary_email ? user.secondary_email : undefined,
-			specialty: visibility.specialty ? user.specialty : undefined,
-			subscriber_account: user.subscriber_account,
-			subscription: user.current_subscription ? user.current_subscription.expires : undefined,
-		};
-
-		return output;
+		return user;
 	}
 
-	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter?: true): Promise<UserObject>;
+	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter?: true): Promise<Partial<User>>;
 	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter?: false): Promise<User>;
 
 	@UseRequestContext()
-	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter = true): Promise<User | UserObject> {
-		if (id) {
-			if (filter) return this.convertToUserObject(await this.orm.em.findOneOrFail(User, { id }));
-			return this.orm.em.findOneOrFail(User, { id });
-		}
-		if (email) {
-			if (filter) return this.convertToUserObject(await this.orm.em.findOneOrFail(User, { email }));
-			return this.orm.em.findOneOrFail(User, { email });
-		}
+	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter = true): Promise<User | Partial<User>> {
+		let user = null;
+
+		if (id) user = await this.orm.em.findOneOrFail(User, { id });
+		if (email) user = await this.orm.em.findOneOrFail(User, { email });
 
 		if (!id && !email) throw new HttpException('Missing id or email', HttpStatus.BAD_REQUEST);
+
+		if (filter) return this.checkVisibility(user);
+		return user;
 	}
 
 	@UseRequestContext()
-	async findAll() {
-		return (await this.orm.em.find(User, {})).map(async (user) => await this.convertToUserGrouped(user));
+	async findAll(filter = true) {
+		const users = await this.orm.em.find(User, {});
+		if (filter) return users.map(async (user) => await this.checkVisibility(user));
+
+		return users;
 	}
 
 	// TODO: send a confirmation email to the user

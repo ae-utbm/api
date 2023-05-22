@@ -1,13 +1,12 @@
 import { Args, Int, Query, Resolver } from '@nestjs/graphql';
 import { PromotionsService } from './promotions.service';
-import { Promotion } from './entities/promotion.entity';
 import { PromotionObject } from './models/promotion.object';
-import { UserGroupedObject } from '@modules/users/models/user-grouped.object';
 import { UseGuards } from '@nestjs/common';
 import { PermissionGuard } from '@modules/auth/guards/perms.guard';
 import { Permissions } from '@modules/auth/decorators/perms.decorator';
+import { UserObject } from '@modules/users/models/user.object';
 
-@Resolver(() => Promotion)
+@Resolver(() => PromotionObject)
 export class PromotionsResolver {
 	constructor(private readonly promotionsService: PromotionsService) {}
 
@@ -22,7 +21,7 @@ export class PromotionsResolver {
 		return this.promotionsService.findOne(number);
 	}
 
-	@Query(() => [UserGroupedObject])
+	@Query(() => [UserObject])
 	@UseGuards(PermissionGuard)
 	@Permissions('CAN_VIEW_USERS_IN_PROMOTION')
 	async usersInPromotion(@Args('number', { type: () => Int }) number: number) {

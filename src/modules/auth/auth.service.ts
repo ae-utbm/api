@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
-import { UserObject } from '../users/models/user.object';
 import { UserRegisterArgs } from '@modules/users/models/user-register.args';
 import { UseRequestContext, MikroORM } from '@mikro-orm/core';
 
@@ -16,15 +15,17 @@ export class AuthService {
 	 * Checks if the user's credentials are valid.
 	 * @param {User['email']} email the user's main email address
 	 * @param {User['password']} pass  the user's password
-	 * @returns {Promise<null | UserObject>} a promise with the user's data (without the
+	 * @returns {Promise<null | User>} a promise with the user's data (without the
 	 * password) if the credentials are valid, null otherwise
 	 */
-	async validateUser(email: User['email'], pass: User['password']): Promise<null | UserObject> {
+	async validateUser(email: User['email'], pass: User['password']): Promise<null | User> {
 		const user = await this.usersService.findOne({ email }, false);
 		if (!user) return null;
 
+		console.log(user);
+
 		const match = await bcrypt.compare(pass, user.password);
-		return match ? this.usersService.convertToUserObject(user) : null;
+		return match ? user : null;
 	}
 
 	/**

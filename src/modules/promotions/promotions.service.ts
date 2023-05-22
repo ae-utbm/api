@@ -16,14 +16,13 @@ export class PromotionsService {
 
 	@UseRequestContext()
 	async findOne(number: number): Promise<PromotionObject> {
-		const promotion = await this.orm.em.findOneOrFail(Promotion, { number });
-		return { ...promotion, picture: promotion.picture?.path };
+		return await this.orm.em.findOneOrFail(Promotion, { number });
 	}
 
 	@UseRequestContext()
 	async findUsersInPromotion(number: number) {
 		const promotion = await this.orm.em.findOneOrFail(Promotion, { number }, { fields: ['users'] });
-		const users = promotion.users.getItems().map((user) => this.usersService.convertToUserGrouped(user));
+		const users = promotion.users.getItems().map((user) => this.usersService.checkVisibility(user));
 
 		return users;
 	}

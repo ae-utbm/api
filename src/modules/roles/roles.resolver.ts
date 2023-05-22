@@ -1,7 +1,6 @@
 import type { PermissionName } from '@types';
 
 import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { Role } from './entities/role.entity';
 import { RolesService } from './roles.service';
 import { RoleObject } from './models/role.object';
 import { PermissionGuard } from '../auth/guards/perms.guard';
@@ -9,7 +8,7 @@ import { UseGuards } from '@nestjs/common';
 import { Permissions } from '@modules/auth/decorators/perms.decorator';
 import { PermissionArgs, PermissionArgsNoId } from '@modules/perms/models/perms.args';
 
-@Resolver(() => Role)
+@Resolver(() => RoleObject)
 @UseGuards(PermissionGuard)
 export class RolesResolver {
 	constructor(private readonly rolesService: RolesService) {}

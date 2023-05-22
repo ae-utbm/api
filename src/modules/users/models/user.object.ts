@@ -1,5 +1,6 @@
 import { BaseObject } from '@database/models/base.object';
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { PartialPromotionObject } from '@modules/promotions/models/promotion.object';
+import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
 export class UserObject extends BaseObject {
@@ -24,8 +25,8 @@ export class UserObject extends BaseObject {
 	@Field({ nullable: true })
 	cursus?: string;
 
-	@Field(() => Int, { nullable: true })
-	promotion?: number;
+	@Field({ nullable: true })
+	promotion?: PartialPromotionObject;
 
 	@Field({ nullable: true })
 	subscriber_account?: string;

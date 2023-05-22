@@ -31,6 +31,13 @@ type Mutation {
   updateUser(cursus: String, email: String, first_name: String, gender: String, id: Int!, last_name: String, nickname: String, password: String, promotion: Int): UserObject!
 }
 
+type PartialPromotionObject {
+  created: DateTime
+  id: Int
+  number: Int
+  updated: DateTime
+}
+
 type PermissionObject {
   created: DateTime!
   expires: DateTime!
@@ -44,7 +51,6 @@ type PromotionObject {
   created: DateTime!
   id: Int!
   number: Int!
-  picture: String
   updated: DateTime!
 }
 
@@ -59,8 +65,8 @@ type Query {
   promotions: [PromotionObject!]!
   userPrivate(id: Int!): UserObject!
   userPublic(id: Int!): UserObject!
-  users: UserGroupedObject!
-  usersInPromotion(number: Int!): [UserGroupedObject!]!
+  users: [UserObject!]!
+  usersInPromotion(number: Int!): [UserObject!]!
 }
 
 type RawPermissionObject {
@@ -83,16 +89,6 @@ type TokenObject {
   user_id: Int!
 }
 
-type UserGroupedObject {
-  created: DateTime!
-  first_name: String!
-  id: Int!
-  last_name: String!
-  nickname: String
-  promotion: Int
-  updated: DateTime!
-}
-
 type UserObject {
   birthday: DateTime
   created: DateTime!
@@ -106,7 +102,7 @@ type UserObject {
   nickname: String
   parent_contact: String
   phone: String
-  promotion: Int
+  promotion: PartialPromotionObject
   pronouns: String
   secondary_email: String
   specialty: String
