@@ -139,12 +139,11 @@ export class UsersService {
 	@UseRequestContext()
 	async deletePicture(id: number): Promise<void> {
 		const user = await this.orm.em.findOneOrFail(User, { id });
-		if (user.picture) await user.picture.init();
+		if (!user.picture) throw new HttpException('User has no picture', HttpStatus.NOT_FOUND);
 
-		if (user.picture) {
-			fs.unlinkSync(user.picture.path);
-			await this.orm.em.removeAndFlush(user.picture);
-		}
+		await user.picture.init();
+		fs.unlinkSync(user.picture.path);
+		await this.orm.em.removeAndFlush(user.picture);
 	}
 
 	@UseRequestContext()
@@ -203,12 +202,11 @@ export class UsersService {
 	@UseRequestContext()
 	async deleteBanner(id: number): Promise<void> {
 		const user = await this.orm.em.findOneOrFail(User, { id });
-		if (user.banner) await user.banner.init();
+		if (!user.banner) throw new HttpException('User has no banner', HttpStatus.NOT_FOUND);
 
-		if (user.banner) {
-			fs.unlinkSync(user.banner.path);
-			await this.orm.em.removeAndFlush(user.banner);
-		}
+		await user.banner.init();
+		fs.unlinkSync(user.banner.path);
+		await this.orm.em.removeAndFlush(user.banner);
 	}
 
 	@UseRequestContext()
