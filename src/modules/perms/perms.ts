@@ -66,8 +66,12 @@ export const PERMISSIONS = [
 		description: 'Can delete an existing user',
 	},
 	{
-		name: 'CAN_READ_USER',
-		description: 'Can read an existing user',
+		name: 'CAN_READ_USER_PUBLIC',
+		description: 'Can read public information about an existing user',
+	},
+	{
+		name: 'CAN_READ_USER_PRIVATE',
+		description: 'Can read all information about an existing user',
 	},
 
 	// PROMOTIONS

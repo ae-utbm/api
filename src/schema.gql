@@ -57,8 +57,9 @@ type Query {
   lastPictureUpdate(id: Int!): DateObject!
   promotion(number: Int!): PromotionObject!
   promotions: [PromotionObject!]!
-  user(id: Int!): UserObject!
-  users: [UserGroupedObject!]!
+  userPrivate(id: Int!): UserObject!
+  userPublic(id: Int!): UserObject!
+  users: UserGroupedObject!
   usersInPromotion(number: Int!): [UserGroupedObject!]!
 }
 

@@ -18,15 +18,23 @@ export class UsersResolver {
 
 	@Query(() => UserObject)
 	@Self('id')
-	@Permissions('CAN_READ_USER')
+	@Permissions('CAN_READ_USER_PUBLIC')
 	@UseGuards(PermissionOrSelfGuard)
-	user(@Args('id', { type: () => Int }) id: number) {
+	userPublic(@Args('id', { type: () => Int }) id: number) {
 		return this.usersService.findOne({ id });
 	}
 
+	@Query(() => UserObject)
+	@Permissions('CAN_READ_USER_PRIVATE')
 	@Query(() => [UserGroupedObject])
-	@Permissions('CAN_READ_USER')
-	@UseGuards(PermissionGuard)
+	userPrivate(@Args('id', { type: () => Int }) id: number) {
+		return this.usersService.findOne({ id }, false);
+	}
+
+	@Query(() => UserGroupedObject)
+	@Self('id')
+	@Permissions('CAN_READ_USER_PUBLIC')
+	@UseGuards(PermissionOrSelfGuard)
 	async users() {
 		return this.usersService.findAll();
 	}
