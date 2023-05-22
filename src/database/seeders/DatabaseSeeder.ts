@@ -16,53 +16,87 @@ import { Promotion } from '@modules/promotions/entities/promotion.entity';
  */
 export class DatabaseSeeder extends Seeder {
 	async run(em: EntityManager): Promise<void> {
-		// Create root user
-		const user_root = em.create(User, {
-			email: 'ae.info@utbm.fr',
-			password: await bcrypt.hash('root', 10),
-			first_name: 'root',
-			last_name: 'root',
-			nickname: 'noot noot',
-			birthday: new Date('2000-01-01'),
-		});
+		const users = await this.create_users(em);
+		const roles = this.create_roles(em);
+		const promotions = this.create_promotions(em);
 
-		em.create(UserVisibility, { user: user_root });
+		const ae = users.find((u) => u.email === 'ae@utbm.fr');
+		const root = users.find((u) => u.email === 'ae.info@utbm.fr');
 
-		// Add root permission to the root user
+		// Assign roles to users
+		ae.roles.add(roles.find((r) => r.name === 'ADMIN'));
+
+		// Assign permission to users
 		em.create(Permission, {
 			name: 'ROOT',
-			expires: new Date('2100-01-01'),
-			user: user_root,
+			expires: new Date('9999-12-31'),
+			user: root,
 		});
 
-		// Create 1 user which would have the admin role
-		const user_admin = em.create(User, {
-			email: 'ae@utbm.fr',
-			password: await bcrypt.hash('root', 10),
-			first_name: 'ae',
-			last_name: 'ae',
-			birthday: new Date('2000-01-01'),
-		});
+		// Assign promotion to users
+		ae.promotion = promotions.find((p) => p.number === 1);
+		root.promotion = promotions.find((p) => p.number === 21);
 
-		em.create(UserVisibility, { user: user_admin });
+		em.persistAndFlush([...users, ...roles, ...promotions]);
+	}
 
-		// Create admin role (all permissions except ROOT)
-		const admin = em.create(Role, {
-			name: 'ADMIN',
-			permissions: PERMISSIONS.filter((p) => p.name !== 'ROOT').map((p) => p.name),
-			expires: new Date('2100-01-01'),
-		});
+	create_promotions(em: EntityManager): Promotion[] {
+		const res: Promotion[] = [];
+		const year = new Date().getFullYear();
 
-		// Add admin role to user2
-		user_admin.roles.add(admin);
-
-		for (let i = 0; i < 30; i++) {
-			em.create(Promotion, { number: i + 1 });
+		for (let i = 1; i <= year - 1998; i++) {
+			res.push(em.create(Promotion, { number: i }));
 		}
 
-		user_root.promotion = await em.findOneOrFail(Promotion, { number: 1 });
-		user_admin.promotion = await em.findOneOrFail(Promotion, { number: 21 });
+		return res;
+	}
 
-		em.persistAndFlush([user_root, user_admin]);
+	create_roles(em: EntityManager): Role[] {
+		const res: Role[] = [];
+
+		const roles: Partial<Role>[] = [
+			{
+				name: 'ADMIN',
+				permissions: PERMISSIONS.filter((p) => p.name !== 'ROOT').map((p) => p.name),
+				expires: new Date('9999-12-31'),
+			},
+		];
+
+		for (const role of roles) {
+			res.push(em.create(Role, role));
+		}
+
+		return res;
+	}
+
+	async create_users(em: EntityManager): Promise<User[]> {
+		const res: User[] = [];
+
+		const users: Partial<User>[] = [
+			{
+				email: 'ae.info@utbm.fr',
+				password: await bcrypt.hash('root', 10),
+				first_name: 'root',
+				last_name: 'root',
+				nickname: 'noot noot',
+				birthday: new Date('2000-01-01'),
+			},
+			{
+				email: 'ae@utbm.fr',
+				password: await bcrypt.hash('root', 10),
+				first_name: 'Association des Étudiants',
+				last_name: 'UTBM',
+				nickname: 'AE',
+				birthday: new Date('2000-01-01'),
+			},
+		];
+
+		for (const user of users) {
+			const u = em.create(User, user);
+			em.create(UserVisibility, { user: u });
+			res.push(u);
+		}
+
+		return res;
 	}
 }
