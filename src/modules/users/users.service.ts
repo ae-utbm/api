@@ -86,7 +86,7 @@ export class UsersService {
 			throw new HttpException('You can only change your picture once a week', HttpStatus.FORBIDDEN);
 
 		const { buffer, mimetype } = file;
-		const imageDir = this.configService.get<string>('files.usersPictures');
+		const imageDir = join(this.configService.get<string>('files.users'), 'pictures');
 		const extension = mimetype.replace('image/', '.');
 		const filename = `${user.id}${extension}`;
 		const imagePath = join(imageDir, filename);
@@ -98,7 +98,7 @@ export class UsersService {
 		// test if the image is square
 		if (!isSquare(imagePath)) {
 			fs.unlinkSync(imagePath);
-			throw new HttpException('The image must be square', HttpStatus.BAD_REQUEST);
+			throw new HttpException('The user picture must be square', HttpStatus.BAD_REQUEST);
 		}
 
 		// remove old picture if path differs
@@ -149,10 +149,10 @@ export class UsersService {
 	@UseRequestContext()
 	async updateBanner({ id, file }: { id: number; file: Express.Multer.File }) {
 		const user = await this.orm.em.findOneOrFail(User, { id });
-		await user.picture.init();
+		if (user.banner) await user.banner.init();
 
 		const { buffer, mimetype } = file;
-		const imageDir = this.configService.get<string>('files.usersBanners');
+		const imageDir = join(this.configService.get<string>('files.users'), 'banners');
 		const extension = mimetype.replace('image/', '.');
 		const filename = `${user.id}${extension}`;
 		const imagePath = join(imageDir, filename);

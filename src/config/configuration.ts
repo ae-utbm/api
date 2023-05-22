@@ -9,7 +9,6 @@ export default () => ({
 	files: {
 		baseDir: join(process.cwd(), process.env['FILES_BASE_DIR'] || './public'),
 		usersPicturesDelay: parseInt(process.env['USERS_PICTURES_DELAY'], 10) || 60 * 60 * 24 * 7, // 1 week
-		usersPictures: join(process.cwd(), process.env['USERS_PICTURES_PATH'] || './public/users/pictures'),
-		usersBanners: join(process.cwd(), process.env['USERS_BANNERS_PATH'] || './public/users/banners'),
+		users: join(process.cwd(), process.env['USERS_PATH'] || './public/users'),
 	},
 });
