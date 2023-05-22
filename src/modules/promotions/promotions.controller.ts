@@ -2,6 +2,7 @@ import { Controller, Delete, Get, Param, Post, StreamableFile, UploadedFile, Use
 import { PromotionsService } from './promotions.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { getStreamableFile } from '@utils/images';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 
 // TODO: Add guards and decorators to the controller
 
@@ -13,6 +14,18 @@ export class PromotionsController {
 	// CAN_EDIT_PROMOTION
 	// todo: should check that user is admin or president of the promotion
 	@Post('logo/:id')
+	@ApiConsumes('multipart/form-data')
+	@ApiBody({
+		schema: {
+			type: 'object',
+			properties: {
+				file: {
+					type: 'string',
+					format: 'binary',
+				},
+			},
+		},
+	})
 	@UseInterceptors(FileInterceptor('file'))
 	async editLogo(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
 		return this.promotionsService.updateLogo({ id, file });

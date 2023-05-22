@@ -2,15 +2,29 @@ import { Controller, Delete, Get, Param, Post, StreamableFile, UploadedFile, Use
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { getStreamableFile } from '@utils/images';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 
 // TODO: Add guards and decorators to the controller
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
 	constructor(private readonly usersService: UsersService) {}
 
 	// SELF OR EDIT_USER
 	@Post('picture/:id')
+	@ApiConsumes('multipart/form-data')
+	@ApiBody({
+		schema: {
+			type: 'object',
+			properties: {
+				file: {
+					type: 'string',
+					format: 'binary',
+				},
+			},
+		},
+	})
 	@UseInterceptors(FileInterceptor('file'))
 	async editPicture(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
 		return this.usersService.updatePicture({ id, file });
@@ -31,6 +45,18 @@ export class UsersController {
 
 	// SELF OR EDIT_USER
 	@Post('banner/:id')
+	@ApiConsumes('multipart/form-data')
+	@ApiBody({
+		schema: {
+			type: 'object',
+			properties: {
+				file: {
+					type: 'string',
+					format: 'binary',
+				},
+			},
+		},
+	})
 	@UseInterceptors(FileInterceptor('file'))
 	async editBanner(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
 		return this.usersService.updateBanner({ id, file });
