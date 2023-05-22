@@ -102,7 +102,7 @@ export class UsersService {
 			throw new HttpException('The user picture must be square', HttpStatus.BAD_REQUEST);
 		}
 
-		// remove old picture if path differs
+		// remove the old picture (if any)
 		if (user.picture && user.picture.path && user.picture.path !== imagePath) fs.unlinkSync(user.picture.path);
 
 		// convert to webp
