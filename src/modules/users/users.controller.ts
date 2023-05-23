@@ -1,10 +1,23 @@
-import { Controller, Delete, Get, Param, Post, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { getStreamableFile } from '@utils/images';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+	Controller,
+	Delete,
+	Get,
+	Param,
+	Post,
+	StreamableFile,
+	UploadedFile,
+	UseGuards,
+	UseInterceptors,
+} from '@nestjs/common';
 
-// TODO: Add guards and decorators to the controller
+import { PermissionOrSelfGuardREST } from '@modules/auth/guards/self.guard';
+import { Permissions } from '@modules/auth/decorators/perms.decorator';
+import { Self } from '@modules/auth/decorators/self.decorator';
+import { PermissionGuardREST } from '@modules/auth/guards/perms.guard';
 
 @ApiTags('Users')
 @Controller('users')
@@ -13,6 +26,9 @@ export class UsersController {
 
 	// SELF OR EDIT_USER
 	@Post('picture/:id')
+	@UseGuards(PermissionOrSelfGuardREST)
+	@Self('id')
+	@Permissions('CAN_UPDATE_USER')
 	@ApiConsumes('multipart/form-data')
 	@ApiBody({
 		schema: {
@@ -32,6 +48,9 @@ export class UsersController {
 
 	// SELF OR VIEW_USER
 	@Get('picture/:id')
+	@UseGuards(PermissionOrSelfGuardREST)
+	@Self('id')
+	@Permissions('CAN_READ_USER_PUBLIC')
 	async getPicture(@Param('id') id: number) {
 		const picture = await this.usersService.getPicture(id);
 		return new StreamableFile(getStreamableFile(picture.path));
@@ -39,12 +58,17 @@ export class UsersController {
 
 	// EDIT_USER
 	@Delete('picture/:id')
+	@UseGuards(PermissionGuardREST)
+	@Permissions('CAN_UPDATE_USER')
 	async deletePicture(@Param('id') id: number) {
 		return this.usersService.deletePicture(id);
 	}
 
 	// SELF OR EDIT_USER
 	@Post('banner/:id')
+	@UseGuards(PermissionOrSelfGuardREST)
+	@Self('id')
+	@Permissions('CAN_UPDATE_USER')
 	@ApiConsumes('multipart/form-data')
 	@ApiBody({
 		schema: {
@@ -64,6 +88,9 @@ export class UsersController {
 
 	// SELF OR VIEW_USER
 	@Get('banner/:id')
+	@UseGuards(PermissionOrSelfGuardREST)
+	@Self('id')
+	@Permissions('CAN_READ_USER_PUBLIC')
 	async getBanner(@Param('id') id: number) {
 		const banner = await this.usersService.getBanner(id);
 		return new StreamableFile(getStreamableFile(banner.path));
@@ -71,6 +98,9 @@ export class UsersController {
 
 	// SELF OR EDIT_USER
 	@Delete('banner/:id')
+	@UseGuards(PermissionOrSelfGuardREST)
+	@Self('id')
+	@Permissions('CAN_UPDATE_USER')
 	async deleteBanner(@Param('id') id: number) {
 		return this.usersService.deleteBanner(id);
 	}

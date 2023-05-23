@@ -1,11 +1,68 @@
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Reflector } from '@nestjs/core';
+import { User } from '@modules/users/entities/user.entity';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@modules/users/entities/user.entity';
-import { PermissionGuard } from './perms.guard';
+import { Reflector } from '@nestjs/core';
+import { PermsGuardMixin } from './perms.guard';
+import { ConfigService } from '@nestjs/config';
+
+export abstract class PermissionOrSelfGuardMixin extends PermsGuardMixin implements CanActivate {
+	public constructor(
+		override readonly orm: MikroORM,
+		override readonly reflector: Reflector,
+		override readonly jwtService: JwtService,
+		override readonly configService: ConfigService,
+	) {
+		super(orm, reflector, jwtService, configService);
+	}
+
+	@UseRequestContext()
+	override async canActivate(ctx: ExecutionContext): Promise<boolean> {
+		const context = this.context(ctx);
+		const idParam = this.reflector.get<string>('id_param', context.getHandler());
+
+		// if there is no id_param, then we should refer to permission guard
+		if (!idParam) return super.canActivate(ctx);
+
+		const token: string =
+			context instanceof GqlExecutionContext
+				? context.getContext().req.headers.authorization
+				: context.switchToHttp().getRequest().headers.authorization;
+
+		let id: number = undefined;
+
+		// allow dot notation to access nested objects
+		if (idParam.includes('.')) {
+			const keys = idParam.split('.');
+			let value =
+				context instanceof GqlExecutionContext
+					? context.getArgs()
+					: Object.assign({}, context.switchToHttp().getRequest().body, context.switchToHttp().getRequest().params);
+
+			for (const key of keys) {
+				if (value && typeof value === 'object' && key in value) value = value[key];
+			}
+
+			id = value;
+		}
+		// direct access to the object
+		else
+			id = (
+				context instanceof GqlExecutionContext
+					? context.getArgs()
+					: Object.assign({}, context.switchToHttp().getRequest().body, context.switchToHttp().getRequest().params)
+			)[idParam];
+
+		// check if the user is trying to access their own data.
+		// if not, then this guard is not needed and we should refer to permission guard
+		const payload = await this.jwtService.verify(token, { secret: this.configService.get<string>('auth.jwtKey') });
+		const user = await this.orm.em.findOne(User, { id: payload.subject });
+		if (!user) return super.canActivate(ctx);
+
+		return user.id === id || super.canActivate(ctx);
+	}
+}
 
 /**
  * Guard used to check if the user has the required permissions or if they are themselves the target user
@@ -21,47 +78,33 @@ import { PermissionGuard } from './perms.guard';
  * @see [Permissions](../decorators/perms.decorator.ts)
  */
 @Injectable()
-export class PermissionOrSelfGuard extends PermissionGuard implements CanActivate {
+export class PermissionOrSelfGuard extends PermissionOrSelfGuardMixin {
 	constructor(
-		protected override readonly reflector: Reflector,
-		@Inject(JwtService) protected override readonly jwtService: JwtService,
-		@Inject(ConfigService) protected override readonly configService: ConfigService,
-		@Inject(MikroORM) protected override readonly orm: MikroORM,
+		@Inject(MikroORM) override readonly orm: MikroORM,
+		@Inject(Reflector) override readonly reflector: Reflector,
+		@Inject(JwtService) override readonly jwtService: JwtService,
+		@Inject(ConfigService) override readonly configService: ConfigService,
 	) {
-		super(reflector, jwtService, configService, orm);
+		super(orm, reflector, jwtService, configService);
 	}
 
-	@UseRequestContext()
-	override async canActivate(ctx: ExecutionContext): Promise<boolean> {
-		const context = GqlExecutionContext.create(ctx);
-		const idParam = this.reflector.get<string>('id_param', context.getHandler());
+	override context(ctx: ExecutionContext): GqlExecutionContext {
+		return GqlExecutionContext.create(ctx);
+	}
+}
 
-		// if there is no id_param, then we should refer to permission guard
-		if (!idParam) return super.canActivate(ctx);
+@Injectable()
+export class PermissionOrSelfGuardREST extends PermissionOrSelfGuardMixin {
+	constructor(
+		@Inject(MikroORM) override readonly orm: MikroORM,
+		@Inject(Reflector) override readonly reflector: Reflector,
+		@Inject(JwtService) override readonly jwtService: JwtService,
+		@Inject(ConfigService) override readonly configService: ConfigService,
+	) {
+		super(orm, reflector, jwtService, configService);
+	}
 
-		const token = context.getContext().req.headers.authorization;
-		let id: number = undefined;
-
-		// allow dot notation to access nested objects
-		if (idParam.includes('.')) {
-			const keys = idParam.split('.');
-			let value = context.getArgs();
-
-			for (const key of keys) {
-				if (value && typeof value === 'object' && key in value) value = value[key];
-			}
-
-			id = value;
-		}
-		// direct access to the object
-		else id = context.getArgs()[idParam];
-
-		// check if the user is trying to access their own data.
-		// if not, then this guard is not needed and we should refer to permission guard
-		const payload = await this.jwtService.verify(token, { secret: this.configService.get<string>('auth.jwtKey') });
-		const user = await this.orm.em.findOne(User, { id: payload.subject });
-		if (!user) return super.canActivate(ctx);
-
-		return user.id === id || super.canActivate(ctx);
+	override context(ctx: ExecutionContext): ExecutionContext {
+		return ctx;
 	}
 }

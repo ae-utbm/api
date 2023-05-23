@@ -8,34 +8,28 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@modules/users/entities/user.entity';
 
-/**
- * Guard used to check if the user has the required permissions
- * to access a route, based on the permissions attached to the route
- *
- * Usage:
- * - `@UseGuards(PermissionGuard)` on top of a route/resolver
- * - `@Permissions('PERM1', 'PERM2')` on top of the route/resolver
- *
- * @see [PERMISSIONS](../../perms/perms.ts) for the list of permissions
- * @see [Self](../decorators/self.decorator.ts)
- * @see [Permissions](../decorators/perms.decorator.ts)
- */
-@Injectable()
-export class PermissionGuard implements CanActivate {
-	constructor(
+export abstract class PermsGuardMixin implements CanActivate {
+	public constructor(
+		protected readonly orm: MikroORM,
 		protected readonly reflector: Reflector,
-		@Inject(JwtService) protected readonly jwtService: JwtService,
-		@Inject(ConfigService) protected readonly configService: ConfigService,
-		@Inject(MikroORM) protected readonly orm: MikroORM,
+		protected readonly jwtService: JwtService,
+		protected readonly configService: ConfigService,
 	) {}
+
+	abstract context(ctx: ExecutionContext): GqlExecutionContext | ExecutionContext;
 
 	@UseRequestContext()
 	async canActivate(ctx: ExecutionContext): Promise<boolean> {
-		const context = GqlExecutionContext.create(ctx);
+		const context = this.context(ctx);
 		const permsToValidate = this.reflector.get<Array<PermissionName>>('permissions', context.getHandler());
+
 		if (!permsToValidate) return true;
 
-		const token = context.getContext().req.headers.authorization;
+		const token =
+			context instanceof GqlExecutionContext
+				? context.getContext().req.headers.authorization
+				: context.switchToHttp().getRequest().headers.authorization;
+
 		const payload = await this.jwtService.verify(token, { secret: this.configService.get<string>('auth.jwtKey') });
 		const user = await this.orm.em.findOne(User, { id: payload.subject });
 		if (!user) return false;
@@ -59,5 +53,49 @@ export class PermissionGuard implements CanActivate {
 
 		// Otherwise, they don't have permission.
 		return false;
+	}
+}
+
+/**
+ * Guard used to check if the user has the required permissions
+ * to access a route, based on the permissions attached to the route
+ *
+ * Usage:
+ * - `@UseGuards(PermissionGuard)` on top of a route/resolver
+ * - `@Permissions('PERM1', 'PERM2')` on top of the route/resolver
+ *
+ * @see [PERMISSIONS](../../perms/perms.ts) for the list of permissions
+ * @see [Self](../decorators/self.decorator.ts)
+ * @see [Permissions](../decorators/perms.decorator.ts)
+ */
+@Injectable()
+export class PermissionGuard extends PermsGuardMixin {
+	constructor(
+		@Inject(MikroORM) override readonly orm: MikroORM,
+		@Inject(Reflector) override readonly reflector: Reflector,
+		@Inject(JwtService) override readonly jwtService: JwtService,
+		@Inject(ConfigService) override readonly configService: ConfigService,
+	) {
+		super(orm, reflector, jwtService, configService);
+	}
+
+	override context(ctx: ExecutionContext): GqlExecutionContext {
+		return GqlExecutionContext.create(ctx);
+	}
+}
+
+@Injectable()
+export class PermissionGuardREST extends PermsGuardMixin {
+	constructor(
+		@Inject(MikroORM) override readonly orm: MikroORM,
+		@Inject(Reflector) override readonly reflector: Reflector,
+		@Inject(JwtService) override readonly jwtService: JwtService,
+		@Inject(ConfigService) override readonly configService: ConfigService,
+	) {
+		super(orm, reflector, jwtService, configService);
+	}
+
+	override context(ctx: ExecutionContext): ExecutionContext {
+		return ctx;
 	}
 }
