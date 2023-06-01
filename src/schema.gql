@@ -65,6 +65,7 @@ type Query {
   promotions: [PromotionObject!]!
   userPrivate(id: Int!): UserObject!
   userPublic(id: Int!): UserObject!
+  userVisibility(id: Int!): UserVisibilityObject!
   users: [UserObject!]!
   usersInPromotion(number: Int!): [UserObject!]!
 }
@@ -108,5 +109,24 @@ type UserObject {
   specialty: String
   subscriber_account: String
   subscription: DateTime
+  updated: DateTime!
+}
+
+type UserVisibilityObject {
+  birthday: Boolean!
+  created: DateTime!
+  cursus: Boolean!
+  email: Boolean!
+  gender: Boolean!
+  id: Int!
+  last_seen: Boolean!
+  parent_contact: Boolean!
+  phone: Boolean!
+  promotion: Boolean!
+  pronouns: Boolean!
+  secondary_email: Boolean!
+  specialty: Boolean!
+  subscriber_account: Boolean!
+  subscription: Boolean!
   updated: DateTime!
 }

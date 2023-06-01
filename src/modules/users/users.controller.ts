@@ -24,7 +24,6 @@ import { PermissionGuardREST } from '@modules/auth/guards/perms.guard';
 export class UsersController {
 	constructor(private readonly usersService: UsersService) {}
 
-	// SELF OR EDIT_USER
 	@Post('picture/:id')
 	@UseGuards(PermissionOrSelfGuardREST)
 	@Self('id')
@@ -46,7 +45,6 @@ export class UsersController {
 		return this.usersService.updatePicture({ id, file });
 	}
 
-	// SELF OR VIEW_USER
 	@Get('picture/:id')
 	@UseGuards(PermissionOrSelfGuardREST)
 	@Self('id')
@@ -56,7 +54,6 @@ export class UsersController {
 		return new StreamableFile(getStreamableFile(picture.path));
 	}
 
-	// EDIT_USER
 	@Delete('picture/:id')
 	@UseGuards(PermissionGuardREST)
 	@Permissions('CAN_UPDATE_USER')
@@ -64,7 +61,6 @@ export class UsersController {
 		return this.usersService.deletePicture(id);
 	}
 
-	// SELF OR EDIT_USER
 	@Post('banner/:id')
 	@UseGuards(PermissionOrSelfGuardREST)
 	@Self('id')
@@ -86,7 +82,6 @@ export class UsersController {
 		return this.usersService.updateBanner({ id, file });
 	}
 
-	// SELF OR VIEW_USER
 	@Get('banner/:id')
 	@UseGuards(PermissionOrSelfGuardREST)
 	@Self('id')
@@ -96,7 +91,6 @@ export class UsersController {
 		return new StreamableFile(getStreamableFile(banner.path));
 	}
 
-	// SELF OR EDIT_USER
 	@Delete('banner/:id')
 	@UseGuards(PermissionOrSelfGuardREST)
 	@Self('id')

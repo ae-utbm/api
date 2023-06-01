@@ -9,6 +9,7 @@ import { PermissionGuard } from '../auth/guards/perms.guard';
 import { UserRegisterArgs } from './models/user-register.args';
 import { DateObject } from '@database/models/date.object';
 import { UserObject } from './models/user.object';
+import { UserVisibilityObject } from './models/user-visibility.object';
 
 @Resolver(() => UserObject)
 export class UsersResolver {
@@ -28,6 +29,14 @@ export class UsersResolver {
 	@UseGuards(PermissionOrSelfGuard)
 	async userPrivate(@Args('id', { type: () => Int }) id: number) {
 		return this.usersService.findOne({ id }, false);
+	}
+
+	@Query(() => UserVisibilityObject)
+	@Self('id')
+	@Permissions('CAN_READ_USER_PRIVATE')
+	@UseGuards(PermissionOrSelfGuard)
+	async userVisibility(@Args('id', { type: () => Int }) id: number) {
+		return this.usersService.findVisibility({ id });
 	}
 
 	@Query(() => [UserObject])

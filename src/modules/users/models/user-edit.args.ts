@@ -4,6 +4,7 @@ import { IsEmail, IsStrongPassword } from 'class-validator';
 
 @ArgsType()
 export class UserEditArgs extends BaseArgs {
+	// TODO : allow some emails (such as ae@utbm.fr & ae.info@utbm.fr)
 	@Field(() => String, { nullable: true })
 	@IsEmail({ host_blacklist: ['utbm.fr'] })
 	email?: string;

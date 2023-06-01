@@ -48,6 +48,12 @@ export class UsersService {
 	}
 
 	@UseRequestContext()
+	async findVisibility({ id }: Partial<Pick<User, 'id'>>): Promise<UserVisibility> {
+		const user = await this.orm.em.findOne(User, { id });
+		return await this.orm.em.findOneOrFail(UserVisibility, { user });
+	}
+
+	@UseRequestContext()
 	async findAll(filter = true) {
 		const users = await this.orm.em.find(User, {});
 		if (filter) return users.map(async (user) => await this.checkVisibility(user));
@@ -78,6 +84,8 @@ export class UsersService {
 		const user = await this.orm.em.findOneOrFail(User, { id });
 		if (user.picture) await user.picture.init();
 
+		// TODO: add a check to autorise the user to change his picture if he has the associated permission
+		// -> the user needs to be the one sending the request, not the one targeted by the request
 		if (
 			user.picture &&
 			0 <
