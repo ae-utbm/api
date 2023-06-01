@@ -61,6 +61,7 @@ type Query {
   getPermissionsOfUser(id: Int!, show_expired: Boolean = false, show_revoked: Boolean = false): [PermissionObject!]!
   getUserRoles(id: Int!, show_expired: Boolean = false, show_revoked: Boolean = false): [RoleObject!]!
   lastPictureUpdate(id: Int!): DateObject!
+  latestPromotion: PromotionObject!
   promotion(number: Int!): PromotionObject!
   promotions: [PromotionObject!]!
   userPrivate(id: Int!): UserObject!

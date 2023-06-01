@@ -15,10 +15,14 @@ export class PromotionsResolver {
 		return this.promotionsService.findAll();
 	}
 
-	// TODO: restrict this query to only connected users (add a new guard)
 	@Query(() => PromotionObject)
 	async promotion(@Args('number', { type: () => Int }) number: number): Promise<PromotionObject> {
 		return this.promotionsService.findOne(number);
+	}
+
+	@Query(() => PromotionObject)
+	async latestPromotion(): Promise<PromotionObject> {
+		return this.promotionsService.findLatest();
 	}
 
 	@Query(() => [UserObject])
