@@ -1,8 +1,7 @@
 import { SetMetadata } from '@nestjs/common';
 
 /**
- * Specify which args refer to the user id, used to determine if the
- * request is made by the user itself or not
- * @param {string} param - the field name
+ * Set up the name of the parameter that contains the user id concerned by the route
+ * @param {string} param The name of the parameter that contains the user id
  */
-export const Self = (param: string) => SetMetadata('id_param', param);
+export const GuardSelfParam = (param: string) => SetMetadata('guard_self_param_key', param);

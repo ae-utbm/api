@@ -1,59 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
-import { User } from '../users/entities/user.entity';
-import { UserRegisterArgs } from '@modules/users/models/user-register.args';
-import { UseRequestContext, MikroORM } from '@mikro-orm/core';
+import { UsersService } from '@modules/users/users.service';
+import { User } from '@modules/users/entities/user.entity';
 
 import * as bcrypt from 'bcrypt';
+import { TokenDTO } from './dto/token.dto';
+import { JWTPayload } from '@types';
 
 @Injectable()
 export class AuthService {
-	constructor(private usersService: UsersService, private jwtService: JwtService, private readonly orm: MikroORM) {}
+	constructor(private usersService: UsersService, private jwtService: JwtService) {}
 
-	/**
-	 * Checks if the user's credentials are valid.
-	 * @param {User['email']} email the user's main email address
-	 * @param {User['password']} pass  the user's password
-	 * @returns {Promise<null | User>} a promise with the user's data (without the
-	 * password) if the credentials are valid, null otherwise
-	 */
-	async validateUser(email: User['email'], pass: User['password']): Promise<null | User> {
-		const user = await this.usersService.findOne({ email }, false);
-		if (!user) return null;
+	async signIn(email: string, pass: string) {
+		let user: User;
+		try {
+			user = await this.usersService.findOne({ email: email }, false);
+		} catch {
+			throw new NotFoundException();
+		}
 
-		const match = await bcrypt.compare(pass, user.password);
-		return match ? user : null;
+		if (user.password !== pass && !bcrypt.compareSync(pass, user.password)) {
+			throw new UnauthorizedException();
+		}
+
+		const payload = { sub: user.id, email: user.email };
+		return {
+			token: await this.jwtService.signAsync(payload),
+			user_id: user.id,
+		};
 	}
 
-	/**
-	 * Generates an access token for the user with the given id.
-	 * @param {User['id']} id the user's id
-	 * @param {number} expiresIn the time in seconds for the token to expire
-	 * @returns {Promise<string>} a promise with the access token
-	 */
-	@UseRequestContext()
-	async generateAccessToken(id: User['id'], expiresIn: number): Promise<string> {
-		const payload = { subject: String(id), expiresIn };
+	async validateUser(payload: JWTPayload): Promise<User | null> {
+		// Get the user from the database
+		const user = await this.usersService.findOne({ email: payload.email }, false);
 
-		// update the user's last seen date
-		const user = await this.usersService.findOne({ id }, false);
-		user.last_seen = new Date();
-		await this.orm.em.persistAndFlush(user);
-
-		return this.jwtService.signAsync(payload);
-	}
-
-	/**
-	 * Registers a new user in the database.
-	 * @param {UserRegisterArgs} input the user's data with at least the password and email
-	 * @returns {Promise<Omit<User, 'password'>>} a promise with the created user
-	 */
-	@UseRequestContext()
-	async register(input: UserRegisterArgs): Promise<Omit<User, 'password'> | null> {
-		if (await this.orm.em.findOne(User, { email: input.email })) return null;
-
-		const hashed = await bcrypt.hash(input.password, 10);
-		return await this.usersService.create({ ...input, password: hashed });
+		// If user doesn't exists, return null
+		return user ?? null;
 	}
 }

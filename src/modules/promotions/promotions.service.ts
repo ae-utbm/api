@@ -1,13 +1,12 @@
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Promotion } from './entities/promotion.entity';
-import { PromotionObject } from './models/promotion.object';
-import { UsersService } from '@modules/users/users.service';
+import { UsersService } from 'src/modules/users/users.service';
 import { ConfigService } from '@nestjs/config';
 
 import fs from 'fs';
 import { join } from 'path';
-import { convertToWebp, isSquare } from '@utils/images';
+import { convertToWebp, isSquare } from 'src/utils/images';
 import { PromotionPicture } from './entities/promotion-picture.entity';
 
 @Injectable()
@@ -19,22 +18,22 @@ export class PromotionsService {
 	) {}
 
 	@UseRequestContext()
-	async findAll(): Promise<PromotionObject[]> {
+	async findAll(): Promise<Promotion[]> {
 		return await this.orm.em.find(Promotion, {});
 	}
 
 	@UseRequestContext()
-	async findLatest(): Promise<PromotionObject> {
+	async findLatest(): Promise<Promotion> {
 		return (await this.orm.em.find(Promotion, {}, { orderBy: { number: 'DESC' } }))[0];
 	}
 
 	@UseRequestContext()
-	async findOne(number: number): Promise<PromotionObject> {
+	async findOne(number: number): Promise<Promotion> {
 		return await this.orm.em.findOneOrFail(Promotion, { number });
 	}
 
 	@UseRequestContext()
-	async findUsersInPromotion(number: number) {
+	async getUsers(number: number) {
 		const promotion = await this.orm.em.findOneOrFail(Promotion, { number }, { fields: ['users'] });
 		const users = promotion.users.getItems().map((user) => this.usersService.checkVisibility(user));
 
@@ -75,11 +74,14 @@ export class PromotionsService {
 				mimetype,
 				path: imagePath.replace(extension, '.webp'),
 				promotion,
+				size: buffer.byteLength,
+				visibility: 'public',
 			});
 		else {
 			promotion.picture.filename = filename;
 			promotion.picture.mimetype = mimetype;
-			promotion.picture.updated = new Date();
+			promotion.picture.updated_at = new Date();
+			promotion.picture.size = buffer.byteLength;
 			promotion.picture.path = imagePath.replace(extension, '.webp');
 		}
 

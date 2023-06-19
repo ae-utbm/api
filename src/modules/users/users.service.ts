@@ -1,16 +1,19 @@
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { User } from './entities/user.entity';
-import { UserVisibility } from './entities/user-visibility.entity';
-import { UserEditArgs } from './models/user-edit.args';
-import { UserRegisterArgs } from './models/user-register.args';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { join } from 'path';
-import { UserPicture } from './entities/user-picture.entity';
-import { UserBanner } from './entities/user-banner.entity';
 import { convertToWebp, isBannerAspectRation, isSquare } from '@utils/images';
 
+import { UserPostByAdminDTO, UserPostDTO } from '@modules/auth/dto/register.dto';
+import { UserPatchDTO } from './dto/patch.dto';
+import { User } from '@modules/users/entities/user.entity';
+import { UserBanner } from '@modules/users/entities/user-banner.entity';
+import { UserPicture } from '@modules/users/entities/user-picture.entity';
+import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
+import { checkEmail } from '@utils/email';
+
+import { join } from 'path';
 import fs from 'fs';
+import { checkBirthday } from '@utils/dates';
 
 @Injectable()
 export class UsersService {
@@ -24,33 +27,31 @@ export class UsersService {
 			if (visibility[key] === false) user[key] = undefined;
 		}
 
-		user['last_seen'] = undefined;
-		user['password'] = undefined;
-
 		return user;
 	}
 
-	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter?: true): Promise<Partial<User>>;
-	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter?: false): Promise<User>;
+	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>): Promise<Partial<User>>;
+	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter: false): Promise<User>;
 
 	@UseRequestContext()
 	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter = true): Promise<User | Partial<User>> {
 		let user: User = null;
 
-		if (id) user = await this.orm.em.findOneOrFail(User, { id });
-		if (email) user = await this.orm.em.findOneOrFail(User, { email });
+		if (id) user = await this.orm.em.findOne(User, { id });
+		if (email) user = await this.orm.em.findOne(User, { email });
 
-		if (!id && !email) throw new HttpException('Missing id or email', HttpStatus.BAD_REQUEST);
+		if (!id && !email) throw new BadRequestException('Missing user id/email');
+		if (!user) throw new NotFoundException('User not found');
 
-		if (user.promotion) await user.promotion.init();
-		if (filter) return this.checkVisibility(user);
-		return user;
+		return filter ? await this.checkVisibility(user) : user;
 	}
 
 	@UseRequestContext()
 	async findVisibility({ id }: Partial<Pick<User, 'id'>>): Promise<UserVisibility> {
 		const user = await this.orm.em.findOne(User, { id });
-		return await this.orm.em.findOneOrFail(UserVisibility, { user });
+		if (!user) throw new NotFoundException('User not found');
+
+		return await this.orm.em.findOne(UserVisibility, { user });
 	}
 
 	@UseRequestContext()
@@ -63,7 +64,10 @@ export class UsersService {
 
 	// TODO: send a confirmation email to the user
 	@UseRequestContext()
-	async create(input: UserRegisterArgs): Promise<User> {
+	async register(input: UserPostDTO): Promise<User> {
+		if (!checkEmail(input.email)) throw new BadRequestException(`The email '${input.email}' is not allowed`);
+		if (!checkBirthday(input.birthday)) throw new BadRequestException(`The date '${input.birthday}' is not valid`);
+
 		const user = this.orm.em.create(User, input);
 		this.orm.em.create(UserVisibility, { user });
 
@@ -71,10 +75,44 @@ export class UsersService {
 		return user;
 	}
 
+	// TODO: send a confirmation email with the random password to both activate & ask the user to change it
 	@UseRequestContext()
-	async update(input: UserEditArgs) {
-		const user = await this.findOne({ id: input.id });
+	async registerByAdmin(input: UserPostByAdminDTO): Promise<User> {
+		if (!checkEmail(input.email)) throw new BadRequestException(`The email '${input.email}' is not allowed`);
+		if (!checkBirthday(input.birthday)) throw new BadRequestException(`The date '${input.birthday}' is not valid`);
+
+		// TODO : generate random password
+		const final = { ...input, password: 'TOTO' };
+		const user = this.orm.em.create(User, final);
+		this.orm.em.create(UserVisibility, { user });
+
+		await this.orm.em.persistAndFlush(user);
+		return user;
+	}
+
+	@UseRequestContext()
+	async update(requestUser: number, input: UserPatchDTO) {
+		const user = await this.findOne({ id: input.id }, false);
+
+		if (!user) throw new NotFoundException('User not found');
+
+		if (!checkEmail(input.email)) throw new BadRequestException(`The email '${input.email}' is not allowed`);
+
+		if (input.hasOwnProperty('birthday')) {
+			const currentUser = await this.findOne({ id: requestUser }, false);
+
+			if (currentUser.id === user.id)
+				throw new UnauthorizedException(
+					'You cannot update your own birthday, ask another user with the appropriate permission',
+				);
+
+			// if (!checkPermission(currentUser, 'CAN_UPDATE_USER'))
+			// 	throw new UnauthorizedException('You do not have permission to update the birthday');
+		}
+
 		Object.assign(user, input);
+		user.updated_at = new Date();
+
 		await this.orm.em.persistAndFlush(user);
 		return user;
 	}
@@ -90,9 +128,9 @@ export class UsersService {
 			user.picture &&
 			0 <
 				this.configService.get<number>('files.usersPicturesDelay') * 1000 -
-					(new Date().getTime() - new Date(user.picture.updated).getTime())
+					(new Date().getTime() - new Date(user.picture.updated_at).getTime())
 		)
-			throw new HttpException('You can only change your picture once a week', HttpStatus.FORBIDDEN);
+			throw new UnauthorizedException('You can only change your picture once a week');
 
 		const { buffer, mimetype } = file;
 		const imageDir = join(this.configService.get<string>('files.users'), 'pictures');
@@ -107,7 +145,7 @@ export class UsersService {
 		// test if the image is square
 		if (!isSquare(imagePath)) {
 			fs.unlinkSync(imagePath);
-			throw new HttpException('The user picture must be square', HttpStatus.BAD_REQUEST);
+			throw new BadRequestException('The user picture must be square');
 		}
 
 		// remove the old picture (if any)
@@ -127,7 +165,7 @@ export class UsersService {
 		else {
 			user.picture.filename = filename;
 			user.picture.mimetype = mimetype;
-			user.picture.updated = new Date();
+			user.picture.updated_at = new Date();
 			user.picture.path = imagePath.replace(extension, '.webp');
 		}
 
@@ -137,7 +175,7 @@ export class UsersService {
 	@UseRequestContext()
 	async getPicture(id: number): Promise<UserPicture> {
 		const user = await this.orm.em.findOneOrFail(User, { id });
-		if (!user.picture) throw new HttpException('User has no picture', HttpStatus.NOT_FOUND);
+		if (!user.picture) throw new NotFoundException('User has no picture');
 
 		await user.picture.init();
 
@@ -147,7 +185,7 @@ export class UsersService {
 	@UseRequestContext()
 	async deletePicture(id: number): Promise<void> {
 		const user = await this.orm.em.findOneOrFail(User, { id });
-		if (!user.picture) throw new HttpException('User has no picture', HttpStatus.NOT_FOUND);
+		if (!user.picture) throw new NotFoundException('User has no picture to be deleted');
 
 		await user.picture.init();
 		fs.unlinkSync(user.picture.path);
@@ -172,7 +210,7 @@ export class UsersService {
 		// test if the image is square
 		if (!isBannerAspectRation(imagePath)) {
 			fs.unlinkSync(imagePath);
-			throw new HttpException('The image must be of 1:3 aspect ratio', HttpStatus.BAD_REQUEST);
+			throw new BadRequestException('The image must be of 1:3 aspect ratio');
 		}
 
 		// remove old banner if path differs
@@ -201,7 +239,7 @@ export class UsersService {
 	@UseRequestContext()
 	async getBanner(id: number): Promise<UserBanner> {
 		const user = await this.orm.em.findOneOrFail(User, { id });
-		if (!user.banner) throw new HttpException('User has no banner', HttpStatus.NOT_FOUND);
+		if (!user.banner) throw new NotFoundException('User has no banner');
 
 		await user.banner.init();
 		return user.banner;
@@ -210,7 +248,7 @@ export class UsersService {
 	@UseRequestContext()
 	async deleteBanner(id: number): Promise<void> {
 		const user = await this.orm.em.findOneOrFail(User, { id });
-		if (!user.banner) throw new HttpException('User has no banner', HttpStatus.NOT_FOUND);
+		if (!user.banner) throw new NotFoundException('User has no banner to be deleted');
 
 		await user.banner.init();
 		fs.unlinkSync(user.banner.path);
@@ -218,7 +256,19 @@ export class UsersService {
 	}
 
 	@UseRequestContext()
-	async delete(user: User) {
+	async delete(id: number) {
+		const user = await this.orm.em.findOne(User, { id });
 		await this.orm.em.removeAndFlush(user);
+	}
+
+	@UseRequestContext()
+	async getUserRoles(id: number, input: { show_expired: boolean; show_revoked: boolean }) {
+		const user = await this.orm.em.findOneOrFail(User, { id });
+		const roles = await user.roles.loadItems();
+
+		if (!input.show_expired) roles.filter((p) => p.expires > new Date());
+		if (!input.show_revoked) roles.filter((p) => p.revoked === false);
+
+		return roles;
 	}
 }

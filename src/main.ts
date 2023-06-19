@@ -1,31 +1,42 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module';
 
-import { join } from 'path';
+import env from '@env';
+import pkg from '../package.json';
 
+/**
+ * Base server bootstrap
+ */
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule);
 	app.setGlobalPrefix('api');
-	app.enableCors({ origin: '*' });
-
-	app.useStaticAssets(join(process.cwd(), process.env['FILES_BASE_DIR'] || './public'), {
-		index: false,
-		prefix: '/public',
-	});
+	app.enableCors({ origin: env().cors });
+	app.useStaticAssets(env().files.baseDir, { index: false, prefix: '/public' });
+	app.useStaticAssets('./swagger', { index: false, prefix: '/public' });
 
 	const config = new DocumentBuilder()
-		.setTitle('AE UTBM - Files API')
-		.setDescription('REST API endpoints for files management')
-		.setVersion('1.0.0')
+		.setTitle('AE UTBM — REST API')
+		.setDescription('<a href="https://ae.utbm.fr">back to main website</a>')
+		.setVersion(pkg.version)
+		.addBearerAuth()
 		.build();
+
 	const document = SwaggerModule.createDocument(app, config);
-	SwaggerModule.setup('api', app, document);
+	SwaggerModule.setup('api', app, document, {
+		customCssUrl: '/public/swagger.css',
+		customJs: '/public/swagger.js',
+		swaggerOptions: {
+			tagsSorter: 'alpha',
+			operationsSorter: 'alpha',
+		},
+	});
 
-	await app.listen(3000);
+	await app.listen(env().port);
 
-	Logger.log(`Server running on http://localhost:3000/graphql`, 'Bootstrap');
+	Logger.log(`Server running on http://localhost:${env().port}/api`, 'Swagger');
 }
+
 bootstrap();

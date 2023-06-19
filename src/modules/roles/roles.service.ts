@@ -1,10 +1,9 @@
-import type { PermissionName } from '@types';
+import type { PermissionName } from 'src/types';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Role } from './entities/role.entity';
-import { User } from '../users/entities/user.entity';
-import { PermissionArgs, PermissionArgsNoId } from '@modules/perms/models/perms.args';
+import { RolePatchDTO } from './dto/patch.dto';
 
 @Injectable()
 export class RolesService {
@@ -12,11 +11,11 @@ export class RolesService {
 
 	/**
 	 * Get all roles from the database and filter them according to the input
-	 * @param {PermissionArgsNoId} input Input to filter the roles
+	 * @param input Input to filter the roles
 	 * @returns {Promise<Role[]>} Array of roles
 	 */
 	@UseRequestContext()
-	async getAllRoles(input: PermissionArgsNoId): Promise<Role[]> {
+	async getAllRoles(input: { show_expired: boolean; show_revoked: boolean }): Promise<Role[]> {
 		const roles = await this.orm.em.find(Role, {});
 
 		if (!input.show_expired) roles.filter((p) => p.expires > new Date());
@@ -31,31 +30,23 @@ export class RolesService {
 	}
 
 	@UseRequestContext()
-	async revokeRole(id: number) {
-		const role = await this.orm.em.findOneOrFail(Role, { id });
-		role.revoked = true;
+	async editRole(input: RolePatchDTO) {
+		const role = await this.orm.em.findOne(Role, { id: input.id });
+		if (!role) throw new NotFoundException(`Role with ID ${input.id} not found`);
+
+		role.name = input.name;
+		role.permissions = input.permissions;
+		role.expires = input.expires;
 		this.orm.em.persistAndFlush(role);
 
 		return role;
 	}
 
 	@UseRequestContext()
-	async editExpirationOfRole(id: number, date: Date) {
-		const role = await this.orm.em.findOneOrFail(Role, { id });
-		role.expires = date;
-		this.orm.em.persistAndFlush(role);
+	async getRoleUsers(id: number) {
+		const role = await this.orm.em.findOne(Role, { id });
+		if (!role) throw new NotFoundException(`Role with ID ${id} not found`);
 
-		return role;
-	}
-
-	@UseRequestContext()
-	async getUserRoles(input: PermissionArgs) {
-		const user = await this.orm.em.findOneOrFail(User, { id: input.id });
-		const roles = await user.roles.loadItems();
-
-		if (!input.show_expired) roles.filter((p) => p.expires > new Date());
-		if (!input.show_revoked) roles.filter((p) => p.revoked === false);
-
-		return roles;
+		return role.users;
 	}
 }

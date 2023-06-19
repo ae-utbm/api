@@ -5,6 +5,7 @@
 
 # Logs
 logs
+!src/modules/logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
@@ -40,3 +41,5 @@ lerna-debug.log*
 
 # Stored files
 public/*
+
+old

@@ -3,7 +3,13 @@ import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Logger } from '@nestjs/common';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 
+import 'dotenv/config';
+
 const logger = new Logger('MikroORM');
+
+/**
+ * Global MikroORM configuration
+ */
 const config: Partial<MikroORMOptions<IDatabaseDriver<Connection>>> = {
 	type: 'postgresql',
 	dbName: process.env['DB_NAME'],

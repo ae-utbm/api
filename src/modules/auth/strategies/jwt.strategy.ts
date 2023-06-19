@@ -1,16 +1,17 @@
+import type { JWTPayload } from '@types';
+
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UsersService } from 'src/modules/users/users.service';
-import { User } from 'src/modules/users/entities/user.entity';
+import { AuthService } from '../auth.service';
 
 /**
  * Strategy used to validate the user from the JWT payload
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-	constructor(configService: ConfigService, private usersService: UsersService) {
+	constructor(configService: ConfigService, private authService: AuthService) {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 			ignoreExpiration: false,
@@ -22,10 +23,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	/**
 	 * Validate the user from the payload
 	 * @param payload - The payload from the JWT
-	 * @returns {Promise<User>} - the user, if found
 	 */
-	async validate(payload: { sub: number }): Promise<User> {
-		const { sub: id } = payload;
-		return await this.usersService.findOne({ id }, false);
+	async validate(payload: JWTPayload) {
+		const user = await this.authService.validateUser(payload);
+
+		if (!user) throw new UnauthorizedException();
+		return user;
 	}
 }

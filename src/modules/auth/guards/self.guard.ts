@@ -1,110 +1,58 @@
-import { MikroORM, UseRequestContext } from '@mikro-orm/core';
-import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
-import { User } from '@modules/users/entities/user.entity';
-import { GqlExecutionContext } from '@nestjs/graphql';
+import type { JWTPayload } from '@types';
+import type { Observable } from 'rxjs';
+
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Reflector } from '@nestjs/core';
-import { PermsGuardMixin } from './perms.guard';
 import { ConfigService } from '@nestjs/config';
-
-export abstract class PermissionOrSelfGuardMixin extends PermsGuardMixin implements CanActivate {
-	public constructor(
-		override readonly orm: MikroORM,
-		override readonly reflector: Reflector,
-		override readonly jwtService: JwtService,
-		override readonly configService: ConfigService,
-	) {
-		super(orm, reflector, jwtService, configService);
-	}
-
-	@UseRequestContext()
-	override async canActivate(ctx: ExecutionContext): Promise<boolean> {
-		const context = this.context(ctx);
-		const idParam = this.reflector.get<string>('id_param', context.getHandler());
-
-		// if there is no id_param, then we should refer to permission guard
-		if (!idParam) return super.canActivate(ctx);
-
-		const token: string =
-			context instanceof GqlExecutionContext
-				? context.getContext().req.headers.authorization
-				: context.switchToHttp().getRequest().headers.authorization;
-
-		let id: number = undefined;
-
-		// allow dot notation to access nested objects
-		if (idParam.includes('.')) {
-			const keys = idParam.split('.');
-			let value =
-				context instanceof GqlExecutionContext
-					? context.getArgs()
-					: Object.assign({}, context.switchToHttp().getRequest().body, context.switchToHttp().getRequest().params);
-
-			for (const key of keys) {
-				if (value && typeof value === 'object' && key in value) value = value[key];
-			}
-
-			id = value;
-		}
-		// direct access to the object
-		else
-			id = (
-				context instanceof GqlExecutionContext
-					? context.getArgs()
-					: Object.assign({}, context.switchToHttp().getRequest().body, context.switchToHttp().getRequest().params)
-			)[idParam];
-
-		// check if the user is trying to access their own data.
-		// if not, then this guard is not needed and we should refer to permission guard
-		const payload = await this.jwtService.verify(token, { secret: this.configService.get<string>('auth.jwtKey') });
-		const user = await this.orm.em.findOne(User, { id: payload.subject });
-		if (!user) return super.canActivate(ctx);
-
-		return user.id === id || super.canActivate(ctx);
-	}
-}
+import { Reflector } from '@nestjs/core';
 
 /**
- * Guard used to check if the user has the required permissions or if they are themselves the target user
- * to access a route, based on the permissions attached to the route
+ * Check if the authenticated user is the same as the user ID in the request
  *
- * Usage:
- * - `@UseGuards(PermissionOrSelfGuard)` on top of a route/resolver
- * - `@Permissions('PERM1', 'PERM2')` on top of the route/resolver
- * - `@Self('id')` on top of the route/resolver, where `id` is the name of the parameter containing the id of the target user
- *
- * @see [PERMISSIONS](../../perms/perms.ts) for the list of permissions
- * @see [Self](../decorators/self.decorator.ts)
- * @see [Permissions](../decorators/perms.decorator.ts)
+ * **The user id parameter should be called `user_id`**
+ * @example
+ * UseGuards(SelfGuard)
+ * async route(@param('user_id') user_id: string) {
+ * // ...
+ * }
  */
 @Injectable()
-export class PermissionOrSelfGuard extends PermissionOrSelfGuardMixin {
+export class SelfGuard implements CanActivate {
 	constructor(
-		@Inject(MikroORM) override readonly orm: MikroORM,
-		@Inject(Reflector) override readonly reflector: Reflector,
-		@Inject(JwtService) override readonly jwtService: JwtService,
-		@Inject(ConfigService) override readonly configService: ConfigService,
-	) {
-		super(orm, reflector, jwtService, configService);
-	}
+		private readonly jwtService: JwtService,
+		private readonly configService: ConfigService,
+		private readonly reflector: Reflector,
+	) {}
 
-	override context(ctx: ExecutionContext): GqlExecutionContext {
-		return GqlExecutionContext.create(ctx);
+	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+		return checkSelf(context, this.jwtService, this.configService, this.reflector);
 	}
 }
 
-@Injectable()
-export class PermissionOrSelfGuardREST extends PermissionOrSelfGuardMixin {
-	constructor(
-		@Inject(MikroORM) override readonly orm: MikroORM,
-		@Inject(Reflector) override readonly reflector: Reflector,
-		@Inject(JwtService) override readonly jwtService: JwtService,
-		@Inject(ConfigService) override readonly configService: ConfigService,
-	) {
-		super(orm, reflector, jwtService, configService);
-	}
+export function checkSelf(
+	context: ExecutionContext,
+	jwtService: JwtService,
+	configService: ConfigService,
+	reflector: Reflector,
+): boolean {
+	// Access the request object from the execution context
+	const request = context.switchToHttp().getRequest();
 
-	override context(ctx: ExecutionContext): ExecutionContext {
-		return ctx;
-	}
+	// Access the name of the parameter that contains the user ID
+	const userIdKey = reflector.get<string>('guard_self_param_key', context.getHandler());
+
+	// Extract the user ID from the request parameters or body
+	const user_id: string = request.params[userIdKey] ?? request.body[userIdKey];
+	if (user_id === undefined) throw new Error(`The parameter ${userIdKey} is missing from the request.`);
+
+	// Retrieve the authenticated user from the request's user object or session
+	const bearerToken = request.headers.authorization;
+
+	// Verify and decode the JWT token to extract the user ID
+	const decodedToken = jwtService.verify<JWTPayload>(bearerToken.replace('Bearer ', ''), {
+		secret: configService.get<string>('auth.jwtKey'),
+	});
+
+	// Compare the authenticated user's ID with the ID from the request
+	return decodedToken.sub === parseInt(user_id, 10);
 }

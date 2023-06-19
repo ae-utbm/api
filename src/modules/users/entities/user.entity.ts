@@ -1,10 +1,4 @@
-import { Role } from '@modules/roles/entities/role.entity';
-import { BaseEntity } from 'src/database/entities/base.entity';
-import { Permission } from 'src/modules/perms/entities/permission.entity';
-import { Promotion } from '@modules/promotions/entities/promotion.entity';
-import { UserPicture } from './user-picture.entity';
-import { UserBanner } from './user-banner.entity';
-import { Subscription } from '@modules/subscription/entities/subscription.entity';
+import type { UserEntity } from '@types';
 
 import {
 	Cascade,
@@ -18,16 +12,36 @@ import {
 	Property,
 } from '@mikro-orm/core';
 
+import { BaseEntity } from '@modules/_mixin/entities/base.entity';
+import { Promotion } from '@modules/promotions/entities/promotion.entity';
+import { Subscription } from '@modules/subscription/entities/subscription.entity';
+import { Permission } from '@modules/permissions/entities/permission.entity';
+import { Role } from '@modules/roles/entities/role.entity';
+import { Log } from '@modules/logs/entities/log.entity';
+
+import { UserBanner } from './user-banner.entity';
+import { UserPicture } from './user-picture.entity';
+import { ApiProperty } from '@nestjs/swagger';
+
 @Entity({ tableName: 'users' })
-export class User extends BaseEntity {
+export class User
+	extends BaseEntity
+	implements UserEntity<UserPicture, UserBanner, Promotion, Permission, Role, Subscription, Log>
+{
 	//* INFORMATIONS
 	/** The first name of the user, @example 'John' */
 	@Property()
+	@ApiProperty()
 	first_name: string;
 
 	/** The last name of the user, @example 'Doe' */
 	@Property()
+	@ApiProperty()
 	last_name: string;
+
+	@Property({ onCreate: () => false })
+	@ApiProperty()
+	email_verified = false;
 
 	/** Get the full name of the user */
 	@Property({ persist: false })
@@ -37,22 +51,27 @@ export class User extends BaseEntity {
 
 	/** The user profile picture */
 	@OneToOne(() => UserPicture, (picture) => picture.user, { cascade: [Cascade.ALL], nullable: true })
+	@ApiProperty()
 	picture?: UserPicture;
 
 	/** The user profile banner */
 	@OneToOne(() => UserBanner, (banner) => banner.user, { cascade: [Cascade.ALL], nullable: true })
+	@ApiProperty()
 	banner?: UserBanner;
 
 	/** The main email of the user, used to login, @example 'example@domain.net' */
 	@Property({ unique: true })
+	@ApiProperty()
 	email: string;
 
 	/** The encrypted user password */
-	@Property()
+	@Property({ hidden: true })
+	@ApiProperty()
 	password: string;
 
 	/** The birthday of the user */
 	@Property({ type: 'date' })
+	@ApiProperty()
 	birthday: Date;
 
 	/** The age of the user */
@@ -71,41 +90,54 @@ export class User extends BaseEntity {
 
 	/** The nickname of the user, @example 'fenshmirtz' // + Doe => Doofenshmirtz */
 	@Property({ nullable: true })
+	@ApiProperty()
 	nickname?: string;
 
 	/** Gender of the user */
 	@Property({ nullable: true })
+	@ApiProperty()
 	gender?: string;
 
 	/** The pronouns of the user */
 	@Property({ nullable: true })
+	@ApiProperty()
 	pronouns?: string;
 
 	/** Cursus of the user within the school */
 	// TODO: use an entity relation ?
 	@Property({ nullable: true })
+	@ApiProperty()
 	cursus?: string;
 
 	/** Specialty of the user */
 	// TODO: use an entity relation ?
 	@Property({ nullable: true })
+	@ApiProperty()
 	specialty?: string;
 
 	/** Promotion of the user */
 	@ManyToOne(() => Promotion, { nullable: true })
+	@ApiProperty()
 	promotion?: Promotion;
 
 	/** The last time the user was seen online (JWT Token generated) */
 	@Property({ type: 'date', nullable: true })
+	@ApiProperty()
 	last_seen?: Date;
 
 	//* SUBSCRIPTIONS
 	/** The subscription of the user */
-	@OneToMany(() => Subscription, (subscription) => subscription.user, { cascade: [Cascade.REMOVE], nullable: true })
+	@OneToMany(() => Subscription, (subscription) => subscription.user, {
+		cascade: [Cascade.REMOVE],
+		nullable: true,
+		orphanRemoval: true,
+	})
+	@ApiProperty()
 	subscriptions?: Collection<Subscription>;
 
 	/** Subscriber account number, undefined if he never subscribed */
 	@Property({ nullable: true })
+	@ApiProperty()
 	subscriber_account?: string;
 
 	/** The current subscription of the user */
@@ -123,22 +155,31 @@ export class User extends BaseEntity {
 	//* CONTACT
 	/** The secondary email of the user, used for communications emails */
 	@Property({ nullable: true })
+	@ApiProperty()
 	secondary_email?: string;
 
 	/** The phone number of the user */
 	@Property({ nullable: true })
+	@ApiProperty()
 	phone?: string;
 
 	/** Parent contact (for minors only) */
 	@Property({ nullable: true })
+	@ApiProperty()
 	parent_contact?: string;
 
 	//* PERMISSIONS & AUTHENTIFICATION
 	/** Linked permissions to the user */
-	@OneToMany(() => Permission, (permission) => permission.user, { cascade: [Cascade.REMOVE] })
+	@OneToMany(() => Permission, (permission) => permission.user, { cascade: [Cascade.REMOVE], orphanRemoval: true })
+	@ApiProperty()
 	permissions = new Collection<Permission>(this);
 
 	/** Linked roles to the user */
 	@ManyToMany({ entity: () => Role, mappedBy: 'users' })
+	@ApiProperty()
 	roles = new Collection<Role>(this);
+
+	@OneToMany(() => Log, (log) => log.user, { cascade: [Cascade.REMOVE], orphanRemoval: true })
+	@ApiProperty()
+	logs = new Collection<Log>(this);
 }
