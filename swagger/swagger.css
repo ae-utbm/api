@@ -154,6 +154,7 @@ html>body>div#swagger-ui>section.swagger-ui.swagger-container>div.swagger-ui>div
 @media (prefers-color-scheme: dark) {
 	body,
 	input[type=text],
+	input[type=file],
 	.model-box,
 	.swagger-ui textarea,
 	.microlight,
@@ -175,6 +176,7 @@ html>body>div#swagger-ui>section.swagger-ui.swagger-container>div.swagger-ui>div
 	.opblock-summary-description,
 	select.content-type,
 	input[type=text],
+	input[type=file],
 	h1,
 	h2,
 	h3,
