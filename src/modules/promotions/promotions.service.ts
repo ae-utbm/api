@@ -10,10 +10,22 @@ import { PromotionUsersResponseDTO } from './dto/promotion-users.dto';
 
 import fs from 'fs';
 import { join } from 'path';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class PromotionsService {
 	constructor(private readonly orm: MikroORM, private readonly configService: ConfigService) {}
+
+	/**
+	 * Create a new promotion each year on the 15th of July
+	 */
+	@Cron('0 0 0 15 7 *')
+	async createNewPromotion(): Promise<void> {
+		const latest = await this.findLatest();
+		const newPromotion = this.orm.em.create(Promotion, { number: latest.number + 1 });
+
+		await this.orm.em.persistAndFlush(newPromotion);
+	}
 
 	@UseRequestContext()
 	async findAll(): Promise<PromotionResponseDTO[]> {
