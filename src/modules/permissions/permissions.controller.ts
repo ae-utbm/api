@@ -23,14 +23,25 @@ import { PermissionPatchDTO } from './dto/patch.dto';
 export class PermissionsController {
 	constructor(private readonly permsService: PermissionsService) {}
 
-	@Post('user/:id')
+	@Post('user')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PERMISSIONS_OF_USER')
 	@ApiOperation({ summary: 'Add a permission to a user' })
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	addToUser(@Param('id') id: number, @Body() body: PermissionPostDTO): Promise<Permission> {
+	addToUser(@Body() body: PermissionPostDTO): Promise<Permission> {
 		return this.permsService.addPermissionToUser(body.permission, body.id, body.expires);
+	}
+
+	@Patch('user')
+	@UseGuards(PermissionGuard)
+	@GuardPermissions('CAN_EDIT_PERMISSIONS_OF_USER')
+	@ApiOperation({ summary: 'Edit permission of a user' })
+	@ApiNotFoundResponse({ description: 'User not found' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiOkResponse({ description: 'The modified user permission', type: Permission })
+	removePermissionFromUser(@Body() body: PermissionPatchDTO) {
+		return this.permsService.editPermissionOfUser(body.id, body);
 	}
 
 	@Get('user/:id')
@@ -45,25 +56,13 @@ export class PermissionsController {
 		return this.permsService.getPermissionsOfUser(id, { show_expired: true, show_revoked: true });
 	}
 
-	@Patch('user/:id')
-	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_EDIT_PERMISSIONS_OF_USER')
-	@ApiOperation({ summary: 'Edit permission of a user' })
-	@ApiNotFoundResponse({ description: 'User not found' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiOkResponse({ description: 'The modified user permission', type: Permission })
-	@ApiParam({ name: 'id', description: 'The user ID' })
-	removePermissionFromUser(@Param('id') id: number, @Body() body: PermissionPatchDTO) {
-		return this.permsService.editPermissionOfUser(id, body);
-	}
-
-	@Post('role/:id')
+	@Post('role')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PERMISSIONS_OF_ROLE')
 	@ApiOperation({ summary: 'Add a permission to a role' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	addToRole(@Param('id') id: number, @Body() body: PermissionPostDTO) {
+	addToRole(@Body() body: PermissionPostDTO) {
 		return this.permsService.addPermissionToRole(body.permission, body.id);
 	}
 
