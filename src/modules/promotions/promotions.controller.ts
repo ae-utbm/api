@@ -10,7 +10,7 @@ import {
 	UseInterceptors,
 } from '@nestjs/common';
 
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { getStreamableFile } from '@utils/images';
@@ -31,22 +31,46 @@ export class PromotionsController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
 	@ApiOkResponse({ type: [PromotionResponseDTO] })
+	@ApiOperation({ summary: 'Get all promotions' })
 	async getAll() {
 		return this.promotionsService.findAll();
+	}
+
+	@Get(':number')
+	@UseGuards(PermissionGuard)
+	@GuardPermissions('CAN_READ_PROMOTION')
+	@ApiOkResponse({ type: PromotionResponseDTO })
+	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
+	@ApiOperation({ summary: 'Get the specified promotion' })
+	async get(@Param('number') number: number) {
+		return this.promotionsService.findOne(number);
+	}
+
+	@Get(':number/users')
+	@UseGuards(PermissionGuard)
+	@GuardPermissions('CAN_VIEW_USERS_IN_PROMOTION')
+	@ApiOkResponse({ type: [PromotionUsersResponseDTO] })
+	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
+	@ApiOperation({ summary: 'Get users of the specified promotions' })
+	async getUsers(@Param('number') number: number) {
+		return this.promotionsService.getUsers(number);
 	}
 
 	@Get('latest')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
 	@ApiOkResponse({ type: PromotionResponseDTO })
+	@ApiOperation({ summary: 'Get the latest promotion created' })
 	async getLatest() {
 		return this.promotionsService.findLatest();
 	}
 
-	@Post('logo/:id')
+	@Post('logo/:number')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PROMOTION')
 	@ApiConsumes('multipart/form-data')
+	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
+	@ApiOperation({ summary: 'Update the promotion logo' })
 	@ApiBody({
 		schema: {
 			type: 'object',
@@ -59,40 +83,26 @@ export class PromotionsController {
 		},
 	})
 	@UseInterceptors(FileInterceptor('file'))
-	async editLogo(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
-		return this.promotionsService.updateLogo({ id, file });
+	async editLogo(@UploadedFile() file: Express.Multer.File, @Param('number') number: number) {
+		return this.promotionsService.updateLogo({ number, file });
 	}
 
-	@Get('logo/:id')
+	@Get('logo/:number')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
-	async getLogo(@Param('id') id: number) {
-		const logo = await this.promotionsService.getLogo(id);
+	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
+	@ApiOperation({ summary: 'Get the promotion logo' })
+	async getLogo(@Param('number') number: number) {
+		const logo = await this.promotionsService.getLogo(number);
 		return new StreamableFile(getStreamableFile(logo.path));
 	}
 
-	@Delete('logo/:id')
+	@Delete('logo/:number')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PROMOTION')
-	async deleteLogo(@Param('id') id: number) {
-		return this.promotionsService.deleteLogo(id);
-	}
-
-	@Get(':number')
-	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiOkResponse({ type: PromotionResponseDTO })
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
-	async get(@Param('number') number: number) {
-		return this.promotionsService.findOne(number);
-	}
-
-	@Get(':number/users')
-	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_VIEW_USERS_IN_PROMOTION')
-	@ApiOkResponse({ type: [PromotionUsersResponseDTO] })
-	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
-	async getUsers(@Param('number') number: number) {
-		return this.promotionsService.getUsers(number);
+	@ApiOperation({ summary: 'Delete the promotion logo' })
+	async deleteLogo(@Param('number') number: number) {
+		return this.promotionsService.deleteLogo(number);
 	}
 }

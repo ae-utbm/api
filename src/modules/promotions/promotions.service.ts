@@ -1,23 +1,19 @@
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import { Promotion } from './entities/promotion.entity';
-import { UsersService } from 'src/modules/users/users.service';
 import { ConfigService } from '@nestjs/config';
 
-import fs from 'fs';
-import { join } from 'path';
+import { Promotion } from './entities/promotion.entity';
 import { convertToWebp, isSquare } from 'src/utils/images';
 import { PromotionPicture } from './entities/promotion-picture.entity';
 import { PromotionResponseDTO } from './dto/promotion.dto';
 import { PromotionUsersResponseDTO } from './dto/promotion-users.dto';
 
+import fs from 'fs';
+import { join } from 'path';
+
 @Injectable()
 export class PromotionsService {
-	constructor(
-		private readonly orm: MikroORM,
-		private readonly usersService: UsersService,
-		private readonly configService: ConfigService,
-	) {}
+	constructor(private readonly orm: MikroORM, private readonly configService: ConfigService) {}
 
 	@UseRequestContext()
 	async findAll(): Promise<PromotionResponseDTO[]> {
@@ -76,8 +72,8 @@ export class PromotionsService {
 	}
 
 	@UseRequestContext()
-	async updateLogo({ id, file }: { id: number; file: Express.Multer.File }) {
-		const promotion = await this.orm.em.findOneOrFail(Promotion, { id });
+	async updateLogo({ number, file }: { number: number; file: Express.Multer.File }) {
+		const promotion = await this.orm.em.findOneOrFail(Promotion, { number });
 		if (promotion.picture) await promotion.picture.init();
 
 		const { buffer, mimetype } = file;
@@ -114,7 +110,7 @@ export class PromotionsService {
 			});
 		else {
 			promotion.picture.filename = filename;
-			promotion.picture.mimetype = mimetype;
+			promotion.picture.mimetype = 'image/webp';
 			promotion.picture.updated_at = new Date();
 			promotion.picture.size = buffer.byteLength;
 			promotion.picture.path = imagePath.replace(extension, '.webp');
@@ -124,8 +120,8 @@ export class PromotionsService {
 	}
 
 	@UseRequestContext()
-	async getLogo(id: number) {
-		const promotion = await this.orm.em.findOneOrFail(Promotion, { id });
+	async getLogo(number: number) {
+		const promotion = await this.orm.em.findOneOrFail(Promotion, { number });
 		if (!promotion.picture) throw new HttpException('This promotion has no logo', HttpStatus.NOT_FOUND);
 
 		await promotion.picture.init();
@@ -133,8 +129,8 @@ export class PromotionsService {
 	}
 
 	@UseRequestContext()
-	async deleteLogo(id: number) {
-		const promotion = await this.orm.em.findOneOrFail(Promotion, { id });
+	async deleteLogo(number: number) {
+		const promotion = await this.orm.em.findOneOrFail(Promotion, { number });
 		if (!promotion.picture) throw new HttpException('This promotion has no logo', HttpStatus.NOT_FOUND);
 
 		await promotion.picture.init();
