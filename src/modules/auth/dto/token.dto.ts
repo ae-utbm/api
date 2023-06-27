@@ -8,7 +8,7 @@ export class TokenDTO implements UserTokenDto {
 	@IsString()
 	token: string;
 
-	@ApiProperty()
+	@ApiProperty({ minimum: 1 })
 	@IsInt()
 	user_id: number;
 }

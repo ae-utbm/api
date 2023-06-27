@@ -1,12 +1,12 @@
 import type { PermissionName, PermissionsPostDto } from '@types';
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsInt, IsString } from 'class-validator';
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
 export class PermissionPostDTO implements PermissionsPostDto {
 	@ApiProperty()
-	@IsNumber()
+	@IsInt()
 	id: number;
 
 	@ApiProperty({ enum: PERMISSIONS_NAMES })

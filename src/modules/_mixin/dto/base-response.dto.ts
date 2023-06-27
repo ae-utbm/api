@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { BaseResponseDto } from '@types';
 
 export class BaseResponseDTO implements BaseResponseDto {
-	@ApiProperty()
+	@ApiProperty({ minimum: 1 })
 	id: number;
 
 	@ApiProperty()

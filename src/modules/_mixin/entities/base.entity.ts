@@ -9,7 +9,7 @@ import { ApiProperty } from '@nestjs/swagger';
 @Entity({ abstract: true })
 export abstract class BaseEntity extends BE<BaseEntity, 'id'> implements BEI {
 	@PrimaryKey()
-	@ApiProperty()
+	@ApiProperty({ minimum: 1 })
 	id: number;
 
 	@Property({ type: 'date', onCreate: () => new Date() })

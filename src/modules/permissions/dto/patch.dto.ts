@@ -1,12 +1,12 @@
 import type { PermissionName, PermissionPatchDto } from '@types';
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString, IsDate, IsBoolean } from 'class-validator';
+import { IsInt, IsString, IsDate, IsBoolean } from 'class-validator';
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
 export class PermissionPatchDTO implements PermissionPatchDto {
-	@ApiProperty({ required: true })
-	@IsNumber()
+	@ApiProperty({ required: true, minimum: 1 })
+	@IsInt()
 	id: number;
 
 	@ApiProperty({ enum: PERMISSIONS_NAMES })
