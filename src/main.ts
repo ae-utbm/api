@@ -28,6 +28,7 @@ async function bootstrap() {
 	SwaggerModule.setup('api', app, document, {
 		customCssUrl: '/public/swagger.css',
 		customJs: '/public/swagger.js',
+		customfavIcon: '/public/ae_base.png',
 		swaggerOptions: {
 			tagsSorter: 'alpha',
 			operationsSorter: 'alpha',
