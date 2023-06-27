@@ -14,8 +14,7 @@ export abstract class FileEntity extends BaseEntity implements FE {
 	@ApiProperty()
 	mimetype: string;
 
-	@Property()
-	@ApiProperty()
+	@Property({ hidden: true })
 	path: string;
 
 	@Property()
