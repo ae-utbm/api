@@ -14,6 +14,7 @@ import { PermissionsModule } from '@modules/permissions/permissions.module';
 import { PromotionsModule } from '@modules/promotions/promotions.module';
 import { RolesModule } from '@modules/roles/roles.module';
 import { UsersModule } from '@modules/users/users.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
 	imports: [
@@ -21,6 +22,7 @@ import { UsersModule } from '@modules/users/users.module';
 			isGlobal: true,
 			load: [env],
 		}),
+		ScheduleModule.forRoot(),
 		MikroOrmModule.forRoot({
 			...config,
 			// Entities paths are relative to the root of the project so we need to update them

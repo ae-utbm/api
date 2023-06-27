@@ -42,6 +42,7 @@ export class LoggingInterceptor implements NestInterceptor {
 				log.error_stack = context.switchToHttp().getResponse().error_stack;
 				log.error_message = context.switchToHttp().getResponse().error_message;
 				log.updated_at = new Date();
+
 				await this.orm.em.persistAndFlush(log);
 			}),
 		);
