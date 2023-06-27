@@ -10,13 +10,15 @@ import {
 	UseInterceptors,
 } from '@nestjs/common';
 
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { getStreamableFile } from '@utils/images';
 import { PromotionsService } from './promotions.service';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
+import { PromotionResponseDTO } from './dto/promotion.dto';
+import { PromotionUsersResponseDTO } from './dto/promotion-users.dto';
 
 @ApiTags('Promotions')
 @Controller('promotions')
@@ -28,6 +30,7 @@ export class PromotionsController {
 	@Get()
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
+	@ApiOkResponse({ type: [PromotionResponseDTO] })
 	async getAll() {
 		return this.promotionsService.findAll();
 	}
@@ -35,6 +38,7 @@ export class PromotionsController {
 	@Get('latest')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
+	@ApiOkResponse({ type: PromotionResponseDTO })
 	async getLatest() {
 		return this.promotionsService.findLatest();
 	}
@@ -77,6 +81,7 @@ export class PromotionsController {
 	@Get(':number')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
+	@ApiOkResponse({ type: PromotionResponseDTO })
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	async get(@Param('number') number: number) {
 		return this.promotionsService.findOne(number);
@@ -85,6 +90,7 @@ export class PromotionsController {
 	@Get(':number/users')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_VIEW_USERS_IN_PROMOTION')
+	@ApiOkResponse({ type: [PromotionUsersResponseDTO] })
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	async getUsers(@Param('number') number: number) {
 		return this.promotionsService.getUsers(number);

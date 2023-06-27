@@ -1,5 +1,5 @@
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Promotion } from './entities/promotion.entity';
 import { UsersService } from 'src/modules/users/users.service';
 import { ConfigService } from '@nestjs/config';
@@ -8,6 +8,8 @@ import fs from 'fs';
 import { join } from 'path';
 import { convertToWebp, isSquare } from 'src/utils/images';
 import { PromotionPicture } from './entities/promotion-picture.entity';
+import { PromotionResponseDTO } from './dto/promotion.dto';
+import { PromotionUsersResponseDTO } from './dto/promotion-users.dto';
 
 @Injectable()
 export class PromotionsService {
@@ -18,26 +20,59 @@ export class PromotionsService {
 	) {}
 
 	@UseRequestContext()
-	async findAll(): Promise<Promotion[]> {
-		return await this.orm.em.find(Promotion, {});
+	async findAll(): Promise<PromotionResponseDTO[]> {
+		const promotions = await this.orm.em.find(Promotion, {}, { fields: ['*', 'picture', 'users'] });
+		const res: PromotionResponseDTO[] = [];
+
+		for (const promotion of promotions) {
+			res.push({ ...promotion, users: promotion.users.count() ?? 0 });
+		}
+
+		return res;
 	}
 
 	@UseRequestContext()
-	async findLatest(): Promise<Promotion> {
-		return (await this.orm.em.find(Promotion, {}, { orderBy: { number: 'DESC' } }))[0];
+	async findLatest(): Promise<PromotionResponseDTO> {
+		const promotion = (
+			await this.orm.em.find(Promotion, {}, { orderBy: { number: 'DESC' }, fields: ['*', 'picture', 'users'] })
+		)[0];
+
+		return {
+			...promotion,
+			users: promotion.users.count() ?? 0,
+		};
 	}
 
 	@UseRequestContext()
-	async findOne(number: number): Promise<Promotion> {
-		return await this.orm.em.findOneOrFail(Promotion, { number });
+	async findOne(number: number): Promise<PromotionResponseDTO> {
+		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['*', 'picture', 'users'] });
+		if (!promotion) throw new NotFoundException(`Promotion with number ${number} not found`);
+
+		return {
+			...promotion,
+			users: promotion.users.count() ?? 0,
+		};
 	}
 
 	@UseRequestContext()
-	async getUsers(number: number) {
-		const promotion = await this.orm.em.findOneOrFail(Promotion, { number }, { fields: ['users'] });
-		const users = promotion.users.getItems().map((user) => this.usersService.checkVisibility(user));
+	async getUsers(number: number): Promise<PromotionUsersResponseDTO[]> {
+		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['users'] });
+		if (!promotion) throw new NotFoundException(`Promotion with number ${number} not found`);
 
-		return users;
+		const res: PromotionUsersResponseDTO[] = [];
+
+		for (const user of promotion.users.getItems()) {
+			res.push({
+				id: user.id,
+				updated_at: user.updated_at,
+				created_at: user.created_at,
+				first_name: user.first_name,
+				last_name: user.last_name,
+				nickname: user.nickname,
+			});
+		}
+
+		return res;
 	}
 
 	@UseRequestContext()

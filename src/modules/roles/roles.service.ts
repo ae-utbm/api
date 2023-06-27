@@ -26,7 +26,9 @@ export class RolesService {
 
 	@UseRequestContext()
 	async createRole(name: Uppercase<string>, permissions: PermissionName[], expires: Date) {
-		return this.orm.em.create(Role, { name, permissions, expires });
+		const role = this.orm.em.create(Role, { name, permissions, expires });
+		await this.orm.em.persistAndFlush(role);
+		return role;
 	}
 
 	@UseRequestContext()

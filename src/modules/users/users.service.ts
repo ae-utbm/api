@@ -10,10 +10,10 @@ import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
 import { checkEmail } from '@utils/email';
+import { checkBirthday } from '@utils/dates';
 
 import { join } from 'path';
 import fs from 'fs';
-import { checkBirthday } from '@utils/dates';
 
 @Injectable()
 export class UsersService {
@@ -119,8 +119,7 @@ export class UsersService {
 
 	@UseRequestContext()
 	async updatePicture({ id, file }: { id: number; file: Express.Multer.File }) {
-		const user = await this.orm.em.findOneOrFail(User, { id });
-		if (user.picture) await user.picture.init();
+		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['*', 'picture'] });
 
 		// TODO: add a check to autorise the user to change his picture if he has the associated permission
 		// -> the user needs to be the one sending the request, not the one targeted by the request
@@ -174,28 +173,23 @@ export class UsersService {
 
 	@UseRequestContext()
 	async getPicture(id: number): Promise<UserPicture> {
-		const user = await this.orm.em.findOneOrFail(User, { id });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['picture'] });
 		if (!user.picture) throw new NotFoundException('User has no picture');
-
-		await user.picture.init();
-
 		return user.picture;
 	}
 
 	@UseRequestContext()
 	async deletePicture(id: number): Promise<void> {
-		const user = await this.orm.em.findOneOrFail(User, { id });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['picture'] });
 		if (!user.picture) throw new NotFoundException('User has no picture to be deleted');
 
-		await user.picture.init();
 		fs.unlinkSync(user.picture.path);
 		await this.orm.em.removeAndFlush(user.picture);
 	}
 
 	@UseRequestContext()
 	async updateBanner({ id, file }: { id: number; file: Express.Multer.File }) {
-		const user = await this.orm.em.findOneOrFail(User, { id });
-		if (user.banner) await user.banner.init();
+		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['*', 'banner'] });
 
 		const { buffer, mimetype } = file;
 		const imageDir = join(this.configService.get<string>('files.users'), 'banners');
@@ -238,19 +232,17 @@ export class UsersService {
 
 	@UseRequestContext()
 	async getBanner(id: number): Promise<UserBanner> {
-		const user = await this.orm.em.findOneOrFail(User, { id });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['banner'] });
 		if (!user.banner) throw new NotFoundException('User has no banner');
 
-		await user.banner.init();
 		return user.banner;
 	}
 
 	@UseRequestContext()
 	async deleteBanner(id: number): Promise<void> {
-		const user = await this.orm.em.findOneOrFail(User, { id });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['banner'] });
 		if (!user.banner) throw new NotFoundException('User has no banner to be deleted');
 
-		await user.banner.init();
 		fs.unlinkSync(user.banner.path);
 		await this.orm.em.removeAndFlush(user.banner);
 	}
@@ -263,8 +255,8 @@ export class UsersService {
 
 	@UseRequestContext()
 	async getUserRoles(id: number, input: { show_expired: boolean; show_revoked: boolean }) {
-		const user = await this.orm.em.findOneOrFail(User, { id });
-		const roles = await user.roles.loadItems();
+		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['roles'] });
+		const roles = user.roles.getItems();
 
 		if (!input.show_expired) roles.filter((p) => p.expires > new Date());
 		if (!input.show_revoked) roles.filter((p) => p.revoked === false);

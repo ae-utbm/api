@@ -72,6 +72,7 @@ export class PermissionsController {
 	@GuardPermissions('CAN_READ_PERMISSIONS_OF_ROLE')
 	@ApiOperation({ summary: 'Get all permissions of a role' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
+	@ApiOkResponse({ description: 'Role permissions retrieved', type: String, isArray: true })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiParam({ name: 'id', description: 'The role ID' })
 	getRolePermissions(@Param('id') id: number) {

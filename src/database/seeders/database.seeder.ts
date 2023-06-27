@@ -14,8 +14,8 @@ import * as bcrypt from 'bcrypt';
  */
 export class DatabaseSeeder extends Seeder {
 	async run(em: EntityManager): Promise<void> {
-		const users = await this.create_users(em);
 		const promotions = this.create_promotions(em);
+		const users = await this.create_users(em);
 
 		const root = users.find((u) => u.email === 'ae.info@utbm.fr');
 
