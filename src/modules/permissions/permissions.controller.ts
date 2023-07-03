@@ -15,6 +15,7 @@ import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { Permission } from './entities/permission.entity';
 import { PermissionPatchDTO } from './dto/patch.dto';
+import { Role } from '@modules/roles/entities/role.entity';
 
 @Controller('permissions')
 @UseGuards(AuthGuard('jwt'))
@@ -27,6 +28,7 @@ export class PermissionsController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PERMISSIONS_OF_USER')
 	@ApiOperation({ summary: 'Add a permission to a user' })
+	@ApiOkResponse({ description: 'The added permission', type: Permission })
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	addToUser(@Body() body: PermissionPostDTO): Promise<Permission> {
@@ -60,6 +62,7 @@ export class PermissionsController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PERMISSIONS_OF_ROLE')
 	@ApiOperation({ summary: 'Add a permission to a role' })
+	@ApiOkResponse({ description: 'Permission added to role', type: Role })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	addToRole(@Body() body: PermissionPostDTO) {

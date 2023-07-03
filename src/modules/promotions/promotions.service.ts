@@ -6,7 +6,7 @@ import { Promotion } from './entities/promotion.entity';
 import { convertToWebp, isSquare } from 'src/utils/images';
 import { PromotionPicture } from './entities/promotion-picture.entity';
 import { PromotionResponseDTO } from './dto/promotion.dto';
-import { PromotionUsersResponseDTO } from './dto/promotion-users.dto';
+import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
 
 import fs from 'fs';
 import { join } from 'path';
@@ -20,6 +20,7 @@ export class PromotionsService {
 	 * Create a new promotion each year on the 15th of July
 	 */
 	@Cron('0 0 0 15 7 *')
+	@UseRequestContext()
 	async createNewPromotion(): Promise<void> {
 		const latest = await this.findLatest();
 		const newPromotion = this.orm.em.create(Promotion, { number: latest.number + 1 });
@@ -63,11 +64,11 @@ export class PromotionsService {
 	}
 
 	@UseRequestContext()
-	async getUsers(number: number): Promise<PromotionUsersResponseDTO[]> {
+	async getUsers(number: number): Promise<BaseUserResponseDTO[]> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['users'] });
 		if (!promotion) throw new NotFoundException(`Promotion with number ${number} not found`);
 
-		const res: PromotionUsersResponseDTO[] = [];
+		const res: BaseUserResponseDTO[] = [];
 
 		for (const user of promotion.users.getItems()) {
 			res.push({

@@ -1,15 +1,35 @@
 import type { PermissionName } from '@types';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '../users/entities/user.entity';
 import { Permission } from './entities/permission.entity';
 import { Role } from '../roles/entities/role.entity';
 import { PermissionPatchDTO } from './dto/patch.dto';
+import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class PermissionsService {
 	constructor(private readonly orm: MikroORM) {}
+
+	/**
+	 * Automatically revoke permissions that have expired
+	 * Runs every 10 minutes
+	 */
+	@Cron('0 */10 * * * *')
+	@UseRequestContext()
+	async revokeExpiredPermissions(): Promise<void> {
+		const permissions = await this.orm.em.find(Permission, { expires: { $lte: new Date() }, revoked: false });
+		if (!permissions.length) return;
+
+		permissions.forEach((role) => {
+			role.revoked = true;
+			role.updated_at = new Date();
+		});
+
+		await this.orm.em.persistAndFlush(permissions);
+	}
 
 	/**
 	 * Add a permission to a user
@@ -22,6 +42,7 @@ export class PermissionsService {
 	async addPermissionToUser(name: PermissionName, user_id: number, expires: Date): Promise<Permission> {
 		const user = await this.orm.em.findOne(User, { id: user_id });
 		if (!user) throw new NotFoundException(`User with id '${user_id}' not found`);
+		if (!PERMISSIONS_NAMES.includes(name)) throw new BadRequestException(`Permission '${name}' does not exist`);
 
 		const permission = this.orm.em.create(Permission, { name, user, expires, revoked: false });
 
@@ -39,9 +60,12 @@ export class PermissionsService {
 	async addPermissionToRole(name: PermissionName, role_id: number): Promise<Role> {
 		const role = await this.orm.em.findOne(Role, { id: role_id });
 		if (!role) throw new NotFoundException(`Role with id '${role_id}' not found`);
+		if (!PERMISSIONS_NAMES.includes(name)) throw new BadRequestException(`Permission '${name}' does not exist`);
 
-		role.permissions.push(name);
-		await this.orm.em.persistAndFlush(role);
+		if (!role.permissions.includes(name)) {
+			role.permissions.push(name);
+			await this.orm.em.persistAndFlush(role);
+		}
 
 		return role;
 	}

@@ -2,7 +2,7 @@ import { BaseResponseDTO } from '@modules/_mixin/dto/base-response.dto';
 import { User } from '@modules/users/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class PromotionUsersResponseDTO
+export class BaseUserResponseDTO
 	extends BaseResponseDTO
 	implements Pick<User, 'first_name' | 'last_name' | 'nickname'>
 {

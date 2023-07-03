@@ -29,6 +29,7 @@ async function bootstrap() {
 		customCssUrl: '/public/swagger.css',
 		customJs: '/public/swagger.js',
 		customfavIcon: '/public/ae_base.png',
+		customSiteTitle: 'AE UTBM - REST API',
 		swaggerOptions: {
 			tagsSorter: 'alpha',
 			operationsSorter: 'alpha',

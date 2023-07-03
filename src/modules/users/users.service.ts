@@ -163,7 +163,7 @@ export class UsersService {
 			});
 		else {
 			user.picture.filename = filename;
-			user.picture.mimetype = mimetype;
+			user.picture.mimetype = 'image/webp';
 			user.picture.updated_at = new Date();
 			user.picture.path = imagePath.replace(extension, '.webp');
 		}

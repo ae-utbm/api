@@ -5,7 +5,7 @@ import { IsNumber } from 'class-validator';
 import { RolePostDTO } from './post.dto';
 
 export class RolePatchDTO extends RolePostDTO implements RolePatchDto {
-	@ApiProperty()
+	@ApiProperty({ required: true, minimum: 1 })
 	@IsNumber()
 	id: number;
 }

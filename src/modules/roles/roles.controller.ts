@@ -1,11 +1,22 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+	ApiTags,
+	ApiBearerAuth,
+	ApiOkResponse,
+	ApiUnauthorizedResponse,
+	ApiOperation,
+	ApiBadRequestResponse,
+	ApiNotFoundResponse,
+} from '@nestjs/swagger';
+
 import { RolesService } from './roles.service';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { RolePatchDTO } from './dto/patch.dto';
 import { RolePostDTO } from './dto/post.dto';
+import { Role } from './entities/role.entity';
+import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
 
 @ApiTags('Roles')
 @Controller('roles')
@@ -17,6 +28,10 @@ export class RolesController {
 	@Post()
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_CREATE_ROLE')
+	@ApiOperation({ summary: 'Create a new role' })
+	@ApiOkResponse({ type: Role })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiBadRequestResponse({ description: 'Role name is not uppercase or already exists' })
 	async createRole(@Body() body: RolePostDTO) {
 		return this.rolesService.createRole(body.name, body.permissions, body.expires);
 	}
@@ -24,6 +39,11 @@ export class RolesController {
 	@Patch()
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_ROLE')
+	@ApiOperation({ summary: 'Update an existing role' })
+	@ApiOkResponse({ type: Role })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiBadRequestResponse({ description: 'Role name is not uppercase' })
+	@ApiNotFoundResponse({ description: 'Role not found' })
 	async editRole(@Body() body: RolePatchDTO) {
 		return this.rolesService.editRole(body);
 	}
@@ -31,14 +51,43 @@ export class RolesController {
 	@Get()
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_VIEW_ALL_ROLES')
+	@ApiOperation({ summary: 'Get all existing roles' })
+	@ApiOkResponse({ type: [Role] })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getAllRoles() {
 		return this.rolesService.getAllRoles({ show_expired: true, show_revoked: true });
 	}
 
-	@Get(':id/users')
+	@Get(':role_id/users')
 	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_VIEW_ROLE_USERS')
-	async getRoleUsers(@Param('id') id: number) {
-		return this.rolesService.getRoleUsers(id);
+	@GuardPermissions('CAN_VIEW_USERS_OF_ROLE')
+	@ApiOperation({ summary: 'Get user of the specified role' })
+	@ApiOkResponse({ type: [BaseUserResponseDTO] })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiNotFoundResponse({ description: 'Role not found' })
+	async getRoleUsers(@Param('role_id') id: number) {
+		return this.rolesService.getUsers(id);
+	}
+
+	@Post(':role_id/users/:user_id')
+	@UseGuards(PermissionGuard)
+	@GuardPermissions('CAN_EDIT_USERS_OF_ROLE')
+	@ApiOperation({ summary: 'Add a user to the role' })
+	@ApiOkResponse({ type: [BaseUserResponseDTO] })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiNotFoundResponse({ description: 'Role or user not found' })
+	async addUserToRole(@Param('role_id') role_id: number, @Param('user_id') user_id: number) {
+		return this.rolesService.addUser(role_id, user_id);
+	}
+
+	@Delete(':role_id/users/:user_id')
+	@UseGuards(PermissionGuard)
+	@GuardPermissions('CAN_EDIT_USERS_OF_ROLE')
+	@ApiOperation({ summary: 'Remove a user from the role' })
+	@ApiOkResponse({ type: [BaseUserResponseDTO] })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiNotFoundResponse({ description: 'Role or user not found' })
+	async removeUserToRole(@Param('role_id') role_id: number, @Param('user_id') user_id: number) {
+		return this.rolesService.removeUser(role_id, user_id);
 	}
 }

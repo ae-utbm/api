@@ -66,7 +66,6 @@ export class User
 
 	/** The encrypted user password */
 	@Property({ hidden: true })
-	@ApiProperty()
 	password: string;
 
 	/** The birthday of the user */
@@ -175,7 +174,7 @@ export class User
 	permissions = new Collection<Permission>(this);
 
 	/** Linked roles to the user */
-	@ManyToMany({ entity: () => Role, mappedBy: 'users' })
+	@ManyToMany(() => Role, (role) => role.users)
 	@ApiProperty()
 	roles = new Collection<Role>(this);
 

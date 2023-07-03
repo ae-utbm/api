@@ -13,13 +13,13 @@ import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 @Entity({ tableName: 'roles' })
 export class Role extends BaseEntity implements RoleEntity<Permission, User> {
 	/** Name of the role, in caps */
-	@Property()
-	@ApiProperty()
+	@Property({ unique: true })
+	@ApiProperty({ type: String, example: 'AE_ADMIN' })
 	name: Uppercase<string>;
 
 	/** Determine wether the role is still active */
 	@Property({ name: 'is_revoked', onCreate: () => false })
-	@ApiProperty()
+	@ApiProperty({ type: Boolean, default: false })
 	revoked = false;
 
 	/** Specify when the role should expires */
@@ -33,7 +33,6 @@ export class Role extends BaseEntity implements RoleEntity<Permission, User> {
 	permissions: PermissionName[];
 
 	/** Specify to which user the role is attached */
-	@ManyToMany({ entity: () => User, inversedBy: 'roles' })
-	@ApiProperty({ type: [Number] })
+	@ManyToMany(() => User, (user) => user.roles, { owner: true })
 	users = new Collection<User>(this);
 }

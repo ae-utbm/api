@@ -18,7 +18,7 @@ import { PromotionsService } from './promotions.service';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { PromotionResponseDTO } from './dto/promotion.dto';
-import { PromotionUsersResponseDTO } from './dto/promotion-users.dto';
+import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
 
 @ApiTags('Promotions')
 @Controller('promotions')
@@ -49,7 +49,7 @@ export class PromotionsController {
 	@Get(':number/users')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_VIEW_USERS_IN_PROMOTION')
-	@ApiOkResponse({ type: [PromotionUsersResponseDTO] })
+	@ApiOkResponse({ type: [BaseUserResponseDTO] })
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Get users of the specified promotions' })
 	async getUsers(@Param('number') number: number) {
