@@ -27,7 +27,7 @@ export class RolesController {
 
 	@Post()
 	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_CREATE_ROLE')
+	@GuardPermissions('CAN_EDIT_ROLE')
 	@ApiOperation({ summary: 'Create a new role' })
 	@ApiOkResponse({ type: Role })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
@@ -50,7 +50,7 @@ export class RolesController {
 
 	@Get()
 	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_VIEW_ALL_ROLES')
+	@GuardPermissions('CAN_READ_ROLE')
 	@ApiOperation({ summary: 'Get all existing roles' })
 	@ApiOkResponse({ type: [Role] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
@@ -60,7 +60,7 @@ export class RolesController {
 
 	@Get(':role_id/users')
 	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_VIEW_USERS_OF_ROLE')
+	@GuardPermissions('CAN_READ_ROLE')
 	@ApiOperation({ summary: 'Get user of the specified role' })
 	@ApiOkResponse({ type: [BaseUserResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
@@ -71,7 +71,7 @@ export class RolesController {
 
 	@Post(':role_id/users/:user_id')
 	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_EDIT_USERS_OF_ROLE')
+	@GuardPermissions('CAN_EDIT_ROLE')
 	@ApiOperation({ summary: 'Add a user to the role' })
 	@ApiOkResponse({ type: [BaseUserResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
@@ -82,7 +82,7 @@ export class RolesController {
 
 	@Delete(':role_id/users/:user_id')
 	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_EDIT_USERS_OF_ROLE')
+	@GuardPermissions('CAN_EDIT_ROLE')
 	@ApiOperation({ summary: 'Remove a user from the role' })
 	@ApiOkResponse({ type: [BaseUserResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })

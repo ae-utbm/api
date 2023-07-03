@@ -48,7 +48,7 @@ export class PromotionsController {
 
 	@Get(':number/users')
 	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_VIEW_USERS_IN_PROMOTION')
+	@GuardPermissions('CAN_READ_PROMOTION')
 	@ApiOkResponse({ type: [BaseUserResponseDTO] })
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Get users of the specified promotions' })
