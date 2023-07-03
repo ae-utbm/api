@@ -17,9 +17,11 @@ export class LoggingInterceptor implements NestInterceptor {
 		// No need to log guest users
 		if (user_id === 'Guest') return next.handle();
 
+		const em = this.orm.em.fork();
+
 		// Create a new log entry
-		const user = await this.orm.em.findOne(User, { id: user_id });
-		const log = this.orm.em.create(Log, {
+		const user = await em.findOne(User, { id: user_id });
+		const log = em.create(Log, {
 			user,
 			action: context.getClass().name + '.' + context.getHandler().name,
 			ip: context.switchToHttp().getRequest().ip,
@@ -32,18 +34,19 @@ export class LoggingInterceptor implements NestInterceptor {
 			updated_at: undefined,
 		});
 
-		await this.orm.em.persistAndFlush(log);
-
 		return next.handle().pipe(
-			tap(async () => {
-				log.response = context.switchToHttp().getResponse().body;
-				log.status_code = context.switchToHttp().getResponse().statusCode;
-				log.error = context.switchToHttp().getResponse().error;
-				log.error_stack = context.switchToHttp().getResponse().error_stack;
-				log.error_message = context.switchToHttp().getResponse().error_message;
-				log.updated_at = new Date();
+			tap({
+				finalize: async () => {
+					// Update the log entity after the observable is ended
+					log.response = context.switchToHttp().getResponse().body;
+					log.status_code = context.switchToHttp().getResponse().statusCode;
+					log.error = context.switchToHttp().getResponse().error;
+					log.error_stack = context.switchToHttp().getResponse().error_stack;
+					log.error_message = context.switchToHttp().getResponse().error_message;
+					log.updated_at = new Date();
 
-				await this.orm.em.persistAndFlush(log);
+					em.flush();
+				},
 			}),
 		);
 	}
