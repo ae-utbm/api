@@ -1,11 +1,11 @@
+import type { JWTPayload } from '@types';
+
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@modules/users/users.service';
 import { User } from '@modules/users/entities/user.entity';
 
 import * as bcrypt from 'bcrypt';
-import { TokenDTO } from './dto/token.dto';
-import { JWTPayload } from '@types';
 
 @Injectable()
 export class AuthService {
@@ -16,11 +16,11 @@ export class AuthService {
 		try {
 			user = await this.usersService.findOne({ email: email }, false);
 		} catch {
-			throw new NotFoundException();
+			throw new NotFoundException('User not found');
 		}
 
 		if (user.password !== pass && !bcrypt.compareSync(pass, user.password)) {
-			throw new UnauthorizedException();
+			throw new UnauthorizedException('Password mismatch');
 		}
 
 		const payload = { sub: user.id, email: user.email };

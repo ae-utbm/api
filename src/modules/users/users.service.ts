@@ -9,11 +9,14 @@ import { User } from '@modules/users/entities/user.entity';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
-import { checkEmail } from '@utils/email';
+import { checkEmail, sendEmail } from '@utils/email';
 import { checkBirthday } from '@utils/dates';
 
 import { join } from 'path';
 import fs from 'fs';
+
+import * as bcrypt from 'bcrypt';
+import { generateRandomPassword } from '@utils/password';
 
 @Injectable()
 export class UsersService {
@@ -62,29 +65,91 @@ export class UsersService {
 		return users;
 	}
 
-	// TODO: send a confirmation email to the user
 	@UseRequestContext()
 	async register(input: UserPostDTO): Promise<User> {
-		if (!checkEmail(input.email)) throw new BadRequestException(`The email '${input.email}' is not allowed`);
-		if (!checkBirthday(input.birthday)) throw new BadRequestException(`The date '${input.birthday}' is not valid`);
+		if (await this.orm.em.findOne(User, { email: input.email }))
+			throw new BadRequestException(`User already with the email '${input.email}' already exists`);
 
-		const user = this.orm.em.create(User, input);
+		if (!checkEmail(input.email))
+			throw new BadRequestException(`The following email '${input.email}' is not allowed (blacklisted or invalid)`);
+
+		if (!checkBirthday(input.birthday))
+			throw new BadRequestException(`The date '${input.birthday}' is not valid (either too young or in the future)`);
+
+		// Check if the password is already hashed
+		if (input.password.length !== 60) input.password = bcrypt.hashSync(input.password, 10);
+
+		// Add the email verification token & create the user
+		const email_token = generateRandomPassword(12);
+		const user = this.orm.em.create(User, {
+			...input,
+			email_verification: bcrypt.hashSync(email_token, 10),
+		});
+
+		// Save changes to the database & create the user's visibility parameters
 		this.orm.em.create(UserVisibility, { user });
+		await this.orm.em.persistAndFlush(user);
+
+		// Fetch the user again to get the id
+		const registered = await this.orm.em.findOne(User, { email: input.email });
+		await sendEmail('register', {
+			to: [registered.email],
+			subject: 'Confirmation de votre inscription - AE UTBM',
+			templates_args: {
+				username: registered.full_name,
+				link: this.configService.get<boolean>('production')
+					? `https://ae.utbm.fr/api/auth/confirm/${registered.id}/${encodeURI(email_token)}`
+					: `http://localhost:${this.configService.get<string>('port')}/api/auth/confirm/${registered.id}/${encodeURI(
+							email_token,
+					  )}`,
+			},
+		});
+
+		return user;
+	}
+
+	@UseRequestContext()
+	async verifyEmail(user_id: number, token: string): Promise<User> {
+		const user = await this.orm.em.findOne(User, { id: user_id });
+		if (!user) throw new NotFoundException('User not found');
+
+		if (user.email_verified) throw new BadRequestException('Email already verified');
+
+		if (!bcrypt.compareSync(token, user.email_verification))
+			throw new UnauthorizedException('Invalid email verification token');
+
+		user.email_verified = true;
+		user.email_verification = null;
 
 		await this.orm.em.persistAndFlush(user);
 		return user;
 	}
 
-	// TODO: send a confirmation email with the random password to both activate & ask the user to change it
 	@UseRequestContext()
 	async registerByAdmin(input: UserPostByAdminDTO): Promise<User> {
-		if (!checkEmail(input.email)) throw new BadRequestException(`The email '${input.email}' is not allowed`);
-		if (!checkBirthday(input.birthday)) throw new BadRequestException(`The date '${input.birthday}' is not valid`);
+		if (await this.orm.em.findOne(User, { email: input.email }))
+			throw new BadRequestException(`User already with the email '${input.email}' already exists`);
 
-		// TODO : generate random password
-		const final = { ...input, password: 'TOTO' };
-		const user = this.orm.em.create(User, final);
+		if (!checkEmail(input.email))
+			throw new BadRequestException(`The following email '${input.email}' is not allowed (blacklisted or invalid)`);
+
+		if (!checkBirthday(input.birthday))
+			throw new BadRequestException(`The date '${input.birthday}' is not valid (either too young or in the future)`);
+
+		// Generate a random password & hash it
+		const password = generateRandomPassword(12);
+		const user = this.orm.em.create(User, { ...input, password: bcrypt.hashSync(password, 10), email_verified: true });
 		this.orm.em.create(UserVisibility, { user });
+
+		// Send the email to the user
+		await sendEmail('register_by_admin', {
+			to: [user.email],
+			subject: 'Confirmation de votre inscription - AE UTBM',
+			templates_args: {
+				username: user.full_name,
+				password,
+			},
+		});
 
 		await this.orm.em.persistAndFlush(user);
 		return user;
@@ -96,7 +161,8 @@ export class UsersService {
 
 		if (!user) throw new NotFoundException('User not found');
 
-		if (!checkEmail(input.email)) throw new BadRequestException(`The email '${input.email}' is not allowed`);
+		if (!checkEmail(input.email))
+			throw new BadRequestException(`The following email '${input.email}' is not allowed (blacklisted or invalid)`);
 
 		if (input.hasOwnProperty('birthday')) {
 			const currentUser = await this.findOne({ id: requestUser }, false);
@@ -223,7 +289,7 @@ export class UsersService {
 			});
 		else {
 			user.banner.filename = filename;
-			user.banner.mimetype = mimetype;
+			user.banner.mimetype = 'image/webp';
 			user.banner.path = imagePath.replace(extension, '.webp');
 		}
 

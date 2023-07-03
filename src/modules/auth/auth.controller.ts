@@ -1,9 +1,10 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
 	ApiNotFoundResponse,
 	ApiOkResponse,
 	ApiOperation,
+	ApiParam,
 	ApiTags,
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -35,5 +36,22 @@ export class AuthController {
 	@ApiBadRequestResponse({ description: 'Bad request, invalid fields' })
 	async register(@Body() registerDto: UserPostDTO): Promise<User> {
 		return this.userService.register(registerDto);
+	}
+
+	@Get('confirm/:user_id/:token/:redirect_url?')
+	@ApiParam({ name: 'redirect_url', required: false })
+	@ApiOperation({ summary: 'Validate a user account' })
+	async verifyEmail(
+		@Param('user_id') user_id: number,
+		@Param('token') token: string,
+		@Param('redirect_url') redirect_url?: number,
+	) {
+		// TODO : check if redirect_url is a valid url
+		if (redirect_url) {
+			await this.userService.verifyEmail(user_id, token);
+			return { url: redirect_url, code: 301 };
+		}
+
+		return this.userService.verifyEmail(user_id, token);
 	}
 }

@@ -43,6 +43,10 @@ export class User
 	@ApiProperty()
 	email_verified = false;
 
+	@Property({ nullable: true })
+	@Property({ hidden: true })
+	email_verification?: string;
+
 	/** Get the full name of the user */
 	@Property({ persist: false })
 	get full_name(): string {

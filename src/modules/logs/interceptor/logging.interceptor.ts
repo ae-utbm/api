@@ -17,6 +17,8 @@ export class LoggingInterceptor implements NestInterceptor {
 		// No need to log guest users
 		if (user_id === 'Guest') return next.handle();
 
+		// Create a separate entity manager for this request
+		// > to avoid conflicts with the main entity manager (in the request scope)
 		const em = this.orm.em.fork();
 
 		// Create a new log entry
@@ -45,7 +47,7 @@ export class LoggingInterceptor implements NestInterceptor {
 					log.error_message = context.switchToHttp().getResponse().error_message;
 					log.updated_at = new Date();
 
-					em.flush();
+					await em.flush();
 				},
 			}),
 		);

@@ -49,6 +49,7 @@ export class DatabaseSeeder extends Seeder {
 		const users: Partial<User>[] = [
 			{
 				email: 'ae.info@utbm.fr',
+				email_verified: true,
 				password: await bcrypt.hash('root', 10),
 				first_name: 'root',
 				last_name: 'root',

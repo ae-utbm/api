@@ -1,6 +1,7 @@
 import { join } from 'path';
 
 export default () => ({
+	production: process.env['DEBUG'] === 'false',
 	port: parseInt(process.env['API_PORT'], 10) || 3000,
 	auth: {
 		jwtKey: process.env['JWT_KEY'],
@@ -13,6 +14,13 @@ export default () => ({
 		promotions: join(process.cwd(), process.env['PROMOTIONS_LOGO_PATH'] || './public/promotions'),
 	},
 	email: {
+		host: process.env['EMAIL_HOST'],
+		port: parseInt(process.env['EMAIL_PORT'], 10) || 465,
+		secure: process.env['EMAIL_SECURE'] === 'true',
+		auth: {
+			user: process.env['EMAIL_AUTH_USER'],
+			pass: process.env['EMAIL_AUTH_PASS'],
+		},
 		whitelist: {
 			// Email addresses that are allowed to be used to register
 			// even if they're domain is blacklisted
