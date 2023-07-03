@@ -17,10 +17,29 @@ import fs from 'fs';
 
 import * as bcrypt from 'bcrypt';
 import { generateRandomPassword } from '@utils/password';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class UsersService {
 	constructor(private readonly configService: ConfigService, private readonly orm: MikroORM) {}
+
+	/**
+	 * Check for user that are not verified and which their verification period is older than 7 days
+	 * If found, delete them
+	 * Runs every 10 minutes
+	 */
+	@Cron('0 */10 * * * *')
+	@UseRequestContext()
+	async checkForUnverifiedUsers() {
+		const users = await this.orm.em.find(User, {
+			email_verified: false,
+			created_at: { $lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+		});
+
+		for (const user of users) {
+			await this.delete(user.id);
+		}
+	}
 
 	@UseRequestContext()
 	public async checkVisibility(user: User): Promise<Partial<User>> {
