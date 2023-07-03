@@ -15,7 +15,15 @@ import {
 	UseInterceptors,
 } from '@nestjs/common';
 
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+	ApiBearerAuth,
+	ApiBody,
+	ApiConsumes,
+	ApiOkResponse,
+	ApiOperation,
+	ApiTags,
+	ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
@@ -26,6 +34,9 @@ import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { getStreamableFile } from '@utils/images';
+import { User } from './entities/user.entity';
+import { UserVisibility } from './entities/user-visibility.entity';
+import { Role } from '@modules/roles/entities/role.entity';
 
 @ApiTags('Users')
 @Controller('users')
@@ -37,6 +48,9 @@ export class UsersController {
 	@Post()
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_CREATE_USER')
+	@ApiOperation({ summary: 'Create a new user' })
+	@ApiOkResponse({ description: 'The created user', type: User })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async create(@Body() input: UserPostByAdminDTO) {
 		return this.usersService.registerByAdmin(input);
 	}
@@ -44,6 +58,9 @@ export class UsersController {
 	@Patch()
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_UPDATE_USER'])
+	@ApiOperation({ summary: 'Update an existing user' })
+	@ApiOkResponse({ description: 'The updated user', type: User })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async update(@Body() input: UserPatchDTO, @Req() req: Request) {
 		return this.usersService.update(req.user.id, input);
 	}
@@ -51,6 +68,8 @@ export class UsersController {
 	@Delete(':id')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_DELETE_USER'])
+	@ApiOperation({ summary: 'Delete a user' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async delete(@Param('id') id: number) {
 		return this.usersService.delete(id);
 	}
@@ -58,6 +77,9 @@ export class UsersController {
 	@Get(':id')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PUBLIC'])
+	@ApiOperation({ summary: 'Get public information of a user' })
+	@ApiOkResponse({ description: 'User data, excepted privates fields (set in the visibility table)', type: User })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async get(@Param('id') id: number) {
 		return this.usersService.findOne({ id });
 	}
@@ -65,6 +87,9 @@ export class UsersController {
 	@Get(':id/private')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PRIVATE'])
+	@ApiOperation({ summary: 'Get information of a user' })
+	@ApiOkResponse({ description: 'User data', type: User })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getAsPrivate(@Param('id') id: number) {
 		return this.usersService.findOne({ id }, false);
 	}
@@ -72,6 +97,9 @@ export class UsersController {
 	@Get(':id/visibility')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PRIVATE'])
+	@ApiOperation({ summary: 'Get visibility of a user' })
+	@ApiOkResponse({ description: 'User data', type: UserVisibility })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getVisibility(@Param('id') id: number) {
 		return this.usersService.findVisibility({ id });
 	}
@@ -79,7 +107,8 @@ export class UsersController {
 	@Post(':id/picture')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_UPDATE_USER'])
-	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Update user profile picture' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiConsumes('multipart/form-data')
 	@ApiBody({
 		schema: {
@@ -100,7 +129,8 @@ export class UsersController {
 	@Delete(':id/picture')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_UPDATE_USER')
-	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Delete user profile picture' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async deletePicture(@Param('id') id: number) {
 		return this.usersService.deletePicture(id);
 	}
@@ -108,7 +138,8 @@ export class UsersController {
 	@Get(':id/picture')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PUBLIC'])
-	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Get user profile picture' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getPicture(@Param('id') id: number) {
 		const picture = await this.usersService.getPicture(id);
 		return new StreamableFile(getStreamableFile(picture.path));
@@ -117,7 +148,8 @@ export class UsersController {
 	@Post(':id/banner')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_UPDATE_USER'])
-	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Update user profile banner' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiConsumes('multipart/form-data')
 	@ApiBody({
 		schema: {
@@ -138,7 +170,8 @@ export class UsersController {
 	@Delete(':id/banner')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_UPDATE_USER'])
-	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Delete user profile banner' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async deleteBanner(@Param('id') id: number) {
 		return this.usersService.deleteBanner(id);
 	}
@@ -146,7 +179,8 @@ export class UsersController {
 	@Get(':id/banner')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_UPDATE_USER'])
-	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Get user profile banner' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getBanner(@Param('id') id: number) {
 		const banner = await this.usersService.getBanner(id);
 		return new StreamableFile(getStreamableFile(banner.path));
@@ -155,6 +189,9 @@ export class UsersController {
 	@Get(':id/roles')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_VIEW_USER_ROLES')
+	@ApiOperation({ summary: 'Get roles of a user' })
+	@ApiOkResponse({ description: 'Roles of the user', type: [Role] })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getRoleUsers(@Param('id') id: number) {
 		return this.usersService.getUserRoles(id, { show_expired: true, show_revoked: true });
 	}

@@ -156,28 +156,24 @@ export class UsersService {
 	}
 
 	@UseRequestContext()
-	async update(requestUser: number, input: UserPatchDTO) {
+	async update(requestUserId: number, input: UserPatchDTO) {
 		const user = await this.findOne({ id: input.id }, false);
 
-		if (!user) throw new NotFoundException('User not found');
+		if (!user) throw new NotFoundException(`User with id ${input.id} not found`);
 
-		if (!checkEmail(input.email))
+		if (input.email && !checkEmail(input.email))
 			throw new BadRequestException(`The following email '${input.email}' is not allowed (blacklisted or invalid)`);
 
-		if (input.hasOwnProperty('birthday')) {
-			const currentUser = await this.findOne({ id: requestUser }, false);
+		if (input.hasOwnProperty('birthday') || input.hasOwnProperty('first_name') || input.hasOwnProperty('last_name')) {
+			const currentUser = await this.findOne({ id: requestUserId }, false);
 
 			if (currentUser.id === user.id)
 				throw new UnauthorizedException(
-					'You cannot update your own birthday, ask another user with the appropriate permission',
+					'You cannot update your own birthday / first (or last) name, ask another user with the appropriate permission',
 				);
-
-			// if (!checkPermission(currentUser, 'CAN_UPDATE_USER'))
-			// 	throw new UnauthorizedException('You do not have permission to update the birthday');
 		}
 
 		Object.assign(user, input);
-		user.updated_at = new Date();
 
 		await this.orm.em.persistAndFlush(user);
 		return user;

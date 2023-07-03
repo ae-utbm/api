@@ -7,7 +7,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ tableName: 'users_pictures' })
 export class UserPicture extends FileEntity implements UserPictureEntity<User> {
-	@ApiProperty({ type: Number })
+	@ApiProperty({ type: Number, minimum: 1 })
 	@OneToOne(() => User, (user) => user.picture, { owner: true, unique: true })
 	user: User;
 }

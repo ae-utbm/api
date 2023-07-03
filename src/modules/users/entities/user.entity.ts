@@ -40,15 +40,15 @@ export class User
 	last_name: string;
 
 	@Property({ onCreate: () => false })
-	@ApiProperty()
+	@ApiProperty({ type: Boolean })
 	email_verified = false;
 
-	@Property({ nullable: true })
-	@Property({ hidden: true })
+	@Property({ nullable: true, hidden: true })
 	email_verification?: string;
 
 	/** Get the full name of the user */
 	@Property({ persist: false })
+	@ApiProperty()
 	get full_name(): string {
 		return `${this.first_name} ${this.last_name}`;
 	}
@@ -79,6 +79,7 @@ export class User
 
 	/** The age of the user */
 	@Property({ persist: false })
+	@ApiProperty()
 	get age(): number {
 		const diff = Date.now() - this.birthday.getTime();
 		const age = new Date(diff);
@@ -87,6 +88,7 @@ export class User
 
 	/** True if the user is minor */
 	@Property({ persist: false })
+	@ApiProperty()
 	get is_minor(): boolean {
 		return this.age < 18;
 	}
@@ -120,7 +122,7 @@ export class User
 
 	/** Promotion of the user */
 	@ManyToOne(() => Promotion, { nullable: true })
-	@ApiProperty()
+	@ApiProperty({ type: Number })
 	promotion?: Promotion;
 
 	/** The last time the user was seen online (JWT Token generated) */
@@ -135,7 +137,6 @@ export class User
 		nullable: true,
 		orphanRemoval: true,
 	})
-	@ApiProperty()
 	subscriptions?: Collection<Subscription>;
 
 	/** Subscriber account number, undefined if he never subscribed */
@@ -151,6 +152,7 @@ export class User
 
 	/** True if the user is currently subscribed */
 	@Property({ persist: false })
+	@ApiProperty()
 	get is_currently_subscribed(): boolean {
 		return this.current_subscription !== undefined;
 	}
@@ -174,15 +176,12 @@ export class User
 	//* PERMISSIONS & AUTHENTIFICATION
 	/** Linked permissions to the user */
 	@OneToMany(() => Permission, (permission) => permission.user, { cascade: [Cascade.REMOVE], orphanRemoval: true })
-	@ApiProperty()
 	permissions = new Collection<Permission>(this);
 
 	/** Linked roles to the user */
 	@ManyToMany(() => Role, (role) => role.users)
-	@ApiProperty()
 	roles = new Collection<Role>(this);
 
 	@OneToMany(() => Log, (log) => log.user, { cascade: [Cascade.REMOVE], orphanRemoval: true })
-	@ApiProperty()
 	logs = new Collection<Log>(this);
 }

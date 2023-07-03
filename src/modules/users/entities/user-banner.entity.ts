@@ -7,7 +7,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ tableName: 'users_banners' })
 export class UserBanner extends FileEntity implements UserBannerEntity<User> {
-	@ApiProperty({ type: Number })
+	@ApiProperty({ type: Number, minimum: 1 })
 	@OneToOne(() => User, (user) => user.banner, { owner: true, unique: true })
 	user: User;
 }

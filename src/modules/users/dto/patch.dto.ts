@@ -9,22 +9,6 @@ export class UserPatchDTO implements UserPatchDto {
 	id: number;
 
 	@ApiProperty()
-	@IsString()
-	nickname?: string;
-
-	@ApiProperty()
-	@IsString()
-	gender?: string;
-
-	@ApiProperty()
-	@IsString()
-	cursus?: string;
-
-	@ApiProperty()
-	@IsNumber()
-	promotion?: number;
-
-	@ApiProperty()
 	@IsEmail()
 	email: email;
 
@@ -43,4 +27,40 @@ export class UserPatchDTO implements UserPatchDto {
 	@ApiProperty()
 	@IsString()
 	last_name: string;
+
+	@ApiProperty()
+	@IsString()
+	nickname?: string;
+
+	@ApiProperty()
+	@IsString()
+	gender?: string;
+
+	@ApiProperty()
+	@IsString()
+	pronouns?: string;
+
+	@ApiProperty()
+	@IsString()
+	secondary_email?: string;
+
+	@ApiProperty()
+	@IsString()
+	phone?: string;
+
+	@ApiProperty()
+	@IsString()
+	parent_contact?: string;
+
+	@ApiProperty()
+	@IsString()
+	cursus?: string;
+
+	@ApiProperty()
+	@IsString()
+	specialty?: string;
+
+	@ApiProperty()
+	@IsNumber()
+	promotion?: number;
 }
