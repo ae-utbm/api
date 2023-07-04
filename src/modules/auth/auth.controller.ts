@@ -44,7 +44,7 @@ export class AuthController {
 	async verifyEmail(
 		@Param('user_id') user_id: number,
 		@Param('token') token: string,
-		@Param('redirect_url') redirect_url?: number,
+		@Param('redirect_url') redirect_url?: string,
 	) {
 		// TODO : check if redirect_url is a valid url
 		if (redirect_url) {

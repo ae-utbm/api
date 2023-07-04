@@ -2,7 +2,7 @@ import type { PermissionEntity, PermissionName } from 'src/types';
 
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@modules/_mixin/entities/base.entity';
-import { User } from '@/modules/users/entities/user.entity';
+import { User } from '@modules/users/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 

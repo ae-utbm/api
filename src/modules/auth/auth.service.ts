@@ -12,12 +12,8 @@ export class AuthService {
 	constructor(private usersService: UsersService, private jwtService: JwtService) {}
 
 	async signIn(email: string, pass: string) {
-		let user: User;
-		try {
-			user = await this.usersService.findOne({ email: email }, false);
-		} catch {
-			throw new NotFoundException('User not found');
-		}
+		const user: User = await this.usersService.findOne({ email: email }, false);
+		if (!user) throw new NotFoundException('User not found');
 
 		if (user.password !== pass && !bcrypt.compareSync(pass, user.password)) {
 			throw new UnauthorizedException('Password mismatch');
@@ -34,7 +30,9 @@ export class AuthService {
 		// Get the user from the database
 		const user = await this.usersService.findOne({ email: payload.email }, false);
 
-		// If user doesn't exists, return null
-		return user ?? null;
+		// Do not validate if user isn't verified
+		//              or if user doesn't exists
+		if (!user || !user.email_verified) return null;
+		return user;
 	}
 }
