@@ -24,11 +24,11 @@ jobs:
         run: pnpm install
 
       - name: Run tests
-        run: pnpm jest --config jest.config.ts --coverage --forceExit
+        run: pnpm jest --config jest.config.ts --coverage
 
       - name: Export coverage results
         uses: actions/upload-artifact@v3
         with:
           name: Coverage results
-          path: coverage
+          path: ./coverage
           retention-days: 7
