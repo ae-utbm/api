@@ -18,10 +18,16 @@ import fs from 'fs';
 import * as bcrypt from 'bcrypt';
 import { generateRandomPassword } from '@utils/password';
 import { Cron } from '@nestjs/schedule';
+import { I18nContext, I18nService } from 'nestjs-i18n';
+import { getTemplate } from '@templates';
 
 @Injectable()
 export class UsersService {
-	constructor(private readonly configService: ConfigService, private readonly orm: MikroORM) {}
+	constructor(
+		private readonly i18n: I18nService,
+		private readonly configService: ConfigService,
+		private readonly orm: MikroORM,
+	) {}
 
 	/**
 	 * Check for user that are not verified and which their verification period is older than 7 days
@@ -111,18 +117,20 @@ export class UsersService {
 
 		// Fetch the user again to get the id
 		const registered = await this.orm.em.findOne(User, { email: input.email });
-		await sendEmail('register', {
+
+		await sendEmail({
 			to: [registered.email],
-			subject: 'Confirmation de votre inscription - AE UTBM',
-			templates_args: {
+			subject: this.i18n.t('templates.register_common.subject', { lang: I18nContext.current().lang }),
+			html: getTemplate('emails/register_user', this.i18n, { 
 				username: registered.full_name,
 				link: this.configService.get<boolean>('production')
-					? `https://ae.utbm.fr/api/auth/confirm/${registered.id}/${encodeURI(email_token)}`
+					? `https://ae.utbm.fr/api/auth/confirm/${registered.id}/${encodeURI(email_token)}/${encodeURI('https://ae.utbm.fr')}`
 					: `http://localhost:${this.configService.get<string>('port')}/api/auth/confirm/${registered.id}/${encodeURI(
 							email_token,
-					  )}`,
-			},
-		});
+						)}`,
+				days: 7,
+			}),
+		})
 
 		return user;
 	}
@@ -160,15 +168,14 @@ export class UsersService {
 		const user = this.orm.em.create(User, { ...input, password: bcrypt.hashSync(password, 10), email_verified: true });
 		this.orm.em.create(UserVisibility, { user });
 
-		// Send the email to the user
-		await sendEmail('register_by_admin', {
+		await sendEmail({
 			to: [user.email],
-			subject: 'Confirmation de votre inscription - AE UTBM',
-			templates_args: {
+			subject: this.i18n.t('templates.register_common.subject', { lang: I18nContext.current().lang }),
+			html: getTemplate('emails/register_user_by_admin', this.i18n, { 
 				username: user.full_name,
 				password,
-			},
-		});
+			}),
+		})
 
 		await this.orm.em.persistAndFlush(user);
 		return user;

@@ -1,9 +1,6 @@
 import type { email } from '@types';
 
 import * as nodemailer from 'nodemailer';
-import * as fs from 'fs';
-import * as path from 'path';
-
 import env from '@env';
 
 /**
@@ -34,28 +31,21 @@ const transporter = nodemailer.createTransport({
 
 interface EmailOptions {
 	to: string[];
+	from?: string;
 	subject: string;
-	templates_args: Record<string, string>;
+	html: string;
 }
 
 /**
  * Send en email based on a template and given data
- * @param {string} template filename located in `src/utils/templates/emails`
+ * @param {string} html the html template to use
  * @param {EmailOptions} options the options for the email
  */
-export async function sendEmail(template: string, options: EmailOptions): Promise<void> {
-	let html = fs.readFileSync(path.join(__dirname, '../../../templates/emails', template + '.html'), {
-		encoding: 'utf-8',
-	});
-
-	Object.keys(options.templates_args).forEach((key) => {
-		html = html.replaceAll(`{{ ${key} }}`, options.templates_args[key]);
-	});
-
+export async function sendEmail(options: EmailOptions): Promise<void> {
 	await transporter.sendMail({
-		from: `ae.noreply@utbm.fr`,
+		from: options.from ?? `ae.noreply@utbm.fr`,
 		to: options.to.join(', '),
 		subject: options.subject,
-		html,
+		html: options.html,
 	});
 }

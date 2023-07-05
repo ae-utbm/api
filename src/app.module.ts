@@ -15,6 +15,7 @@ import { PromotionsModule } from '@modules/promotions/promotions.module';
 import { RolesModule } from '@modules/roles/roles.module';
 import { UsersModule } from '@modules/users/users.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AcceptLanguageResolver, I18nModule } from 'nestjs-i18n';
 
 @Module({
 	imports: [
@@ -28,6 +29,16 @@ import { ScheduleModule } from '@nestjs/schedule';
 			// Entities paths are relative to the root of the project so we need to update them
 			entities: [path.join(__dirname, '/modules/**/*.entity.js')],
 			entitiesTs: [path.join(__dirname, '/modules/src/**/*.entity.ts')],
+		}),
+		I18nModule.forRoot({
+			fallbackLanguage: 'en-US',
+			loaderOptions: {
+				path: path.join(__dirname, '/i18n/'),
+				watch: true,
+			},
+			resolvers: [
+				AcceptLanguageResolver
+			]
 		}),
 		AuthModule,
 		LogsModule,
