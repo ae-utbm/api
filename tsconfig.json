@@ -1,40 +1,40 @@
 {
-	"compilerOptions": {
-		"declaration": true,
-		"removeComments": true,
-		"emitDecoratorMetadata": true,
-		"experimentalDecorators": true,
-		"allowJs": true,
-		"allowSyntheticDefaultImports": true,
-		"moduleResolution": "node",
-		"module": "CommonJS",
-		"target": "ESNext",
-		"sourceMap": true,
-		"outDir": "./dist",
-		"baseUrl": ".",
-		"incremental": true,
-		"skipLibCheck": true,
-		"strictNullChecks": false,
-		"noImplicitAny": false,
-		"strictBindCallApply": false,
-		"forceConsistentCasingInFileNames": true,
-		"noFallthroughCasesInSwitch": true,
-		"strict": true,
-		"noImplicitOverride": true,
-		"noPropertyAccessFromIndexSignature": true,
-		"noImplicitReturns": false,
-		"downlevelIteration": true,
-		"useDefineForClassFields": false,
-		"resolveJsonModule": true,
-		"esModuleInterop": true,
-		"typeRoots": [
-			"src/types",
-			"node_modules/@types"
-		],
-		"paths": {
-			"@*": [
-				"src/*"
-			]
-		}
-	}
+  "compilerOptions": {
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node",
+    "module": "CommonJS",
+    "target": "ESNext",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": false,
+    "downlevelIteration": true,
+    "useDefineForClassFields": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "typeRoots": [
+      "src/types",
+      "node_modules/@types"
+    ],
+    "paths": {
+      "@*": [
+        "src/*"
+      ]
+    }
+  }
 }
