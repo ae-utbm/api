@@ -6,6 +6,11 @@
     "deleteOutDir": true,
     "assets": [
       {
+        "include": "swagger/**/*",
+        "outDir": "dist/src",
+        "watchAssets": true
+      },
+      {
         "include": "templates/**/*",
         "outDir": "dist/src",
         "watchAssets": true

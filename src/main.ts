@@ -15,7 +15,7 @@ async function bootstrap() {
 	app.setGlobalPrefix('api');
 	app.enableCors({ origin: env().cors });
 	app.useStaticAssets(env().files.baseDir, { index: false, prefix: '/public' });
-	app.useStaticAssets('./swagger', { index: false, prefix: '/public' });
+	app.useStaticAssets('./src/swagger', { index: false, prefix: '/public' });
 
 	const config = new DocumentBuilder()
 		.setTitle('AE UTBM — REST API')
