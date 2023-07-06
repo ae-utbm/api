@@ -1,3 +1,5 @@
+import type { ObjectKeysArray } from '@types';
+
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -11,15 +13,14 @@ import { UserPicture } from '@modules/users/entities/user-picture.entity';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
 import { checkEmail, sendEmail } from '@utils/email';
 import { checkBirthday } from '@utils/dates';
-
-import { join } from 'path';
-import fs from 'fs';
-
-import * as bcrypt from 'bcrypt';
 import { generateRandomPassword } from '@utils/password';
 import { Cron } from '@nestjs/schedule';
 import { I18nContext, I18nService } from 'nestjs-i18n';
-import { getTemplate } from '@templates';
+import { getTemplate } from '@utils/template';
+
+import { join } from 'path';
+import fs from 'fs';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -92,8 +93,18 @@ export class UsersService {
 
 	@UseRequestContext()
 	async register(input: UserPostDTO): Promise<User> {
-		if (await this.orm.em.findOne(User, { email: input.email }))
-			throw new BadRequestException(`User already with the email '${input.email}' already exists`);
+		Object.keys(input).forEach((key) => (input[key] = input[key].trim()));
+
+		const requiredFields: ObjectKeysArray<UserPostDTO> = ['password', 'first_name', 'last_name', 'email', 'birthday']; // Add other required fields as necessary
+
+		requiredFields.forEach((field) => {
+			if (!input[field]) throw new BadRequestException(`Missing required field '${field}'`);
+		});
+
+		(Object.keys(input) as ObjectKeysArray<UserPostDTO>).forEach((key) => {
+			if (!requiredFields.includes(key))
+				throw new BadRequestException(`Invalid field '${key}', please check the documentation`);
+		});
 
 		if (!checkEmail(input.email))
 			throw new BadRequestException(`The following email '${input.email}' is not allowed (blacklisted or invalid)`);
@@ -101,15 +112,24 @@ export class UsersService {
 		if (!checkBirthday(input.birthday))
 			throw new BadRequestException(`The date '${input.birthday}' is not valid (either too young or in the future)`);
 
+		if (await this.orm.em.findOne(User, { email: input.email }))
+			throw new BadRequestException(`Email '${input.email}' is already taken`);
+
 		// Check if the password is already hashed
 		if (input.password.length !== 60) input.password = bcrypt.hashSync(input.password, 10);
 
 		// Add the email verification token & create the user
 		const email_token = generateRandomPassword(12);
-		const user = this.orm.em.create(User, {
-			...input,
-			email_verification: bcrypt.hashSync(email_token, 10),
-		});
+
+		let user: User;
+		try {
+			user = this.orm.em.create(User, {
+				...input,
+				email_verification: bcrypt.hashSync(email_token, 10),
+			});
+		} catch (e) {
+			throw new BadRequestException('Invalid input, please check your data');
+		}
 
 		// Save changes to the database & create the user's visibility parameters
 		this.orm.em.create(UserVisibility, { user });
@@ -121,26 +141,33 @@ export class UsersService {
 		await sendEmail({
 			to: [registered.email],
 			subject: this.i18n.t('templates.register_common.subject', { lang: I18nContext.current().lang }),
-			html: getTemplate('emails/register_user', this.i18n, { 
+			html: getTemplate('emails/register_user', this.i18n, {
 				username: registered.full_name,
 				link: this.configService.get<boolean>('production')
-					? `https://ae.utbm.fr/api/auth/confirm/${registered.id}/${encodeURI(email_token)}/${encodeURI('https://ae.utbm.fr')}`
+					? `https://ae.utbm.fr/api/auth/confirm/${registered.id}/${encodeURI(email_token)}/${encodeURI(
+							'https://ae.utbm.fr',
+					  )}`
 					: `http://localhost:${this.configService.get<string>('port')}/api/auth/confirm/${registered.id}/${encodeURI(
 							email_token,
-						)}`,
+					  )}`,
 				days: 7,
 			}),
-		})
+		});
 
 		return user;
 	}
 
 	@UseRequestContext()
 	async verifyEmail(user_id: number, token: string): Promise<User> {
+		if (!user_id || !token) throw new BadRequestException('Missing user id or token');
+
+		if (typeof user_id === 'string' && parseInt(user_id, 10) != user_id)
+			throw new BadRequestException('Invalid user id');
+
 		const user = await this.orm.em.findOne(User, { id: user_id });
 		if (!user) throw new NotFoundException('User not found');
 
-		if (user.email_verified) throw new BadRequestException('Email already verified');
+		if (user.email_verified) throw new BadRequestException('Email is already verified');
 
 		if (!bcrypt.compareSync(token, user.email_verification))
 			throw new UnauthorizedException('Invalid email verification token');
@@ -171,11 +198,11 @@ export class UsersService {
 		await sendEmail({
 			to: [user.email],
 			subject: this.i18n.t('templates.register_common.subject', { lang: I18nContext.current().lang }),
-			html: getTemplate('emails/register_user_by_admin', this.i18n, { 
+			html: getTemplate('emails/register_user_by_admin', this.i18n, {
 				username: user.full_name,
 				password,
 			}),
-		})
+		});
 
 		await this.orm.em.persistAndFlush(user);
 		return user;

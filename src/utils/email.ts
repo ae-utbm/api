@@ -38,10 +38,11 @@ interface EmailOptions {
 
 /**
  * Send en email based on a template and given data
- * @param {string} html the html template to use
  * @param {EmailOptions} options the options for the email
  */
 export async function sendEmail(options: EmailOptions): Promise<void> {
+	if (env().email.disabled) return;
+
 	await transporter.sendMail({
 		from: options.from ?? `ae.noreply@utbm.fr`,
 		to: options.to.join(', '),

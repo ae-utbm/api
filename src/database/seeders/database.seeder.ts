@@ -15,7 +15,7 @@ import * as bcrypt from 'bcrypt';
 export class DatabaseSeeder extends Seeder {
 	async run(em: EntityManager): Promise<void> {
 		const promotions = this.create_promotions(em);
-		const users = await this.create_users(em);
+		const users = this.create_users(em);
 
 		const root = users.find((u) => u.email === 'ae.info@utbm.fr');
 
@@ -43,17 +43,28 @@ export class DatabaseSeeder extends Seeder {
 		return res;
 	}
 
-	async create_users(em: EntityManager): Promise<User[]> {
+	create_users(em: EntityManager): User[] {
 		const res: User[] = [];
 
 		const users: Partial<User>[] = [
+			// Root user
 			{
 				email: 'ae.info@utbm.fr',
 				email_verified: true,
-				password: await bcrypt.hash('root', 10),
+				password: bcrypt.hashSync('root', 10),
 				first_name: 'root',
 				last_name: 'root',
 				nickname: 'noot noot',
+				birthday: new Date('2000-01-01'),
+			},
+			// Unverified user
+			{
+				email: 'unverified@email.com',
+				email_verified: false,
+				email_verification: bcrypt.hashSync('token', 10),
+				password: bcrypt.hashSync('root', 10),
+				first_name: 'unverified',
+				last_name: 'unverified',
 				birthday: new Date('2000-01-01'),
 			},
 		];

@@ -26,7 +26,7 @@ export function getTemplate(
 	i18n: I18nService,
 	args: AvailableTemplateArgs = {},
 ): string {
-	let inputString = fs.readFileSync(path.join(__dirname, `./${templateName}.html`), 'utf8');
+	let inputString = fs.readFileSync(path.join(__dirname, `../templates/${templateName}.html`), 'utf8');
 	const regex = /\{\{([^}]+)\}\}/g;
 	const matches = [];
 
@@ -36,7 +36,9 @@ export function getTemplate(
 		matches.push(variant);
 	}
 
-	console.log(matches, I18nContext.current());
-	matches.forEach((match) => inputString = inputString.replace(`{{ ${match} }}`, i18n.t(match, { lang: I18nContext.current().lang, args })));
+	matches.forEach(
+		(match) =>
+			(inputString = inputString.replace(`{{ ${match} }}`, i18n.t(match, { lang: I18nContext.current().lang, args }))),
+	);
 	return inputString;
 }

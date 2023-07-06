@@ -14,6 +14,7 @@ export default () => ({
 		promotions: join(process.cwd(), process.env['PROMOTIONS_LOGO_PATH'] || './public/promotions'),
 	},
 	email: {
+		disabled: process.env['EMAIL_DISABLED'] === 'true',
 		host: process.env['EMAIL_HOST'],
 		port: parseInt(process.env['EMAIL_PORT'], 10) || 465,
 		secure: process.env['EMAIL_SECURE'] === 'true',

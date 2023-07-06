@@ -27,8 +27,8 @@ import { AcceptLanguageResolver, I18nModule } from 'nestjs-i18n';
 		MikroOrmModule.forRoot({
 			...config,
 			// Entities paths are relative to the root of the project so we need to update them
-			entities: [path.join(__dirname, '/modules/**/*.entity.js')],
-			entitiesTs: [path.join(__dirname, '/modules/src/**/*.entity.ts')],
+			entities: [path.join(__dirname, '../../dist/src/modules/**/*.entity.js')],
+			entitiesTs: [path.join(__dirname, '/modules/**/*.entity.ts')],
 		}),
 		I18nModule.forRoot({
 			fallbackLanguage: 'en-US',
@@ -36,9 +36,7 @@ import { AcceptLanguageResolver, I18nModule } from 'nestjs-i18n';
 				path: path.join(__dirname, '/i18n/'),
 				watch: true,
 			},
-			resolvers: [
-				AcceptLanguageResolver
-			]
+			resolvers: [AcceptLanguageResolver],
 		}),
 		AuthModule,
 		LogsModule,

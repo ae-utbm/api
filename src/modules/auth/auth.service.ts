@@ -1,6 +1,6 @@
 import type { JWTPayload } from '@types';
 
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@modules/users/users.service';
 import { User } from '@modules/users/entities/user.entity';
@@ -13,7 +13,6 @@ export class AuthService {
 
 	async signIn(email: string, pass: string) {
 		const user: User = await this.usersService.findOne({ email: email }, false);
-		if (!user) throw new NotFoundException('User not found');
 
 		if (user.password !== pass && !bcrypt.compareSync(pass, user.password)) {
 			throw new UnauthorizedException('Password mismatch');

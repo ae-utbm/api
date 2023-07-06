@@ -10,14 +10,10 @@ export default {
 		'^@utils/(.*)$': '<rootDir>/src/utils/$1',
 		'^@types/(.*)$': '<rootDir>/src/types/$1',
 		'^@database/(.*)$': '<rootDir>/src/database/$1',
+		'^@templates/(.*)$': '<rootDir>/src/templates/$1',
 	},
+	coverageReporters: ['text', 'lcov'],
 	collectCoverage: true,
-	collectCoverageFrom: [
-		'src/**/*.{!(module),}.ts', // Module are tested in e2e tests
-		'!src/main.ts',
-		'!src/**/*.d.ts',
-		'!src/database/**',
-	],
 	coverageDirectory: 'coverage',
 	coverageThreshold: {
 		global: {
@@ -27,6 +23,6 @@ export default {
 			statements: 100,
 		},
 	},
-	testRegex: '.spec.ts$',
+	testRegex: '.(spec|test).ts$',
 	moduleFileExtensions: ['ts', 'js', 'json'],
 };
