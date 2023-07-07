@@ -17,10 +17,9 @@ import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { getStreamableFile } from '@utils/images';
 
-import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
-
 import { PromotionResponseDTO } from './dto/promotion.dto';
 import { PromotionsService } from './promotions.service';
+import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
 
 @ApiTags('Promotions')
 @Controller('promotions')

@@ -6,11 +6,10 @@ import { Cron } from '@nestjs/schedule';
 
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
-import { Role } from '../roles/entities/role.entity';
-import { User } from '../users/entities/user.entity';
-
 import { PermissionPatchDTO } from './dto/patch.dto';
 import { Permission } from './entities/permission.entity';
+import { Role } from '../roles/entities/role.entity';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class PermissionsService {

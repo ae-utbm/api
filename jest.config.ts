@@ -6,6 +6,7 @@ export default {
 	moduleNameMapper: {
 		'@env': '<rootDir>/src/env.ts',
 		'@mikro-orm.config': '<rootDir>/src/mikro-orm.config.ts',
+		'@app.module': '<rootDir>/src/app.module.ts',
 		'^src/(.*)$': '<rootDir>/src/$1',
 		'^@modules/(.*)$': '<rootDir>/src/modules/$1',
 		'^@utils/(.*)$': '<rootDir>/src/utils/$1',

@@ -1,10 +1,11 @@
+import type { PermissionName } from '@types';
+
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
 import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
 import { User } from '@modules/users/entities/user.entity';
-import type { PermissionName } from 'src/types';
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
 import { RolePatchDTO } from './dto/patch.dto';

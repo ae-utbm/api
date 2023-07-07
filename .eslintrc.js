@@ -43,7 +43,7 @@ module.exports = {
 			'error',
 			{
 				'newlines-between': 'always',
-				groups: ['type', 'builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+				groups: ['type', 'builtin', 'external', 'internal', ['parent', 'sibling', 'index']],
 				pathGroups: [
 					{
 						pattern: '@(database|modules|templates|utils|src)/**',

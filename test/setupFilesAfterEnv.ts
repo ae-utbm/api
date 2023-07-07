@@ -1,6 +1,6 @@
 import type { I18nTranslations } from '@types';
-import 'tsconfig-paths/register';
 
+import 'tsconfig-paths/register';
 import path from 'path';
 
 import { MikroORM } from '@mikro-orm/core';
@@ -9,9 +9,9 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { TestingModule, Test } from '@nestjs/testing';
 import { AcceptLanguageResolver, I18nModule, I18nService } from 'nestjs-i18n';
 
+import { AppModule } from '@app.module';
 import env from '@env';
 import config from '@mikro-orm.config';
-import { AppModule } from 'src/app.module';
 
 let i18n: I18nService<I18nTranslations>;
 let app: NestExpressApplication;

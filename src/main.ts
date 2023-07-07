@@ -5,9 +5,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import env from '@env';
 
-import pkg from '../package.json';
-
 import { AppModule } from './app.module';
+import pkg from '../package.json';
 
 /**
  * Base server bootstrap

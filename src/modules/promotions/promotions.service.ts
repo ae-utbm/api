@@ -6,13 +6,12 @@ import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestj
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 
-import { convertToWebp, isSquare } from 'src/utils/images';
-
-import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
+import { convertToWebp, isSquare } from '@utils/images';
 
 import { PromotionResponseDTO } from './dto/promotion.dto';
 import { PromotionPicture } from './entities/promotion-picture.entity';
 import { Promotion } from './entities/promotion.entity';
+import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
 
 @Injectable()
 export class PromotionsService {
