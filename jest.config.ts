@@ -1,7 +1,8 @@
 export default {
 	preset: 'ts-jest',
 	testEnvironment: 'node',
-	setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
+	globalSetup: '<rootDir>/test/globalSetup.ts',
+	setupFilesAfterEnv: ['<rootDir>/test/setupFilesAfterEnv.ts'],
 	moduleNameMapper: {
 		'@env': '<rootDir>/src/env.ts',
 		'@mikro-orm.config': '<rootDir>/src/mikro-orm.config.ts',
