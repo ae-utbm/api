@@ -10,13 +10,14 @@ import {
 	ApiNotFoundResponse,
 } from '@nestjs/swagger';
 
-import { RolesService } from './roles.service';
-import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
+import { PermissionGuard } from '@modules/auth/guards/permission.guard';
+import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
+
 import { RolePatchDTO } from './dto/patch.dto';
 import { RolePostDTO } from './dto/post.dto';
 import { Role } from './entities/role.entity';
-import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
+import { RolesService } from './roles.service';
 
 @ApiTags('Roles')
 @Controller('roles')

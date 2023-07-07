@@ -9,13 +9,15 @@ import {
 	ApiParam,
 	ApiOperation,
 } from '@nestjs/swagger';
-import { LogsService } from './logs.service';
-import { Log } from './entities/log.entity';
+
 import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
-import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
+import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
+
+import { Log } from './entities/log.entity';
+import { LogsService } from './logs.service';
 
 @Controller('logs')
 @UseGuards(AuthGuard('jwt'))

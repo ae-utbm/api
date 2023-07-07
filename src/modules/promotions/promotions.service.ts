@@ -1,16 +1,18 @@
+import fs from 'fs';
+import { join } from 'path';
+
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cron } from '@nestjs/schedule';
 
-import { Promotion } from './entities/promotion.entity';
 import { convertToWebp, isSquare } from 'src/utils/images';
-import { PromotionPicture } from './entities/promotion-picture.entity';
-import { PromotionResponseDTO } from './dto/promotion.dto';
+
 import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
 
-import fs from 'fs';
-import { join } from 'path';
-import { Cron } from '@nestjs/schedule';
+import { PromotionResponseDTO } from './dto/promotion.dto';
+import { PromotionPicture } from './entities/promotion-picture.entity';
+import { Promotion } from './entities/promotion.entity';
 
 @Injectable()
 export class PromotionsService {
@@ -99,7 +101,7 @@ export class PromotionsService {
 		fs.mkdirSync(imageDir, { recursive: true });
 		fs.writeFileSync(imagePath, buffer);
 
-		if (!isSquare(imagePath)) {
+		if (!(await isSquare(imagePath))) {
 			fs.unlinkSync(imagePath);
 			throw new HttpException('The logo must be square', HttpStatus.BAD_REQUEST);
 		}

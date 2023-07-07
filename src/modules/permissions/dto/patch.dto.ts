@@ -2,6 +2,7 @@ import type { PermissionName, PermissionPatchDto } from '@types';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsString, IsDate, IsBoolean } from 'class-validator';
+
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
 export class PermissionPatchDTO implements PermissionPatchDto {

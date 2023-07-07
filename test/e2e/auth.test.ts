@@ -1,11 +1,10 @@
 import type { Email } from '@types';
+
+import { hashSync } from 'bcrypt';
 import request from 'supertest';
 
-import { app, i18n, orm } from '../setupFilesAfterEnv';
 import { UserPostDTO } from '@modules/auth/dto/register.dto';
 import { User } from '@modules/users/entities/user.entity';
-
-import bcrypt from 'bcrypt';
 import {
 	birthdayInvalid,
 	emailAlreadyUsed,
@@ -18,6 +17,8 @@ import {
 	idInvalid,
 	idOrEmailMissing,
 } from '@utils/responses';
+
+import { app, i18n, orm } from '../setupFilesAfterEnv';
 
 describe('AuthController (e2e)', () => {
 	describe('/api/auth/login (POST)', () => {
@@ -68,8 +69,8 @@ describe('AuthController (e2e)', () => {
 				.expect(201);
 
 			expect(response.body).toEqual({
-				token: expect.any(String),
-				user_id: expect.any(Number),
+				token: expect.any(String) as string,
+				user_id: expect.any(Number) as number,
 			});
 		});
 	});
@@ -198,12 +199,12 @@ describe('AuthController (e2e)', () => {
 					return Math.abs(age.getUTCFullYear() - 1970);
 				})(),
 				birthday: '2000-01-01T00:00:00.000Z',
-				created_at: expect.any(String),
+				created_at: expect.any(String) as string,
 				email: 'johndoe@domain.com',
 				email_verified: false,
 				first_name: 'John',
 				full_name: 'John Doe',
-				id: expect.any(Number),
+				id: expect.any(Number) as number,
 				is_currently_subscribed: false,
 				is_minor: false,
 				last_name: 'Doe',
@@ -211,7 +212,7 @@ describe('AuthController (e2e)', () => {
 				permissions: [],
 				roles: [],
 				subscriptions: [],
-				updated_at: expect.any(String),
+				updated_at: expect.any(String) as string,
 			});
 		});
 	});
@@ -256,10 +257,10 @@ describe('AuthController (e2e)', () => {
 			const response = await request(app.getHttpServer()).get(`/api/auth/confirm/${user_id}/${token}`).expect(200);
 
 			expect(response.body).toEqual({
-				age: expect.any(Number),
+				age: expect.any(Number) as number,
 				banner: null,
 				birthday: '2000-01-01T00:00:00.000Z',
-				created_at: expect.any(String),
+				created_at: expect.any(String) as string,
 				cursus: null,
 				email: 'unverified@email.com',
 				email_verified: true,
@@ -280,7 +281,7 @@ describe('AuthController (e2e)', () => {
 				secondary_email: null,
 				specialty: null,
 				subscriber_account: null,
-				updated_at: expect.any(String),
+				updated_at: expect.any(String) as string,
 			});
 		});
 
@@ -290,7 +291,7 @@ describe('AuthController (e2e)', () => {
 			const user = await em.findOne(User, { id: user_id });
 
 			user.email_verified = false;
-			user.email_verification = bcrypt.hashSync(token, 10);
+			user.email_verification = hashSync(token, 10);
 
 			await em.persistAndFlush(user);
 			em.clear();
@@ -300,7 +301,7 @@ describe('AuthController (e2e)', () => {
 				.get(`/api/auth/confirm/${user_id}/${token}/${encodeURIComponent('https://example.com')}`)
 				.expect(308);
 
-			expect(response.header.location).toEqual('https://example.com');
+			expect((response.header as { location: string }).location).toEqual('https://example.com');
 		});
 	});
 });

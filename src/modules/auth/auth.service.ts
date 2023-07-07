@@ -2,12 +2,14 @@ import type { JWTPayload, Email, I18nTranslations } from '@types';
 
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '@modules/users/users.service';
-import { User } from '@modules/users/entities/user.entity';
-
-import * as bcrypt from 'bcrypt';
-import { emailNotVerified } from '@utils/responses';
+import { compareSync } from 'bcrypt';
 import { I18nService } from 'nestjs-i18n';
+
+import { User } from '@modules/users/entities/user.entity';
+import { UsersService } from '@modules/users/users.service';
+import { emailNotVerified } from '@utils/responses';
+
+import { TokenDTO } from './dto/token.dto';
 
 @Injectable()
 export class AuthService {
@@ -17,10 +19,10 @@ export class AuthService {
 		private readonly jwtService: JwtService,
 	) {}
 
-	async signIn(email: Email, pass: string) {
+	async signIn(email: Email, pass: string): Promise<TokenDTO> {
 		const user: User = await this.usersService.findOne({ email: email }, false);
 
-		if (user.password !== pass && !bcrypt.compareSync(pass, user.password)) {
+		if (user.password !== pass && !compareSync(pass, user.password)) {
 			throw new UnauthorizedException('Password mismatch');
 		}
 

@@ -1,12 +1,12 @@
 import type { EntityManager } from '@mikro-orm/core';
-import { Seeder } from '@mikro-orm/seeder';
 
+import { Seeder } from '@mikro-orm/seeder';
+import { hashSync } from 'bcrypt';
+
+import { Permission } from '@modules/permissions/entities/permission.entity';
+import { Promotion } from '@modules/promotions/entities/promotion.entity';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
 import { User } from '@modules/users/entities/user.entity';
-import { Promotion } from '@modules/promotions/entities/promotion.entity';
-import { Permission } from '@modules/permissions/entities/permission.entity';
-
-import bcrypt from 'bcrypt';
 
 /**
  * This class is used to populate the database with some base data
@@ -44,7 +44,7 @@ export class DatabaseSeeder extends Seeder {
 		// Assign promotion to users
 		root.promotion = promotions.find((p) => p.number === 21);
 
-		em.persistAndFlush([...users, ...perms, ...promotions]);
+		await em.persistAndFlush([...users, ...perms, ...promotions]);
 	}
 
 	create_promotions(em: EntityManager): Promotion[] {
@@ -67,7 +67,7 @@ export class DatabaseSeeder extends Seeder {
 			{
 				email: 'ae.info@utbm.fr',
 				email_verified: true,
-				password: bcrypt.hashSync('root', 10),
+				password: hashSync('root', 10),
 				first_name: 'root',
 				last_name: 'root',
 				nickname: 'noot noot',
@@ -78,8 +78,8 @@ export class DatabaseSeeder extends Seeder {
 			{
 				email: 'unverified@email.com',
 				email_verified: false,
-				email_verification: bcrypt.hashSync('token', 10),
-				password: bcrypt.hashSync('root', 10),
+				email_verification: hashSync('token', 10),
+				password: hashSync('root', 10),
 				first_name: 'unverified',
 				last_name: 'user',
 				birthday: new Date('2000-01-01'),
@@ -89,7 +89,7 @@ export class DatabaseSeeder extends Seeder {
 			{
 				email: 'unauthorized@email.com',
 				email_verified: true,
-				password: bcrypt.hashSync('root', 10),
+				password: hashSync('root', 10),
 				first_name: 'unauthorized',
 				last_name: 'user',
 				birthday: new Date('2000-01-01'),
@@ -99,7 +99,7 @@ export class DatabaseSeeder extends Seeder {
 			{
 				email: 'logs@email.com',
 				email_verified: true,
-				password: bcrypt.hashSync('root', 10),
+				password: hashSync('root', 10),
 				first_name: 'logs',
 				last_name: 'moderator',
 				birthday: new Date('2000-01-01'),

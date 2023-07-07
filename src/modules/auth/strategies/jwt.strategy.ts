@@ -1,12 +1,13 @@
 import type { I18nTranslations, JWTPayload } from '@types';
 
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
 import { I18nService } from 'nestjs-i18n';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 
 import { authInvalidPayload } from '@utils/responses';
+
 import { AuthService } from '../auth.service';
 
 /**

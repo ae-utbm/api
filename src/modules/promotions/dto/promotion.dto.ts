@@ -1,7 +1,9 @@
 import type { PromotionResponseDto } from '@types';
 
-import { BaseResponseDTO } from '@modules/_mixin/dto/base-response.dto';
 import { ApiProperty } from '@nestjs/swagger';
+
+import { BaseResponseDTO } from '@modules/_mixin/dto/base-response.dto';
+
 import { PromotionPicture } from '../entities/promotion-picture.entity';
 
 export class PromotionResponseDTO extends BaseResponseDTO implements PromotionResponseDto {

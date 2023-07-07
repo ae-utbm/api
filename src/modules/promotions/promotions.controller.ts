@@ -9,16 +9,18 @@ import {
 	UseGuards,
 	UseInterceptors,
 } from '@nestjs/common';
-
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { getStreamableFile } from '@utils/images';
-import { PromotionsService } from './promotions.service';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
-import { PromotionResponseDTO } from './dto/promotion.dto';
+import { getStreamableFile } from '@utils/images';
+
 import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
+
+import { PromotionResponseDTO } from './dto/promotion.dto';
+import { PromotionsService } from './promotions.service';
 
 @ApiTags('Promotions')
 @Controller('promotions')

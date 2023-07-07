@@ -1,9 +1,11 @@
 import type { UserPictureEntity } from '@types';
 
 import { Entity, OneToOne } from '@mikro-orm/core';
-import { FileEntity } from '@modules/_mixin/entities/file.entity';
-import { User } from './user.entity';
 import { ApiProperty } from '@nestjs/swagger';
+
+import { FileEntity } from '@modules/_mixin/entities/file.entity';
+
+import { User } from './user.entity';
 
 @Entity({ tableName: 'users_pictures' })
 export class UserPicture extends FileEntity implements UserPictureEntity<User> {

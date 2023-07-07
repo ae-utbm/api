@@ -1,6 +1,7 @@
 import type { Email } from '@types';
 
-import * as nodemailer from 'nodemailer';
+import { createTransport } from 'nodemailer';
+
 import env from '@env';
 
 /**
@@ -19,7 +20,7 @@ export function checkEmail(email: Email): boolean {
 	return regex.test(email);
 }
 
-const transporter = nodemailer.createTransport({
+const transporter = createTransport({
 	host: env().email.host,
 	port: env().email.port,
 	secure: env().email.secure,

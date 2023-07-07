@@ -1,13 +1,14 @@
-import type { PermissionName } from 'src/types';
-
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Role } from './entities/role.entity';
-import { RolePatchDTO } from './dto/patch.dto';
-import { User } from '@modules/users/entities/user.entity';
 import { Cron } from '@nestjs/schedule';
+
 import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
+import { User } from '@modules/users/entities/user.entity';
+import type { PermissionName } from 'src/types';
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
+
+import { RolePatchDTO } from './dto/patch.dto';
+import { Role } from './entities/role.entity';
 
 @Injectable()
 export class RolesService {
@@ -71,7 +72,7 @@ export class RolesService {
 		role.name = input.name;
 		role.permissions = input.permissions;
 		role.expires = input.expires;
-		this.orm.em.persistAndFlush(role);
+		await this.orm.em.persistAndFlush(role);
 
 		await role.users.init();
 		return { ...role, users: role.users.count() };

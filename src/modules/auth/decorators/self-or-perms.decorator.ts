@@ -1,7 +1,9 @@
 import type { PermissionName } from '@types';
+
 import { applyDecorators } from '@nestjs/common';
-import { GuardSelfParam } from './self.decorator';
+
 import { GuardPermissions } from './permissions.decorator';
+import { GuardSelfParam } from './self.decorator';
 
 export const GuardSelfOrPermissions = <T extends [PermissionName, ...PermissionName[]]>(
 	param: string,

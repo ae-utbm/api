@@ -2,6 +2,7 @@ import type { RolePostDto, PermissionName } from '@types';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsString } from 'class-validator';
+
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
 export class RolePostDTO implements RolePostDto {

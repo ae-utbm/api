@@ -1,17 +1,29 @@
-import { tap, type Observable } from 'rxjs';
+import type { IncomingMessage, ServerResponse } from 'http';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { Log } from '../entities/log.entity';
+import { tap, type Observable } from 'rxjs';
+
 import { User } from '@modules/users/entities/user.entity';
+
+import { Log } from '../entities/log.entity';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
 	constructor(private readonly orm: MikroORM) {}
 
 	@UseRequestContext()
-	async intercept(context: ExecutionContext, next: CallHandler<unknown>): Promise<Observable<unknown>> {
-		const request = context.switchToHttp().getRequest();
+	async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
+		type Req = IncomingMessage & {
+			route: { path: string };
+			user: User;
+			params: Record<string, string>;
+			query: Record<string, string>;
+			body: Record<string, string>;
+			ip: string;
+		};
+
+		const request = context.switchToHttp().getRequest<Req>();
 		const user_id = request.user ? request.user.id : 'Guest';
 
 		// No need to log guest users
@@ -26,25 +38,34 @@ export class LoggingInterceptor implements NestInterceptor {
 		const log = em.create(Log, {
 			user,
 			action: context.getClass().name + '.' + context.getHandler().name,
-			ip: context.switchToHttp().getRequest().ip,
-			user_agent: context.switchToHttp().getRequest().headers['user-agent'] || 'Unknown',
-			route: context.switchToHttp().getRequest().route.path,
-			method: context.switchToHttp().getRequest().method,
-			body: context.switchToHttp().getRequest().body,
-			query: context.switchToHttp().getRequest().query,
-			params: context.switchToHttp().getRequest().params,
+			ip: request.ip.replace('::1', '127.0.0.1'),
+			user_agent: request.headers['user-agent'] ?? 'Unknown',
+			route: request.route.path,
+			method: request.method,
+			body: request.body as unknown as string,
+			query: request.query as unknown as string,
+			params: request.params as unknown as string,
 			updated_at: undefined,
 		});
 
 		return next.handle().pipe(
 			tap({
+				// eslint-disable-next-line @typescript-eslint/no-misused-promises
 				finalize: async () => {
+					type Res = ServerResponse & {
+						body: Record<string, string>;
+						error: string;
+						error_stack: string;
+						error_message: string;
+					};
+					const response = context.switchToHttp().getResponse<Res>();
+
 					// Update the log entity after the observable is ended
-					log.response = context.switchToHttp().getResponse().body;
-					log.status_code = context.switchToHttp().getResponse().statusCode;
-					log.error = context.switchToHttp().getResponse().error;
-					log.error_stack = context.switchToHttp().getResponse().error_stack;
-					log.error_message = context.switchToHttp().getResponse().error_message;
+					log.response = response.body as unknown as string; // TODO: Get the actual response body (actually null)
+					log.status_code = response.statusCode;
+					log.error = response.error;
+					log.error_stack = response.error_stack;
+					log.error_message = response.error_message;
 					log.updated_at = new Date();
 
 					await em.flush();

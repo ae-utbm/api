@@ -1,4 +1,5 @@
 import type { PermissionName } from '@types';
+
 import { SetMetadata } from '@nestjs/common';
 
 /**

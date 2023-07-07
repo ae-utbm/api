@@ -1,4 +1,5 @@
 import type { BaseEntity as BEI } from '@types';
+
 import { BaseEntity as BE, Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';
 

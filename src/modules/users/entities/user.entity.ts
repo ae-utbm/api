@@ -11,17 +11,17 @@ import {
 	OneToOne,
 	Property,
 } from '@mikro-orm/core';
+import { ApiProperty } from '@nestjs/swagger';
 
 import { BaseEntity } from '@modules/_mixin/entities/base.entity';
-import { Promotion } from '@modules/promotions/entities/promotion.entity';
-import { Subscription } from '@modules/subscription/entities/subscription.entity';
-import { Permission } from '@modules/permissions/entities/permission.entity';
-import { Role } from '@modules/roles/entities/role.entity';
 import { Log } from '@modules/logs/entities/log.entity';
+import { Permission } from '@modules/permissions/entities/permission.entity';
+import { Promotion } from '@modules/promotions/entities/promotion.entity';
+import { Role } from '@modules/roles/entities/role.entity';
+import { Subscription } from '@modules/subscription/entities/subscription.entity';
 
 import { UserBanner } from './user-banner.entity';
 import { UserPicture } from './user-picture.entity';
-import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ tableName: 'users' })
 export class User

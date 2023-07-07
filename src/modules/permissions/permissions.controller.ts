@@ -9,13 +9,15 @@ import {
 	ApiTags,
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { PermissionsService } from './permissions.service';
-import { PermissionPostDTO } from './dto/post.dto';
-import { PermissionGuard } from '@modules/auth/guards/permission.guard';
+
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
-import { Permission } from './entities/permission.entity';
-import { PermissionPatchDTO } from './dto/patch.dto';
+import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { Role } from '@modules/roles/entities/role.entity';
+
+import { PermissionPatchDTO } from './dto/patch.dto';
+import { PermissionPostDTO } from './dto/post.dto';
+import { Permission } from './entities/permission.entity';
+import { PermissionsService } from './permissions.service';
 
 @Controller('permissions')
 @UseGuards(AuthGuard('jwt'))

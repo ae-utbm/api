@@ -1,9 +1,10 @@
 import type { SubscriptionEntity } from '@types';
 
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
+import { ApiProperty } from '@nestjs/swagger';
+
 import { BaseEntity } from '@modules/_mixin/entities/base.entity';
 import { User } from '@modules/users/entities/user.entity';
-import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ tableName: 'subscriptions' })
 export class Subscription extends BaseEntity implements SubscriptionEntity<User> {

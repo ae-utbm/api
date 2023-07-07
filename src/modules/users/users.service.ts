@@ -1,26 +1,24 @@
 import type { I18nTranslations, ObjectKeysArray } from '@types';
 
+import fs from 'fs';
+import path from 'path';
+
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { convertToWebp, isBannerAspectRation, isSquare } from '@utils/images';
+import { Cron } from '@nestjs/schedule';
+import { compareSync, hashSync } from 'bcrypt';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
 import { UserPostByAdminDTO, UserPostDTO } from '@modules/auth/dto/register.dto';
-import { UserPatchDTO } from './dto/patch.dto';
-import { User } from '@modules/users/entities/user.entity';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
-import { checkEmail, sendEmail } from '@utils/email';
+import { User } from '@modules/users/entities/user.entity';
 import { checkBirthday } from '@utils/dates';
+import { checkEmail, sendEmail } from '@utils/email';
+import { convertToWebp, isBannerAspectRation, isSquare } from '@utils/images';
 import { generateRandomPassword } from '@utils/password';
-import { Cron } from '@nestjs/schedule';
-import { I18nContext, I18nService } from 'nestjs-i18n';
-import { getTemplate } from '@utils/template';
-
-import fs from 'fs';
-import path from 'path';
-import bcrypt from 'bcrypt';
 import {
 	birthdayInvalid,
 	emailAlreadyUsed,
@@ -34,6 +32,9 @@ import {
 	idNotFound,
 	idOrEmailMissing,
 } from '@utils/responses';
+import { getTemplate } from '@utils/template';
+
+import { UserPatchDTO } from './dto/patch.dto';
 
 @Injectable()
 export class UsersService {
@@ -122,7 +123,12 @@ export class UsersService {
 
 	@UseRequestContext()
 	async register(input: UserPostDTO): Promise<User> {
-		Object.keys(input).forEach((key) => (input[key] = input[key].trim()));
+		Object.keys(input).forEach((key) => {
+			const value = input[key] as unknown;
+			if (typeof value === 'string') {
+				input[key] = value.trim();
+			}
+		});
 
 		const requiredFields: ObjectKeysArray<UserPostDTO> = ['password', 'first_name', 'last_name', 'email', 'birthday']; // Add other required fields as necessary
 
@@ -144,7 +150,7 @@ export class UsersService {
 			throw new BadRequestException(emailAlreadyUsed({ i18n: this.i18n, email: input.email }));
 
 		// Check if the password is already hashed
-		if (input.password.length !== 60) input.password = bcrypt.hashSync(input.password, 10);
+		if (input.password.length !== 60) input.password = hashSync(input.password, 10);
 
 		// Add the email verification token & create the user
 		const email_token = generateRandomPassword(12);
@@ -153,7 +159,7 @@ export class UsersService {
 		try {
 			user = this.orm.em.create(User, {
 				...input,
-				email_verification: bcrypt.hashSync(email_token, 10),
+				email_verification: hashSync(email_token, 10),
 			});
 		} catch (e) {
 			throw new BadRequestException('Invalid input, please check your data');
@@ -197,7 +203,7 @@ export class UsersService {
 
 		if (user.email_verified) throw new BadRequestException(emailAlreadyVerified({ i18n: this.i18n, type: User }));
 
-		if (!bcrypt.compareSync(token, user.email_verification))
+		if (!compareSync(token, user.email_verification))
 			throw new UnauthorizedException(emailInvalidToken({ i18n: this.i18n }));
 
 		user.email_verified = true;
@@ -219,7 +225,7 @@ export class UsersService {
 
 		// Generate a random password & hash it
 		const password = generateRandomPassword(12);
-		const user = this.orm.em.create(User, { ...input, password: bcrypt.hashSync(password, 10), email_verified: true });
+		const user = this.orm.em.create(User, { ...input, password: hashSync(password, 10), email_verified: true });
 		this.orm.em.create(UserVisibility, { user });
 
 		await sendEmail({
@@ -284,7 +290,7 @@ export class UsersService {
 		fs.writeFileSync(imagePath, buffer);
 
 		// test if the image is square
-		if (!isSquare(imagePath)) {
+		if (!(await isSquare(imagePath))) {
 			fs.unlinkSync(imagePath);
 			throw new BadRequestException('The user picture must be square');
 		}
@@ -344,7 +350,7 @@ export class UsersService {
 		fs.writeFileSync(imagePath, buffer);
 
 		// test if the image is square
-		if (!isBannerAspectRation(imagePath)) {
+		if (!(await isBannerAspectRation(imagePath))) {
 			fs.unlinkSync(imagePath);
 			throw new BadRequestException('The image must be of 1:3 aspect ratio');
 		}

@@ -1,10 +1,11 @@
 import 'tsconfig-paths/register';
 
-import { MikroORM } from '@mikro-orm/core';
-import { DatabaseSeeder } from '@database/seeders/database.seeder';
-
-import config from '@mikro-orm.config';
 import path from 'path';
+
+import { MikroORM } from '@mikro-orm/core';
+
+import { DatabaseSeeder } from '@database/seeders/database.seeder';
+import config from '@mikro-orm.config';
 
 /**
  * This file is used to setup the database before running the tests.
@@ -26,5 +27,5 @@ export default async () => {
 	const seeder = orm.getSeeder();
 	await seeder.seed(DatabaseSeeder);
 
-	orm.close(true);
+	await orm.close(true);
 };

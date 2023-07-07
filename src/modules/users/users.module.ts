@@ -1,11 +1,12 @@
-import { Module } from '@nestjs/common';
-import { UsersService } from './users.service';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
-import { UsersController } from './users.controller';
 import { User } from '@modules/users/entities/user.entity';
+
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
 
 @Module({
 	imports: [MikroOrmModule.forFeature([User, UserVisibility])],

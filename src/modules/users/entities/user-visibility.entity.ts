@@ -1,9 +1,11 @@
 import type { UserVisibilityEntity } from '@types';
 
 import { Entity, Property, OneToOne } from '@mikro-orm/core';
-import { User } from './user.entity';
-import { BaseEntity } from '@modules/_mixin/entities/base.entity';
 import { ApiProperty } from '@nestjs/swagger';
+
+import { BaseEntity } from '@modules/_mixin/entities/base.entity';
+
+import { User } from './user.entity';
 
 @Entity({ tableName: 'users_visibility' })
 export class UserVisibility extends BaseEntity implements UserVisibilityEntity<User> {

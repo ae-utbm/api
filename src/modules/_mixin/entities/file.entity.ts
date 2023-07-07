@@ -1,8 +1,9 @@
 import type { FileEntity as FE, VISIBILITY } from '@types';
 
 import { Entity, Property } from '@mikro-orm/core';
-import { BaseEntity } from './base.entity';
 import { ApiProperty } from '@nestjs/swagger';
+
+import { BaseEntity } from './base.entity';
 
 @Entity({ abstract: true })
 export abstract class FileEntity extends BaseEntity implements FE {

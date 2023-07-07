@@ -9,15 +9,15 @@ import {
 	ApiTags,
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-
-import { UsersService } from '@modules/users/users.service';
-import { User } from '@modules/users/entities/user.entity';
-import { AuthService } from './auth.service';
-import { UserSignInDTO } from './dto/sign-in.dto';
-import { UserPostDTO } from './dto/register.dto';
-import { TokenDTO } from './dto/token.dto';
-
 import express from 'express';
+
+import { User } from '@modules/users/entities/user.entity';
+import { UsersService } from '@modules/users/users.service';
+
+import { AuthService } from './auth.service';
+import { UserPostDTO } from './dto/register.dto';
+import { UserSignInDTO } from './dto/sign-in.dto';
+import { TokenDTO } from './dto/token.dto';
 
 @ApiTags('Authentification')
 @Controller('auth')

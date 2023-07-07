@@ -1,8 +1,10 @@
-import { PathImpl2 } from '@nestjs/config';
-import { I18nTranslations } from '@types';
 import fs from 'fs';
+import path from 'path';
+
+import { PathImpl2 } from '@nestjs/config';
 import { I18nContext, I18nService } from 'nestjs-i18n';
-import * as path from 'path';
+
+import { I18nTranslations } from '@types';
 
 export type AvailableTemplates = 'emails/register_user_by_admin' | 'emails/register_user';
 export type AvailableTemplateArgs =

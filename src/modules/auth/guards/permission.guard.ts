@@ -1,10 +1,12 @@
 import type { JWTPayload, PermissionName } from '@types';
+import type { Request } from 'express';
 
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '@modules/users/users.service';
 import { Reflector } from '@nestjs/core';
+import { JwtService } from '@nestjs/jwt';
+
+import { UsersService } from '@modules/users/users.service';
 
 /**
  * Check if the authenticated user has the required permissions to access the route
@@ -25,8 +27,10 @@ export class PermissionGuard implements CanActivate {
 	) {}
 
 	async canActivate(context: ExecutionContext) {
+		type Req = Request & { headers: { authorization: string } };
+
 		// Access the request object from the execution context
-		const request = context.switchToHttp().getRequest();
+		const request = context.switchToHttp().getRequest<Req>();
 
 		// Access the permissions required to access the route
 		const permsToValidate = this.reflector.get<Array<PermissionName>>('guard_permissions', context.getHandler());

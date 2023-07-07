@@ -1,4 +1,4 @@
-import type { Request } from '@types';
+import type { Request } from 'express';
 
 import {
 	Body,
@@ -14,7 +14,8 @@ import {
 	UseGuards,
 	UseInterceptors,
 } from '@nestjs/common';
-
+import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
 	ApiBearerAuth,
 	ApiBody,
@@ -24,19 +25,19 @@ import {
 	ApiTags,
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { UsersService } from './users.service';
-import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
-import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
-import { UserPatchDTO } from './dto/patch.dto';
-import { PermissionGuard } from '@modules/auth/guards/permission.guard';
+
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
+import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { getStreamableFile } from '@utils/images';
-import { User } from './entities/user.entity';
-import { UserVisibility } from './entities/user-visibility.entity';
+import { PermissionGuard } from '@modules/auth/guards/permission.guard';
+import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { Role } from '@modules/roles/entities/role.entity';
+import { getStreamableFile } from '@utils/images';
+
+import { UserPatchDTO } from './dto/patch.dto';
+import { UserVisibility } from './entities/user-visibility.entity';
+import { User } from './entities/user.entity';
+import { UsersService } from './users.service';
 
 @ApiTags('Users')
 @Controller('users')
@@ -61,7 +62,7 @@ export class UsersController {
 	@ApiOperation({ summary: 'Update an existing user' })
 	@ApiOkResponse({ description: 'The updated user', type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async update(@Body() input: UserPatchDTO, @Req() req: Request) {
+	async update(@Body() input: UserPatchDTO, @Req() req: Request & { user: User }) {
 		return this.usersService.update(req.user.id, input);
 	}
 

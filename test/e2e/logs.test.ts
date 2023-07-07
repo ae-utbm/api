@@ -1,8 +1,10 @@
 import request from 'supertest';
 
-import { emailNotVerified, idInvalid, idNotFound } from '@utils/responses';
-import { app, i18n } from '../setupFilesAfterEnv';
+import { TokenDTO } from '@modules/auth/dto/token.dto';
 import { User } from '@modules/users/entities/user.entity';
+import { emailNotVerified, idInvalid, idNotFound } from '@utils/responses';
+
+import { app, i18n } from '../setupFilesAfterEnv';
 
 describe('LogsController (e2e)', () => {
 	let tokenUnverified: string;
@@ -15,7 +17,9 @@ describe('LogsController (e2e)', () => {
 	let userIdLogModerator: number;
 
 	beforeAll(async () => {
-		const responseA = await request(app.getHttpServer()).post('/api/auth/login').send({
+		type Res = Omit<request.Response, 'body'> & { body: TokenDTO };
+
+		const responseA: Res = await request(app.getHttpServer()).post('/api/auth/login').send({
 			email: 'unverified@email.com',
 			password: 'root',
 		});
@@ -23,7 +27,7 @@ describe('LogsController (e2e)', () => {
 		tokenUnverified = responseA.body.token;
 		userIdUnverified = responseA.body.user_id;
 
-		const responseB = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const responseB: Res = await request(app.getHttpServer()).post('/api/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
 		});
@@ -31,7 +35,7 @@ describe('LogsController (e2e)', () => {
 		tokenUnauthorized = responseB.body.token;
 		userIdUnauthorized = responseB.body.user_id;
 
-		const responseC = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const responseC: Res = await request(app.getHttpServer()).post('/api/auth/login').send({
 			email: 'logs@email.com',
 			password: 'root',
 		});

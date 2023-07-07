@@ -2,10 +2,12 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { AppModule } from './app.module';
 
 import env from '@env';
+
 import pkg from '../package.json';
+
+import { AppModule } from './app.module';
 
 /**
  * Base server bootstrap
@@ -41,4 +43,6 @@ async function bootstrap() {
 	Logger.log(`Server running on http://localhost:${env().port}/api`, 'Swagger');
 }
 
-bootstrap();
+bootstrap()
+	.then(() => Logger.log('Server started', 'Bootstrap'))
+	.catch(() => Logger.error('Server crashed', 'Bootstrap'));

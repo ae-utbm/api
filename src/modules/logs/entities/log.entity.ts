@@ -1,9 +1,10 @@
 import type { LogEntity } from '@types';
 
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
+import { ApiProperty } from '@nestjs/swagger';
+
 import { BaseEntity } from '@modules/_mixin/entities/base.entity';
 import { User } from '@modules/users/entities/user.entity';
-import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ tableName: 'logs' })
 export class Log extends BaseEntity implements LogEntity<User> {

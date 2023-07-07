@@ -1,5 +1,6 @@
-import sharp from 'sharp';
 import { createReadStream, ReadStream, unlinkSync } from 'fs';
+
+import sharp from 'sharp';
 
 /**
  * Check if an image is square

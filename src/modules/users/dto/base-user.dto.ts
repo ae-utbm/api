@@ -1,6 +1,7 @@
+import { ApiProperty } from '@nestjs/swagger';
+
 import { BaseResponseDTO } from '@modules/_mixin/dto/base-response.dto';
 import { User } from '@modules/users/entities/user.entity';
-import { ApiProperty } from '@nestjs/swagger';
 
 export class BaseUserResponseDTO
 	extends BaseResponseDTO

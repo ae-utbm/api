@@ -1,8 +1,8 @@
 import { MikroORMOptions, IDatabaseDriver, Connection } from '@mikro-orm/core';
-import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { Logger } from '@nestjs/common';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
+import { Logger } from '@nestjs/common';
 
 import 'dotenv/config';
 
@@ -34,7 +34,7 @@ const config: Partial<MikroORMOptions<IDatabaseDriver<Connection>>> = {
 		pathTs: './src/database/seeders',
 		glob: '!(*.d).{js,ts}',
 	},
-	logger: logger.log.bind(logger),
+	logger: logger.log.bind(logger) as MikroORMOptions<IDatabaseDriver<Connection>>['logger'],
 	metadataProvider: TsMorphMetadataProvider,
 };
 
