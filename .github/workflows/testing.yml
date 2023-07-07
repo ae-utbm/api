@@ -8,6 +8,21 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ae_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -27,6 +42,12 @@ jobs:
 
       - name: Run tests
         run: pnpm workflow:test
+        env:
+          DB_NAME: ae_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
 
       - name: Export coverage results
         uses: actions/upload-artifact@v3
