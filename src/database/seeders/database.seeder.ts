@@ -6,7 +6,7 @@ import { User } from '@modules/users/entities/user.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 
 /**
  * This class is used to populate the database with some base data
@@ -18,18 +18,33 @@ export class DatabaseSeeder extends Seeder {
 		const users = this.create_users(em);
 
 		const root = users.find((u) => u.email === 'ae.info@utbm.fr');
+		const logs = users.find((u) => u.email === 'logs@email.com');
 
 		// Assign permission to users
-		em.create(Permission, {
-			name: 'ROOT',
-			expires: new Date('9999-12-31'),
-			user: root,
-		});
+		const perms = [
+			em.create(Permission, {
+				name: 'ROOT',
+				expires: new Date('9999-12-31'),
+				user: root,
+			}),
+
+			em.create(Permission, {
+				name: 'CAN_READ_LOGS_OF_USER',
+				expires: new Date('9999-12-31'),
+				user: logs,
+			}),
+
+			em.create(Permission, {
+				name: 'CAN_DELETE_LOGS_OF_USER',
+				expires: new Date('9999-12-31'),
+				user: logs,
+			}),
+		];
 
 		// Assign promotion to users
 		root.promotion = promotions.find((p) => p.number === 21);
 
-		em.persistAndFlush([...users, ...promotions]);
+		em.persistAndFlush([...users, ...perms, ...promotions]);
 	}
 
 	create_promotions(em: EntityManager): Promotion[] {
@@ -65,6 +80,15 @@ export class DatabaseSeeder extends Seeder {
 				password: bcrypt.hashSync('root', 10),
 				first_name: 'unverified',
 				last_name: 'unverified',
+				birthday: new Date('2000-01-01'),
+			},
+			// Logs user
+			{
+				email: 'logs@email.com',
+				email_verified: true,
+				password: bcrypt.hashSync('root', 10),
+				first_name: 'logs',
+				last_name: 'moderator',
 				birthday: new Date('2000-01-01'),
 			},
 		];

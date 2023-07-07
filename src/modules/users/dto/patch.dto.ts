@@ -1,4 +1,4 @@
-import type { UserPatchDto, email } from '@types';
+import type { UserPatchDto, Email } from '@types';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsEmail, IsNumber, IsString } from 'class-validator';
@@ -10,7 +10,7 @@ export class UserPatchDTO implements UserPatchDto {
 
 	@ApiProperty()
 	@IsEmail()
-	email: email;
+	email: Email;
 
 	@ApiProperty()
 	@IsString()

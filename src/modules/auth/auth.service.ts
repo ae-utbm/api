@@ -1,4 +1,4 @@
-import type { JWTPayload } from '@types';
+import type { JWTPayload, Email } from '@types';
 
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -11,7 +11,7 @@ import * as bcrypt from 'bcrypt';
 export class AuthService {
 	constructor(private usersService: UsersService, private jwtService: JwtService) {}
 
-	async signIn(email: string, pass: string) {
+	async signIn(email: Email, pass: string) {
 		const user: User = await this.usersService.findOne({ email: email }, false);
 
 		if (user.password !== pass && !bcrypt.compareSync(pass, user.password)) {

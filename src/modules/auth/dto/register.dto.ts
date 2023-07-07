@@ -1,4 +1,4 @@
-import type { UserPostDto, email } from '@types';
+import type { UserPostDto, Email } from '@types';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsEmail, IsString, IsStrongPassword } from 'class-validator';
@@ -6,7 +6,7 @@ import { IsDate, IsEmail, IsString, IsStrongPassword } from 'class-validator';
 export class UserPostByAdminDTO implements Omit<UserPostDto, 'password'> {
 	@ApiProperty()
 	@IsEmail()
-	email: email;
+	email: Email;
 
 	@ApiProperty()
 	@IsDate()

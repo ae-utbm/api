@@ -1,4 +1,4 @@
-import type { UserEntity } from '@types';
+import type { UserEntity, Email } from '@types';
 
 import {
 	Cascade,
@@ -64,9 +64,9 @@ export class User
 	banner?: UserBanner;
 
 	/** The main email of the user, used to login, @example 'example@domain.net' */
-	@Property({ unique: true })
-	@ApiProperty()
-	email: string;
+	@Property({ unique: true, type: String })
+	@ApiProperty({ type: String })
+	email: Email;
 
 	/** The encrypted user password */
 	@Property({ hidden: true })

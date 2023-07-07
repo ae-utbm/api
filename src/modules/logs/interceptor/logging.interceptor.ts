@@ -27,7 +27,7 @@ export class LoggingInterceptor implements NestInterceptor {
 			user,
 			action: context.getClass().name + '.' + context.getHandler().name,
 			ip: context.switchToHttp().getRequest().ip,
-			user_agent: context.switchToHttp().getRequest().headers['user-agent'],
+			user_agent: context.switchToHttp().getRequest().headers['user-agent'] || 'Unknown',
 			route: context.switchToHttp().getRequest().route.path,
 			method: context.switchToHttp().getRequest().method,
 			body: context.switchToHttp().getRequest().body,

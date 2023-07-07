@@ -1,6 +1,23 @@
+import type { Email } from '@types';
 import request from 'supertest';
-import { app } from '../setup';
+
+import { app, i18n, orm } from '../setupFilesAfterEnv';
 import { UserPostDTO } from '@modules/auth/dto/register.dto';
+import { User } from '@modules/users/entities/user.entity';
+
+import bcrypt from 'bcrypt';
+import {
+	birthdayInvalid,
+	emailAlreadyUsed,
+	emailAlreadyVerified,
+	emailInvalid,
+	emailInvalidToken,
+	emailNotFound,
+	fieldMissing,
+	fieldUnexpected,
+	idInvalid,
+	idOrEmailMissing,
+} from '@utils/responses';
 
 describe('AuthController (e2e)', () => {
 	describe('/api/auth/login (POST)', () => {
@@ -12,21 +29,22 @@ describe('AuthController (e2e)', () => {
 
 			expect(response.body).toEqual({
 				error: 'Bad Request',
-				message: 'Missing user id/email',
 				statusCode: 400,
+				message: idOrEmailMissing({ i18n, type: User }),
 			});
 		});
 
 		it('should return 404 when user is not found', async () => {
+			const email: Email = 'doesnotexist@utbm.fr';
 			const response = await request(app.getHttpServer())
 				.post('/api/auth/login')
-				.send({ email: 'doesnotexist@utbm.fr', password: '' })
+				.send({ email, password: '' })
 				.expect(404);
 
 			expect(response.body).toEqual({
 				error: 'Not Found',
 				statusCode: 404,
-				message: 'User not found',
+				message: emailNotFound({ i18n, type: User, email }),
 			});
 		});
 
@@ -77,7 +95,7 @@ describe('AuthController (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: `The date '${tomorrow.toISOString()}' is not valid (either too young or in the future)`,
+					message: birthdayInvalid({ i18n, date: tomorrow }),
 				});
 			});
 
@@ -92,48 +110,51 @@ describe('AuthController (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: `The date '${birthday.toISOString()}' is not valid (either too young or in the future)`,
+					message: birthdayInvalid({ i18n, date: birthday }),
 				});
 			});
 		});
 
 		describe('checking the email', () => {
 			it('should return 400 when email is not valid', async () => {
+				const email = 'invalid';
 				const response = await request(app.getHttpServer())
 					.post('/api/auth/register')
-					.send({ ...user, email: 'invalid' })
+					.send({ ...user, email })
 					.expect(400);
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: "The following email 'invalid' is not allowed (blacklisted or invalid)",
+					message: emailInvalid({ i18n, email: email as unknown as Email }),
 				});
 			});
 
 			it('should return 400 when email is blacklisted', async () => {
+				const email = 'user@utbm.fr';
 				const response = await request(app.getHttpServer())
 					.post('/api/auth/register')
-					.send({ ...user, email: 'user@utbm.fr' })
+					.send({ ...user, email })
 					.expect(400);
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: "The following email 'user@utbm.fr' is not allowed (blacklisted or invalid)",
+					message: emailInvalid({ i18n, email: email as unknown as Email }),
 				});
 			});
 
 			it('should return 400 when email is already used', async () => {
+				const email: Email = 'ae.info@utbm.fr';
 				const response = await request(app.getHttpServer())
 					.post('/api/auth/register')
-					.send({ ...user, email: 'ae.info@utbm.fr' })
+					.send({ ...user, email })
 					.expect(400);
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: "Email 'ae.info@utbm.fr' is already taken",
+					message: emailAlreadyUsed({ i18n, email }),
 				});
 			});
 		});
@@ -147,7 +168,7 @@ describe('AuthController (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: "Missing required field 'first_name'",
+				message: fieldMissing({ i18n, type: UserPostDTO, field: 'first_name' }),
 			});
 		});
 
@@ -160,7 +181,7 @@ describe('AuthController (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: "Invalid field 'never_gonna', please check the documentation",
+				message: fieldUnexpected({ i18n, type: UserPostDTO, field: 'never_gonna' }),
 			});
 		});
 
@@ -201,12 +222,13 @@ describe('AuthController (e2e)', () => {
 		const token = 'token';
 
 		it('should return 400 when user_id is not a number', async () => {
-			const response = await request(app.getHttpServer()).get(`/api/auth/confirm/not_a_number/${token}`).expect(400);
+			const fakeId = 'invalid';
+			const response = await request(app.getHttpServer()).get(`/api/auth/confirm/${fakeId}/${token}`).expect(400);
 
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: 'Invalid user id',
+				message: idInvalid({ i18n, type: User, id: fakeId }),
 			});
 		});
 
@@ -216,7 +238,7 @@ describe('AuthController (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Unauthorized',
 				statusCode: 401,
-				message: 'Invalid email verification token',
+				message: emailInvalidToken({ i18n }),
 			});
 		});
 
@@ -226,7 +248,7 @@ describe('AuthController (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: 'Email is already verified',
+				message: emailAlreadyVerified({ i18n, type: User }),
 			});
 		});
 
@@ -263,6 +285,17 @@ describe('AuthController (e2e)', () => {
 		});
 
 		it('should return 308 when redirect_url is provided', async () => {
+			// Reset user email_verified to false (because of the previous test)
+			const em = orm.em.fork();
+			const user = await em.findOne(User, { id: user_id });
+
+			user.email_verified = false;
+			user.email_verification = bcrypt.hashSync(token, 10);
+
+			await em.persistAndFlush(user);
+			em.clear();
+			// --
+
 			const response = await request(app.getHttpServer())
 				.get(`/api/auth/confirm/${user_id}/${token}/${encodeURIComponent('https://example.com')}`)
 				.expect(308);

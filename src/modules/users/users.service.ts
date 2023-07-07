@@ -1,4 +1,4 @@
-import type { ObjectKeysArray } from '@types';
+import type { I18nTranslations, ObjectKeysArray } from '@types';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
@@ -18,14 +18,27 @@ import { Cron } from '@nestjs/schedule';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 import { getTemplate } from '@utils/template';
 
-import { join } from 'path';
 import fs from 'fs';
-import * as bcrypt from 'bcrypt';
+import path from 'path';
+import bcrypt from 'bcrypt';
+import {
+	birthdayInvalid,
+	emailAlreadyUsed,
+	emailAlreadyVerified,
+	emailInvalid,
+	emailInvalidToken,
+	emailNotFound,
+	fieldMissing,
+	fieldUnexpected,
+	idInvalid,
+	idNotFound,
+	idOrEmailMissing,
+} from '@utils/responses';
 
 @Injectable()
 export class UsersService {
 	constructor(
-		private readonly i18n: I18nService,
+		private readonly i18n: I18nService<I18nTranslations>,
 		private readonly configService: ConfigService,
 		private readonly orm: MikroORM,
 	) {}
@@ -69,8 +82,9 @@ export class UsersService {
 		if (id) user = await this.orm.em.findOne(User, { id });
 		if (email) user = await this.orm.em.findOne(User, { email });
 
-		if (!id && !email) throw new BadRequestException('Missing user id/email');
-		if (!user) throw new NotFoundException('User not found');
+		if (!id && !email) throw new BadRequestException(idOrEmailMissing({ i18n: this.i18n, type: User }));
+		if (!user && id) throw new NotFoundException(idNotFound({ i18n: this.i18n, type: User, id }));
+		if (!user && email) throw new NotFoundException(emailNotFound({ i18n: this.i18n, type: User, email }));
 
 		return filter ? await this.checkVisibility(user) : user;
 	}
@@ -78,7 +92,7 @@ export class UsersService {
 	@UseRequestContext()
 	async findVisibility({ id }: Partial<Pick<User, 'id'>>): Promise<UserVisibility> {
 		const user = await this.orm.em.findOne(User, { id });
-		if (!user) throw new NotFoundException('User not found');
+		if (!user) throw new NotFoundException(idNotFound({ i18n: this.i18n, type: User, id }));
 
 		return await this.orm.em.findOne(UserVisibility, { user });
 	}
@@ -98,22 +112,21 @@ export class UsersService {
 		const requiredFields: ObjectKeysArray<UserPostDTO> = ['password', 'first_name', 'last_name', 'email', 'birthday']; // Add other required fields as necessary
 
 		requiredFields.forEach((field) => {
-			if (!input[field]) throw new BadRequestException(`Missing required field '${field}'`);
+			if (!input[field]) throw new BadRequestException(fieldMissing({ i18n: this.i18n, type: UserPostDTO, field }));
 		});
 
-		(Object.keys(input) as ObjectKeysArray<UserPostDTO>).forEach((key) => {
-			if (!requiredFields.includes(key))
-				throw new BadRequestException(`Invalid field '${key}', please check the documentation`);
+		(Object.keys(input) as ObjectKeysArray<UserPostDTO>).forEach((field) => {
+			if (!requiredFields.includes(field))
+				throw new BadRequestException(fieldUnexpected({ i18n: this.i18n, type: UserPostDTO, field }));
 		});
 
-		if (!checkEmail(input.email))
-			throw new BadRequestException(`The following email '${input.email}' is not allowed (blacklisted or invalid)`);
+		if (!checkEmail(input.email)) throw new BadRequestException(emailInvalid({ i18n: this.i18n, email: input.email }));
 
 		if (!checkBirthday(input.birthday))
-			throw new BadRequestException(`The date '${input.birthday}' is not valid (either too young or in the future)`);
+			throw new BadRequestException(birthdayInvalid({ i18n: this.i18n, date: input.birthday }));
 
 		if (await this.orm.em.findOne(User, { email: input.email }))
-			throw new BadRequestException(`Email '${input.email}' is already taken`);
+			throw new BadRequestException(emailAlreadyUsed({ i18n: this.i18n, email: input.email }));
 
 		// Check if the password is already hashed
 		if (input.password.length !== 60) input.password = bcrypt.hashSync(input.password, 10);
@@ -162,15 +175,15 @@ export class UsersService {
 		if (!user_id || !token) throw new BadRequestException('Missing user id or token');
 
 		if (typeof user_id === 'string' && parseInt(user_id, 10) != user_id)
-			throw new BadRequestException('Invalid user id');
+			throw new BadRequestException(idInvalid({ i18n: this.i18n, type: User, id: user_id }));
 
 		const user = await this.orm.em.findOne(User, { id: user_id });
-		if (!user) throw new NotFoundException('User not found');
+		if (!user) throw new NotFoundException(idNotFound({ i18n: this.i18n, type: User, id: user_id }));
 
-		if (user.email_verified) throw new BadRequestException('Email is already verified');
+		if (user.email_verified) throw new BadRequestException(emailAlreadyVerified({ i18n: this.i18n, type: User }));
 
 		if (!bcrypt.compareSync(token, user.email_verification))
-			throw new UnauthorizedException('Invalid email verification token');
+			throw new UnauthorizedException(emailInvalidToken({ i18n: this.i18n }));
 
 		user.email_verified = true;
 		user.email_verification = null;
@@ -184,11 +197,10 @@ export class UsersService {
 		if (await this.orm.em.findOne(User, { email: input.email }))
 			throw new BadRequestException(`User already with the email '${input.email}' already exists`);
 
-		if (!checkEmail(input.email))
-			throw new BadRequestException(`The following email '${input.email}' is not allowed (blacklisted or invalid)`);
+		if (!checkEmail(input.email)) throw new BadRequestException(emailInvalid({ i18n: this.i18n, email: input.email }));
 
 		if (!checkBirthday(input.birthday))
-			throw new BadRequestException(`The date '${input.birthday}' is not valid (either too young or in the future)`);
+			throw new BadRequestException(birthdayInvalid({ i18n: this.i18n, date: input.birthday }));
 
 		// Generate a random password & hash it
 		const password = generateRandomPassword(12);
@@ -215,7 +227,7 @@ export class UsersService {
 		if (!user) throw new NotFoundException(`User with id ${input.id} not found`);
 
 		if (input.email && !checkEmail(input.email))
-			throw new BadRequestException(`The following email '${input.email}' is not allowed (blacklisted or invalid)`);
+			throw new BadRequestException(emailInvalid({ i18n: this.i18n, email: input.email }));
 
 		if (input.hasOwnProperty('birthday') || input.hasOwnProperty('first_name') || input.hasOwnProperty('last_name')) {
 			const currentUser = await this.findOne({ id: requestUserId }, false);
@@ -247,10 +259,10 @@ export class UsersService {
 			throw new UnauthorizedException('You can only change your picture once a week');
 
 		const { buffer, mimetype } = file;
-		const imageDir = join(this.configService.get<string>('files.users'), 'pictures');
+		const imageDir = path.join(this.configService.get<string>('files.users'), 'pictures');
 		const extension = mimetype.replace('image/', '.');
 		const filename = `${user.id}${extension}`;
-		const imagePath = join(imageDir, filename);
+		const imagePath = path.join(imageDir, filename);
 
 		// write the file
 		fs.mkdirSync(imageDir, { recursive: true });
@@ -307,10 +319,10 @@ export class UsersService {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['*', 'banner'] });
 
 		const { buffer, mimetype } = file;
-		const imageDir = join(this.configService.get<string>('files.users'), 'banners');
+		const imageDir = path.join(this.configService.get<string>('files.users'), 'banners');
 		const extension = mimetype.replace('image/', '.');
 		const filename = `${user.id}${extension}`;
-		const imagePath = join(imageDir, filename);
+		const imagePath = path.join(imageDir, filename);
 
 		// write the file
 		fs.mkdirSync(imageDir, { recursive: true });

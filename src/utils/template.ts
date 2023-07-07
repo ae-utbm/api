@@ -1,3 +1,5 @@
+import { PathImpl2 } from '@nestjs/config';
+import { I18nTranslations } from '@types';
 import fs from 'fs';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 import * as path from 'path';
@@ -23,7 +25,7 @@ export type AvailableTemplateArgs =
  */
 export function getTemplate(
 	templateName: AvailableTemplates,
-	i18n: I18nService,
+	i18n: I18nService<I18nTranslations>,
 	args: AvailableTemplateArgs = {},
 ): string {
 	let inputString = fs.readFileSync(path.join(__dirname, `../templates/${templateName}.html`), 'utf8');
@@ -37,8 +39,11 @@ export function getTemplate(
 	}
 
 	matches.forEach(
-		(match) =>
-			(inputString = inputString.replace(`{{ ${match} }}`, i18n.t(match, { lang: I18nContext.current().lang, args }))),
+		(match: PathImpl2<I18nTranslations>) =>
+			(inputString = inputString.replace(
+				`{{ ${match} }}`,
+				i18n.t(match, { lang: I18nContext.current()?.lang ?? undefined, args }),
+			)),
 	);
 	return inputString;
 }

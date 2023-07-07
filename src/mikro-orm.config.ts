@@ -1,5 +1,6 @@
 import { MikroORMOptions, IDatabaseDriver, Connection } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Logger } from '@nestjs/common';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 
@@ -11,7 +12,7 @@ const logger = new Logger('MikroORM');
  * Global MikroORM configuration
  */
 const config: Partial<MikroORMOptions<IDatabaseDriver<Connection>>> = {
-	type: 'postgresql',
+	driver: PostgreSqlDriver,
 	dbName: process.env['DB_NAME'],
 	port: parseInt(process.env['DB_PORT'], 10),
 	host: process.env['DB_HOST'],

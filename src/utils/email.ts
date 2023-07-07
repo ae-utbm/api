@@ -1,14 +1,14 @@
-import type { email } from '@types';
+import type { Email } from '@types';
 
 import * as nodemailer from 'nodemailer';
 import env from '@env';
 
 /**
  * Check if an email is allowed to be used (to register for example) and if it is valid
- * @param {email} email the email to check
+ * @param {Email} email the email to check
  * @returns {boolean} true if the email is allowed, false otherwise
  */
-export function checkEmail(email: email): boolean {
+export function checkEmail(email: Email): boolean {
 	const blacklist = env().email.blacklist.host;
 	const whitelisted = env().email.whitelist.email;
 

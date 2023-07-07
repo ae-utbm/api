@@ -1,0 +1,30 @@
+{
+  "errors": {
+    "birthday": {
+      "invalid": "The date '{date}' is invalid, either too young or in the future."
+    },
+    "email": {
+      "invalid": "Email '{email}' is invalid (blacklisted or malformed).",
+      "used": "Email '{email}' is already taken.",
+      "not_found": "'{type}' with email '{email}' not found.",
+      "verified": "'{type}' email is already verified.",
+      "token": {
+        "invalid": "Invalid email verification token."
+      }
+    },
+    "field": {
+      "missing": "Missing required field '{field}' in type '{type}'.",
+      "unexpected": "Field '{field}' in type '{type}' is not expected."
+    },
+    "id": {
+      "invalid": "'{type}' ID '{id}' is invalid.",
+      "not_found": "'{type}' with ID '{id}' not found."
+    },
+    "id_or_email": {
+      "missing": "Missing '{type}' ID or email fields."
+    }
+  },
+  "success": {
+    "deleted": "'{type}' successfully deleted."
+  }
+}

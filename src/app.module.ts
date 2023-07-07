@@ -37,6 +37,7 @@ import { AcceptLanguageResolver, I18nModule } from 'nestjs-i18n';
 				watch: true,
 			},
 			resolvers: [AcceptLanguageResolver],
+			typesOutputPath: path.join(__dirname, '../../src/types/api/i18n.d.ts'),
 		}),
 		AuthModule,
 		LogsModule,
