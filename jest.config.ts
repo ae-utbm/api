@@ -1,5 +1,8 @@
-export default {
+import type { Config } from 'jest';
+
+const config: Config = {
 	preset: 'ts-jest',
+	automock: false,
 	modulePathIgnorePatterns: ['<rootDir>/dist'],
 	testEnvironment: 'node',
 	globalSetup: '<rootDir>/test/globalSetup.ts',
@@ -29,3 +32,5 @@ export default {
 	testRegex: '.(spec|test).ts$',
 	moduleFileExtensions: ['ts', 'js', 'json'],
 };
+
+export default config;
