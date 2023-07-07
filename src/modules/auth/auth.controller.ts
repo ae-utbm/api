@@ -17,7 +17,7 @@ import { UserSignInDTO } from './dto/sign-in.dto';
 import { UserPostDTO } from './dto/register.dto';
 import { TokenDTO } from './dto/token.dto';
 
-import * as express from 'express';
+import express from 'express';
 
 @ApiTags('Authentification')
 @Controller('auth')
