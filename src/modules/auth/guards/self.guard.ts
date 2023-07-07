@@ -49,7 +49,7 @@ export function checkSelf(
 	const bearerToken = request.headers.authorization;
 
 	// Verify and decode the JWT token to extract the user ID
-	const decodedToken = jwtService.verify<JWTPayload>(bearerToken.replace('Bearer ', ''), {
+	const decodedToken = jwtService.verify<JWTPayload>(bearerToken.replace('Bearer', '').trim(), {
 		secret: configService.get<string>('auth.jwtKey'),
 	});
 
