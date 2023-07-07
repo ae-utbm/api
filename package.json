@@ -16,7 +16,9 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest --config jest.config.ts"
+    "test": "jest --config jest.config.ts",
+    "workflow:lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --max-warnings=0",
+    "workflow:test": "jest --config './jest.config.ts' --coverage"
   },
   "dependencies": {
     "@mikro-orm/cli": "^5.7.12",

@@ -25,5 +25,5 @@ jobs:
         run: pnpm install
 
       - name: Lint Typescript & HTML
-        run: pnpm eslint "{src,apps,libs,test}/**/*.ts" --fix
+        run: pnpm workflow:lint
 
