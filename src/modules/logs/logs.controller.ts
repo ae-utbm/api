@@ -14,6 +14,8 @@ import { Log } from './entities/log.entity';
 import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
+import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
+import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 
 @Controller('logs')
 @UseGuards(AuthGuard('jwt'))
@@ -23,6 +25,7 @@ export class LogsController {
 	constructor(private readonly logsService: LogsService) {}
 
 	@Get('user/:id')
+	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_LOGS_OF_USER'])
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiBadRequestResponse({ description: 'Invalid user ID' })
@@ -34,6 +37,7 @@ export class LogsController {
 	}
 
 	@Delete('user/:id')
+	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_DELETE_LOGS_OF_USER')
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiBadRequestResponse({ description: 'Invalid user ID' })

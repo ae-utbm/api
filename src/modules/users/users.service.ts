@@ -72,8 +72,23 @@ export class UsersService {
 		return user;
 	}
 
-	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>): Promise<Partial<User>>;
+	/**
+	 * Find a user by id or email and return it
+	 * @param {Partial<Pick<User, 'id' | 'email'>>} param0 The id or email of the user to find
+	 * @param {boolean} filter Whether to filter the user or not (default: true)
+	 *
+	 * @returns {Promise<User | Partial<User>>} The user found (partial if filter is true)
+	 * @throws {BadRequestException} If no id or email is provided
+	 * @throws {NotFoundException} If no user is found with the provided id/email
+	 *
+	 * @example
+	 * ```ts
+	 * const user1: User = await this.usersService.findOne({ id: 1 }, false);
+	 * const user2: Partial<User> = await this.usersService.findOne({ email: 'example@domain.com' });
+	 * ```
+	 */
 	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter: false): Promise<User>;
+	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>): Promise<Partial<User>>;
 
 	@UseRequestContext()
 	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter = true): Promise<User | Partial<User>> {

@@ -24,6 +24,14 @@ interface NamedResponse<T> extends Response {
 	type: Class<T>;
 }
 
+///* ERRORS *///
+/**
+ * Get the translated error for an invalid payload
+ * @returns {string} The translated error
+ */
+export const authInvalidPayload = (options: Response): string =>
+	generic('responses.errors.auth.invalid_payload', {}, options.i18n);
+
 /**
  * Get the translated error for an invalid ID
  * @returns {string} The translated error
@@ -74,6 +82,13 @@ export const emailAlreadyVerified = <T>(options: NamedResponse<T>): string =>
 	generic('responses.errors.email.verified', { type: options.type.name }, options.i18n);
 
 /**
+ * Get the translated error for an unverified email
+ * @returns {string} The translated error
+ */
+export const emailNotVerified = <T>(options: NamedResponse<T>): string =>
+	generic('responses.errors.email.unverified', { type: options.type.name }, options.i18n);
+
+/**
  * Get the translated error for an invalid email token
  * @returns {string} The translated error
  */
@@ -105,6 +120,7 @@ export const fieldMissing = <T>(options: NamedResponse<T> & { field: unknown }):
 export const fieldUnexpected = <T>(options: NamedResponse<T> & { field: unknown }): string =>
 	generic('responses.errors.field.unexpected', { type: options.type.name, field: options.field }, options.i18n);
 
+///* SUCCESS *///
 /**
  * Translate the success message for a delete operation
  * @returns {string} The translated success message

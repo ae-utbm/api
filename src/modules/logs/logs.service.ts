@@ -1,14 +1,14 @@
 import type { I18nTranslations } from '@types';
 
-import { UsersService } from '@modules/users/users.service';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
+import { UsersService } from '@modules/users/users.service';
+import { I18nService } from 'nestjs-i18n';
 import { Cron } from '@nestjs/schedule';
 
-import { Log } from './entities/log.entity';
-import { I18nService } from 'nestjs-i18n';
-import { idInvalid, idNotFound } from '@utils/responses';
+import { idInvalid } from '@utils/responses';
 import { User } from '@modules/users/entities/user.entity';
+import { Log } from './entities/log.entity';
 
 @Injectable()
 export class LogsService {
@@ -32,10 +32,8 @@ export class LogsService {
 			throw new BadRequestException(idInvalid({ i18n: this.i18n, type: User, id }));
 
 		const user = await this.usersService.findOne({ id });
-		if (!user) throw new NotFoundException(idNotFound({ i18n: this.i18n, type: User, id }));
 
 		await user.logs.init();
-
 		return user.logs.getItems();
 	}
 

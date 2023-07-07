@@ -63,6 +63,7 @@ export class DatabaseSeeder extends Seeder {
 
 		const users: Partial<User>[] = [
 			// Root user
+			// > ROOT Permissions
 			{
 				email: 'ae.info@utbm.fr',
 				email_verified: true,
@@ -73,16 +74,28 @@ export class DatabaseSeeder extends Seeder {
 				birthday: new Date('2000-01-01'),
 			},
 			// Unverified user
+			// > Email not verified
 			{
 				email: 'unverified@email.com',
 				email_verified: false,
 				email_verification: bcrypt.hashSync('token', 10),
 				password: bcrypt.hashSync('root', 10),
 				first_name: 'unverified',
-				last_name: 'unverified',
+				last_name: 'user',
+				birthday: new Date('2000-01-01'),
+			},
+			// Unauthorized user
+			// > No permissions (but email verified)
+			{
+				email: 'unauthorized@email.com',
+				email_verified: true,
+				password: bcrypt.hashSync('root', 10),
+				first_name: 'unauthorized',
+				last_name: 'user',
 				birthday: new Date('2000-01-01'),
 			},
 			// Logs user
+			// > CAN_READ_LOGS_OF_USER & CAN_DELETE_LOGS_OF_USER permissions
 			{
 				email: 'logs@email.com',
 				email_verified: true,

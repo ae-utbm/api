@@ -1,5 +1,8 @@
 {
   "errors": {
+    "auth": {
+      "invalid_payload": "JWT payload is invalid."
+    },
     "birthday": {
       "invalid": "The date '{date}' is invalid, either too young or in the future."
     },
@@ -8,6 +11,7 @@
       "used": "Email '{email}' is already taken.",
       "not_found": "'{type}' with email '{email}' not found.",
       "verified": "'{type}' email is already verified.",
+      "unverified": "'{type}' email is not verified.",
       "token": {
         "invalid": "Invalid email verification token."
       }

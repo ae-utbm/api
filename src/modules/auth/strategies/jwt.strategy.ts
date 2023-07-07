@@ -1,9 +1,12 @@
-import type { JWTPayload } from '@types';
+import type { I18nTranslations, JWTPayload } from '@types';
 
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { I18nService } from 'nestjs-i18n';
+
+import { authInvalidPayload } from '@utils/responses';
 import { AuthService } from '../auth.service';
 
 /**
@@ -11,7 +14,11 @@ import { AuthService } from '../auth.service';
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-	constructor(configService: ConfigService, private authService: AuthService) {
+	constructor(
+		private readonly i18n: I18nService<I18nTranslations>,
+		private readonly configService: ConfigService,
+		private readonly authService: AuthService,
+	) {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 			ignoreExpiration: false,
@@ -27,7 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	async validate(payload: JWTPayload) {
 		const user = await this.authService.validateUser(payload);
 
-		if (!user) throw new UnauthorizedException();
+		if (!user) throw new UnauthorizedException(authInvalidPayload({ i18n: this.i18n }));
 		return user;
 	}
 }

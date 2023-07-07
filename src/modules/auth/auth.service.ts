@@ -1,4 +1,4 @@
-import type { JWTPayload, Email } from '@types';
+import type { JWTPayload, Email, I18nTranslations } from '@types';
 
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -6,10 +6,16 @@ import { UsersService } from '@modules/users/users.service';
 import { User } from '@modules/users/entities/user.entity';
 
 import * as bcrypt from 'bcrypt';
+import { emailNotVerified } from '@utils/responses';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AuthService {
-	constructor(private usersService: UsersService, private jwtService: JwtService) {}
+	constructor(
+		private readonly i18n: I18nService<I18nTranslations>,
+		private readonly usersService: UsersService,
+		private readonly jwtService: JwtService,
+	) {}
 
 	async signIn(email: Email, pass: string) {
 		const user: User = await this.usersService.findOne({ email: email }, false);
@@ -25,13 +31,16 @@ export class AuthService {
 		};
 	}
 
-	async validateUser(payload: JWTPayload): Promise<User | null> {
-		// Get the user from the database
+	/**
+	 * Validate the user from the payload
+	 * @param {JWTPayload} payload JWT Payload to validate
+	 * @returns {User} The user if found and valid, throw otherwise (email not verified)
+	 */
+	async validateUser(payload: JWTPayload): Promise<User> {
 		const user = await this.usersService.findOne({ email: payload.email }, false);
 
-		// Do not validate if user isn't verified
-		//              or if user doesn't exists
-		if (!user || !user.email_verified) return null;
+		// throw if user not verified
+		if (!user.email_verified) throw new UnauthorizedException(emailNotVerified({ i18n: this.i18n, type: User }));
 		return user;
 	}
 }
