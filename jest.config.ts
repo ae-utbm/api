@@ -1,5 +1,6 @@
 export default {
 	preset: 'ts-jest',
+	modulePathIgnorePatterns: ['<rootDir>/dist'],
 	testEnvironment: 'node',
 	globalSetup: '<rootDir>/test/globalSetup.ts',
 	setupFilesAfterEnv: ['<rootDir>/test/setupFilesAfterEnv.ts'],
