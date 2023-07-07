@@ -30,8 +30,6 @@ export class PermissionGuard implements CanActivate {
 
 		// Access the permissions required to access the route
 		const permsToValidate = this.reflector.get<Array<PermissionName>>('guard_permissions', context.getHandler());
-		if (!permsToValidate || permsToValidate.length == 0)
-			throw new Error('No permissions were specified for this route despite using the PermissionGuard.');
 
 		// Retrieve the authenticated user from the request's user object or session
 		const bearerToken = request.headers.authorization;
