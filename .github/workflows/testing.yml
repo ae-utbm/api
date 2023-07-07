@@ -24,7 +24,7 @@ jobs:
         run: pnpm install
 
       - name: Run tests
-        run: pnpm jest --config jest.config.ts --coverage
+        run: pnpm test
 
       - name: Export coverage results
         uses: actions/upload-artifact@v3
