@@ -1,0 +1,47 @@
+328d3b7bfb7b3719531beca7d85e3a70
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Subscription = void 0;
+const core_1 = require("@mikro-orm/core");
+const swagger_1 = require("@nestjs/swagger");
+const base_entity_1 = require("@modules/_mixin/entities/base.entity");
+const user_entity_1 = require("@modules/users/entities/user.entity");
+let Subscription = exports.Subscription = class Subscription extends base_entity_1.BaseEntity {
+    /** Determine if the subscription is still active by comparing current date with the subscription date */
+    get is_active() {
+        return this.expires > new Date();
+    }
+};
+__decorate([
+    (0, core_1.ManyToOne)(() => user_entity_1.User, { onDelete: 'cascade', joinColumn: 'user_id' }),
+    (0, swagger_1.ApiProperty)({ type: Number }),
+    __metadata("design:type", user_entity_1.User)
+], Subscription.prototype, "user", void 0);
+__decorate([
+    (0, core_1.Property)(),
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], Subscription.prototype, "plan", void 0);
+__decorate([
+    (0, core_1.Property)({ type: 'date' }),
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Date)
+], Subscription.prototype, "expires", void 0);
+__decorate([
+    (0, core_1.Property)({ persist: false }),
+    __metadata("design:type", Boolean),
+    __metadata("design:paramtypes", [])
+], Subscription.prototype, "is_active", null);
+exports.Subscription = Subscription = __decorate([
+    (0, core_1.Entity)({ tableName: 'subscriptions' })
+], Subscription);
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiL1VzZXJzL2p1a251bS9Eb2N1bWVudHMvQ29kZS9BRS9hcGkvc3JjL21vZHVsZXMvc3Vic2NyaXB0aW9uL2VudGl0aWVzL3N1YnNjcmlwdGlvbi5lbnRpdHkudHMiLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7O0FBRUEsMENBQThEO0FBQzlELDZDQUE4QztBQUU5QyxzRUFBa0U7QUFDbEUscUVBQTJEO0FBR3BELElBQU0sWUFBWSwwQkFBbEIsTUFBTSxZQUFhLFNBQVEsd0JBQVU7SUFhM0MseUdBQXlHO0lBQ3pHLElBQ0ksU0FBUztRQUNaLE9BQU8sSUFBSSxDQUFDLE9BQU8sR0FBRyxJQUFJLElBQUksRUFBRSxDQUFDO0lBQ2xDLENBQUM7Q0FDRCxDQUFBO0FBZkE7SUFGQyxJQUFBLGdCQUFTLEVBQUMsR0FBRyxFQUFFLENBQUMsa0JBQUksRUFBRSxFQUFFLFFBQVEsRUFBRSxTQUFTLEVBQUUsVUFBVSxFQUFFLFNBQVMsRUFBRSxDQUFDO0lBQ3JFLElBQUEscUJBQVcsRUFBQyxFQUFFLElBQUksRUFBRSxNQUFNLEVBQUUsQ0FBQzs4QkFDeEIsa0JBQUk7MENBQUM7QUFJWDtJQUZDLElBQUEsZUFBUSxHQUFFO0lBQ1YsSUFBQSxxQkFBVyxHQUFFOzswQ0FDRDtBQUliO0lBRkMsSUFBQSxlQUFRLEVBQUMsRUFBRSxJQUFJLEVBQUUsTUFBTSxFQUFFLENBQUM7SUFDMUIsSUFBQSxxQkFBVyxHQUFFOzhCQUNMLElBQUk7NkNBQUM7QUFHZDtJQUFDLElBQUEsZUFBUSxFQUFDLEVBQUUsT0FBTyxFQUFFLEtBQUssRUFBRSxDQUFDOzs7NkNBRzVCO3VCQWpCVyxZQUFZO0lBRHhCLElBQUEsYUFBTSxFQUFDLEVBQUUsU0FBUyxFQUFFLGVBQWUsRUFBRSxDQUFDO0dBQzFCLFlBQVksQ0FrQnhCIiwibmFtZXMiOltdLCJzb3VyY2VzIjpbIi9Vc2Vycy9qdWtudW0vRG9jdW1lbnRzL0NvZGUvQUUvYXBpL3NyYy9tb2R1bGVzL3N1YnNjcmlwdGlvbi9lbnRpdGllcy9zdWJzY3JpcHRpb24uZW50aXR5LnRzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB0eXBlIHsgU3Vic2NyaXB0aW9uRW50aXR5IH0gZnJvbSAnQHR5cGVzJztcblxuaW1wb3J0IHsgRW50aXR5LCBNYW55VG9PbmUsIFByb3BlcnR5IH0gZnJvbSAnQG1pa3JvLW9ybS9jb3JlJztcbmltcG9ydCB7IEFwaVByb3BlcnR5IH0gZnJvbSAnQG5lc3Rqcy9zd2FnZ2VyJztcblxuaW1wb3J0IHsgQmFzZUVudGl0eSB9IGZyb20gJ0Btb2R1bGVzL19taXhpbi9lbnRpdGllcy9iYXNlLmVudGl0eSc7XG5pbXBvcnQgeyBVc2VyIH0gZnJvbSAnQG1vZHVsZXMvdXNlcnMvZW50aXRpZXMvdXNlci5lbnRpdHknO1xuXG5ARW50aXR5KHsgdGFibGVOYW1lOiAnc3Vic2NyaXB0aW9ucycgfSlcbmV4cG9ydCBjbGFzcyBTdWJzY3JpcHRpb24gZXh0ZW5kcyBCYXNlRW50aXR5IGltcGxlbWVudHMgU3Vic2NyaXB0aW9uRW50aXR5PFVzZXI+IHtcblx0QE1hbnlUb09uZSgoKSA9PiBVc2VyLCB7IG9uRGVsZXRlOiAnY2FzY2FkZScsIGpvaW5Db2x1bW46ICd1c2VyX2lkJyB9KVxuXHRAQXBpUHJvcGVydHkoeyB0eXBlOiBOdW1iZXIgfSlcblx0dXNlcjogVXNlcjtcblxuXHRAUHJvcGVydHkoKVxuXHRAQXBpUHJvcGVydHkoKVxuXHRwbGFuOiBzdHJpbmc7XG5cblx0QFByb3BlcnR5KHsgdHlwZTogJ2RhdGUnIH0pXG5cdEBBcGlQcm9wZXJ0eSgpXG5cdGV4cGlyZXM6IERhdGU7XG5cblx0LyoqIERldGVybWluZSBpZiB0aGUgc3Vic2NyaXB0aW9uIGlzIHN0aWxsIGFjdGl2ZSBieSBjb21wYXJpbmcgY3VycmVudCBkYXRlIHdpdGggdGhlIHN1YnNjcmlwdGlvbiBkYXRlICovXG5cdEBQcm9wZXJ0eSh7IHBlcnNpc3Q6IGZhbHNlIH0pXG5cdGdldCBpc19hY3RpdmUoKTogYm9vbGVhbiB7XG5cdFx0cmV0dXJuIHRoaXMuZXhwaXJlcyA+IG5ldyBEYXRlKCk7XG5cdH1cbn1cbiJdLCJ2ZXJzaW9uIjozfQ==

@@ -1,0 +1,51 @@
+d5263200c0da8edea3b1b86a19891e40
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FileEntity = void 0;
+const core_1 = require("@mikro-orm/core");
+const swagger_1 = require("@nestjs/swagger");
+const base_entity_1 = require("./base.entity");
+let FileEntity = exports.FileEntity = class FileEntity extends base_entity_1.BaseEntity {
+};
+__decorate([
+    (0, core_1.Property)(),
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], FileEntity.prototype, "filename", void 0);
+__decorate([
+    (0, core_1.Property)(),
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], FileEntity.prototype, "mimetype", void 0);
+__decorate([
+    (0, core_1.Property)({ hidden: true }),
+    __metadata("design:type", String)
+], FileEntity.prototype, "path", void 0);
+__decorate([
+    (0, core_1.Property)(),
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], FileEntity.prototype, "size", void 0);
+__decorate([
+    (0, core_1.Property)(),
+    (0, swagger_1.ApiProperty)({ enum: ['public', 'private', 'hidden'] }),
+    __metadata("design:type", String)
+], FileEntity.prototype, "visibility", void 0);
+__decorate([
+    (0, core_1.Property)({ nullable: true }),
+    (0, swagger_1.ApiProperty)({ required: false }),
+    __metadata("design:type", String)
+], FileEntity.prototype, "description", void 0);
+exports.FileEntity = FileEntity = __decorate([
+    (0, core_1.Entity)({ abstract: true })
+], FileEntity);
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiL1VzZXJzL2p1a251bS9Eb2N1bWVudHMvQ29kZS9BRS9hcGkvc3JjL21vZHVsZXMvX21peGluL2VudGl0aWVzL2ZpbGUuZW50aXR5LnRzIiwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7OztBQUVBLDBDQUFtRDtBQUNuRCw2Q0FBOEM7QUFFOUMsK0NBQTJDO0FBR3BDLElBQWUsVUFBVSx3QkFBekIsTUFBZSxVQUFXLFNBQVEsd0JBQVU7Q0F1QmxELENBQUE7QUFwQkE7SUFGQyxJQUFBLGVBQVEsR0FBRTtJQUNWLElBQUEscUJBQVcsR0FBRTs7NENBQ0c7QUFJakI7SUFGQyxJQUFBLGVBQVEsR0FBRTtJQUNWLElBQUEscUJBQVcsR0FBRTs7NENBQ0c7QUFHakI7SUFEQyxJQUFBLGVBQVEsRUFBQyxFQUFFLE1BQU0sRUFBRSxJQUFJLEVBQUUsQ0FBQzs7d0NBQ2Q7QUFJYjtJQUZDLElBQUEsZUFBUSxHQUFFO0lBQ1YsSUFBQSxxQkFBVyxHQUFFOzt3Q0FDRDtBQUliO0lBRkMsSUFBQSxlQUFRLEdBQUU7SUFDVixJQUFBLHFCQUFXLEVBQUMsRUFBRSxJQUFJLEVBQUUsQ0FBQyxRQUFRLEVBQUUsU0FBUyxFQUFFLFFBQVEsQ0FBQyxFQUFFLENBQUM7OzhDQUNoQztBQUl2QjtJQUZDLElBQUEsZUFBUSxFQUFDLEVBQUUsUUFBUSxFQUFFLElBQUksRUFBRSxDQUFDO0lBQzVCLElBQUEscUJBQVcsRUFBQyxFQUFFLFFBQVEsRUFBRSxLQUFLLEVBQUUsQ0FBQzs7K0NBQ1o7cUJBdEJBLFVBQVU7SUFEL0IsSUFBQSxhQUFNLEVBQUMsRUFBRSxRQUFRLEVBQUUsSUFBSSxFQUFFLENBQUM7R0FDTCxVQUFVLENBdUIvQiIsIm5hbWVzIjpbXSwic291cmNlcyI6WyIvVXNlcnMvanVrbnVtL0RvY3VtZW50cy9Db2RlL0FFL2FwaS9zcmMvbW9kdWxlcy9fbWl4aW4vZW50aXRpZXMvZmlsZS5lbnRpdHkudHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHR5cGUgeyBGaWxlRW50aXR5IGFzIEZFLCBWSVNJQklMSVRZIH0gZnJvbSAnQHR5cGVzJztcblxuaW1wb3J0IHsgRW50aXR5LCBQcm9wZXJ0eSB9IGZyb20gJ0BtaWtyby1vcm0vY29yZSc7XG5pbXBvcnQgeyBBcGlQcm9wZXJ0eSB9IGZyb20gJ0BuZXN0anMvc3dhZ2dlcic7XG5cbmltcG9ydCB7IEJhc2VFbnRpdHkgfSBmcm9tICcuL2Jhc2UuZW50aXR5JztcblxuQEVudGl0eSh7IGFic3RyYWN0OiB0cnVlIH0pXG5leHBvcnQgYWJzdHJhY3QgY2xhc3MgRmlsZUVudGl0eSBleHRlbmRzIEJhc2VFbnRpdHkgaW1wbGVtZW50cyBGRSB7XG5cdEBQcm9wZXJ0eSgpXG5cdEBBcGlQcm9wZXJ0eSgpXG5cdGZpbGVuYW1lOiBzdHJpbmc7XG5cblx0QFByb3BlcnR5KClcblx0QEFwaVByb3BlcnR5KClcblx0bWltZXR5cGU6IHN0cmluZztcblxuXHRAUHJvcGVydHkoeyBoaWRkZW46IHRydWUgfSlcblx0cGF0aDogc3RyaW5nO1xuXG5cdEBQcm9wZXJ0eSgpXG5cdEBBcGlQcm9wZXJ0eSgpXG5cdHNpemU6IG51bWJlcjtcblxuXHRAUHJvcGVydHkoKVxuXHRAQXBpUHJvcGVydHkoeyBlbnVtOiBbJ3B1YmxpYycsICdwcml2YXRlJywgJ2hpZGRlbiddIH0pXG5cdHZpc2liaWxpdHk6IFZJU0lCSUxJVFk7XG5cblx0QFByb3BlcnR5KHsgbnVsbGFibGU6IHRydWUgfSlcblx0QEFwaVByb3BlcnR5KHsgcmVxdWlyZWQ6IGZhbHNlIH0pXG5cdGRlc2NyaXB0aW9uPzogc3RyaW5nO1xufVxuIl0sInZlcnNpb24iOjN9

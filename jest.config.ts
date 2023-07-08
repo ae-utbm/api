@@ -1,7 +1,7 @@
 import type { JestConfigWithTsJest } from 'ts-jest';
 
 const config: JestConfigWithTsJest = {
-	cache: false,
+	cacheDirectory: '<rootDir>/test/cache',
 	coverageReporters: ['text', 'lcov'],
 	collectCoverage: true,
 	coverageDirectory: 'coverage',

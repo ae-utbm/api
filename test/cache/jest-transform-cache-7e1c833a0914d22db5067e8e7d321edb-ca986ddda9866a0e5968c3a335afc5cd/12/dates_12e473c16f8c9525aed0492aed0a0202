@@ -1,0 +1,358 @@
+7023619ca98c82f12d52ad9b94889b37
+"use strict";
+
+/* istanbul ignore next */
+function cov_1z86x48ht() {
+  var path = "/Users/juknum/Documents/Code/AE/api/src/utils/dates.ts";
+  var hash = "f4abae4891bd73705d2023a81f1e0c47a415fdba";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/juknum/Documents/Code/AE/api/src/utils/dates.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 2,
+          column: 62
+        }
+      },
+      "1": {
+        start: {
+          line: 3,
+          column: 0
+        },
+        end: {
+          line: 3,
+          column: 31
+        }
+      },
+      "2": {
+        start: {
+          line: 11,
+          column: 17
+        },
+        end: {
+          line: 11,
+          column: 77
+        }
+      },
+      "3": {
+        start: {
+          line: 12,
+          column: 16
+        },
+        end: {
+          line: 12,
+          column: 26
+        }
+      },
+      "4": {
+        start: {
+          line: 14,
+          column: 4
+        },
+        end: {
+          line: 15,
+          column: 21
+        }
+      },
+      "5": {
+        start: {
+          line: 15,
+          column: 8
+        },
+        end: {
+          line: 15,
+          column: 21
+        }
+      },
+      "6": {
+        start: {
+          line: 17,
+          column: 17
+        },
+        end: {
+          line: 17,
+          column: 55
+        }
+      },
+      "7": {
+        start: {
+          line: 18,
+          column: 4
+        },
+        end: {
+          line: 19,
+          column: 21
+        }
+      },
+      "8": {
+        start: {
+          line: 19,
+          column: 8
+        },
+        end: {
+          line: 19,
+          column: 21
+        }
+      },
+      "9": {
+        start: {
+          line: 20,
+          column: 4
+        },
+        end: {
+          line: 20,
+          column: 16
+        }
+      },
+      "10": {
+        start: {
+          line: 22,
+          column: 0
+        },
+        end: {
+          line: 22,
+          column: 38
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "checkBirthday",
+        decl: {
+          start: {
+            line: 10,
+            column: 9
+          },
+          end: {
+            line: 10,
+            column: 22
+          }
+        },
+        loc: {
+          start: {
+            line: 10,
+            column: 33
+          },
+          end: {
+            line: 21,
+            column: 1
+          }
+        },
+        line: 10
+      }
+    },
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 11,
+            column: 17
+          },
+          end: {
+            line: 11,
+            column: 77
+          }
+        },
+        type: "cond-expr",
+        locations: [{
+          start: {
+            line: 11,
+            column: 48
+          },
+          end: {
+            line: 11,
+            column: 66
+          }
+        }, {
+          start: {
+            line: 11,
+            column: 69
+          },
+          end: {
+            line: 11,
+            column: 77
+          }
+        }],
+        line: 11
+      },
+      "1": {
+        loc: {
+          start: {
+            line: 14,
+            column: 4
+          },
+          end: {
+            line: 15,
+            column: 21
+          }
+        },
+        type: "if",
+        locations: [{
+          start: {
+            line: 14,
+            column: 4
+          },
+          end: {
+            line: 15,
+            column: 21
+          }
+        }, {
+          start: {
+            line: undefined,
+            column: undefined
+          },
+          end: {
+            line: undefined,
+            column: undefined
+          }
+        }],
+        line: 14
+      },
+      "2": {
+        loc: {
+          start: {
+            line: 18,
+            column: 4
+          },
+          end: {
+            line: 19,
+            column: 21
+          }
+        },
+        type: "if",
+        locations: [{
+          start: {
+            line: 18,
+            column: 4
+          },
+          end: {
+            line: 19,
+            column: 21
+          }
+        }, {
+          start: {
+            line: undefined,
+            column: undefined
+          },
+          end: {
+            line: undefined,
+            column: undefined
+          }
+        }],
+        line: 18
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0,
+      "10": 0
+    },
+    f: {
+      "0": 0
+    },
+    b: {
+      "0": [0, 0],
+      "1": [0, 0],
+      "2": [0, 0]
+    },
+    inputSourceMap: {
+      file: "/Users/juknum/Documents/Code/AE/api/src/utils/dates.ts",
+      mappings: ";;;AAAA;;;;;GAKG;AACH,SAAgB,aAAa,CAAC,QAAuB;IACpD,MAAM,IAAI,GAAG,OAAO,QAAQ,KAAK,QAAQ,CAAC,CAAC,CAAC,IAAI,IAAI,CAAC,QAAQ,CAAC,CAAC,CAAC,CAAC,QAAQ,CAAC;IAC1E,MAAM,GAAG,GAAG,IAAI,IAAI,EAAE,CAAC;IAEvB,qCAAqC;IACrC,IAAI,IAAI,GAAG,GAAG;QAAE,OAAO,KAAK,CAAC;IAE7B,6CAA6C;IAC7C,MAAM,IAAI,GAAG,GAAG,CAAC,WAAW,EAAE,GAAG,IAAI,CAAC,WAAW,EAAE,CAAC;IACpD,IAAI,IAAI,GAAG,EAAE;QAAE,OAAO,KAAK,CAAC;IAE5B,OAAO,IAAI,CAAC;AACb,CAAC;AAZD,sCAYC",
+      names: [],
+      sources: ["/Users/juknum/Documents/Code/AE/api/src/utils/dates.ts"],
+      sourcesContent: ["/**\n * Determines if a date is valid for a user's birthday\n * (must be at least 13 years old and not in the future)\n * @param {string|Date} birthday The date to check\n * @returns {boolean} True if the date is valid, false otherwise\n */\nexport function checkBirthday(birthday: string | Date): boolean {\n\tconst date = typeof birthday === 'string' ? new Date(birthday) : birthday;\n\tconst now = new Date();\n\n\t// Check if the date is in the future\n\tif (date > now) return false;\n\n\t// Check if the user is at least 13 years old\n\tconst diff = now.getFullYear() - date.getFullYear();\n\tif (diff < 13) return false;\n\n\treturn true;\n}\n"],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "f4abae4891bd73705d2023a81f1e0c47a415fdba"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_1z86x48ht = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_1z86x48ht();
+cov_1z86x48ht().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_1z86x48ht().s[1]++;
+exports.checkBirthday = void 0;
+/**
+ * Determines if a date is valid for a user's birthday
+ * (must be at least 13 years old and not in the future)
+ * @param {string|Date} birthday The date to check
+ * @returns {boolean} True if the date is valid, false otherwise
+ */
+function checkBirthday(birthday) {
+  /* istanbul ignore next */
+  cov_1z86x48ht().f[0]++;
+  const date =
+  /* istanbul ignore next */
+  (cov_1z86x48ht().s[2]++, typeof birthday === 'string' ?
+  /* istanbul ignore next */
+  (cov_1z86x48ht().b[0][0]++, new Date(birthday)) :
+  /* istanbul ignore next */
+  (cov_1z86x48ht().b[0][1]++, birthday));
+  const now =
+  /* istanbul ignore next */
+  (cov_1z86x48ht().s[3]++, new Date());
+  // Check if the date is in the future
+  /* istanbul ignore next */
+  cov_1z86x48ht().s[4]++;
+  if (date > now) {
+    /* istanbul ignore next */
+    cov_1z86x48ht().b[1][0]++;
+    cov_1z86x48ht().s[5]++;
+    return false;
+  } else
+  /* istanbul ignore next */
+  {
+    cov_1z86x48ht().b[1][1]++;
+  }
+  // Check if the user is at least 13 years old
+  const diff =
+  /* istanbul ignore next */
+  (cov_1z86x48ht().s[6]++, now.getFullYear() - date.getFullYear());
+  /* istanbul ignore next */
+  cov_1z86x48ht().s[7]++;
+  if (diff < 13) {
+    /* istanbul ignore next */
+    cov_1z86x48ht().b[2][0]++;
+    cov_1z86x48ht().s[8]++;
+    return false;
+  } else
+  /* istanbul ignore next */
+  {
+    cov_1z86x48ht().b[2][1]++;
+  }
+  cov_1z86x48ht().s[9]++;
+  return true;
+}
+/* istanbul ignore next */
+cov_1z86x48ht().s[10]++;
+exports.checkBirthday = checkBirthday;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfMXo4Nng0OGh0IiwiYWN0dWFsQ292ZXJhZ2UiLCJzIiwiY2hlY2tCaXJ0aGRheSIsImJpcnRoZGF5IiwiZiIsImRhdGUiLCJiIiwiRGF0ZSIsIm5vdyIsImRpZmYiLCJnZXRGdWxsWWVhciIsImV4cG9ydHMiXSwic291cmNlcyI6WyIvVXNlcnMvanVrbnVtL0RvY3VtZW50cy9Db2RlL0FFL2FwaS9zcmMvdXRpbHMvZGF0ZXMudHMiXSwic291cmNlc0NvbnRlbnQiOlsiLyoqXG4gKiBEZXRlcm1pbmVzIGlmIGEgZGF0ZSBpcyB2YWxpZCBmb3IgYSB1c2VyJ3MgYmlydGhkYXlcbiAqIChtdXN0IGJlIGF0IGxlYXN0IDEzIHllYXJzIG9sZCBhbmQgbm90IGluIHRoZSBmdXR1cmUpXG4gKiBAcGFyYW0ge3N0cmluZ3xEYXRlfSBiaXJ0aGRheSBUaGUgZGF0ZSB0byBjaGVja1xuICogQHJldHVybnMge2Jvb2xlYW59IFRydWUgaWYgdGhlIGRhdGUgaXMgdmFsaWQsIGZhbHNlIG90aGVyd2lzZVxuICovXG5leHBvcnQgZnVuY3Rpb24gY2hlY2tCaXJ0aGRheShiaXJ0aGRheTogc3RyaW5nIHwgRGF0ZSk6IGJvb2xlYW4ge1xuXHRjb25zdCBkYXRlID0gdHlwZW9mIGJpcnRoZGF5ID09PSAnc3RyaW5nJyA/IG5ldyBEYXRlKGJpcnRoZGF5KSA6IGJpcnRoZGF5O1xuXHRjb25zdCBub3cgPSBuZXcgRGF0ZSgpO1xuXG5cdC8vIENoZWNrIGlmIHRoZSBkYXRlIGlzIGluIHRoZSBmdXR1cmVcblx0aWYgKGRhdGUgPiBub3cpIHJldHVybiBmYWxzZTtcblxuXHQvLyBDaGVjayBpZiB0aGUgdXNlciBpcyBhdCBsZWFzdCAxMyB5ZWFycyBvbGRcblx0Y29uc3QgZGlmZiA9IG5vdy5nZXRGdWxsWWVhcigpIC0gZGF0ZS5nZXRGdWxsWWVhcigpO1xuXHRpZiAoZGlmZiA8IDEzKSByZXR1cm4gZmFsc2U7XG5cblx0cmV0dXJuIHRydWU7XG59XG4iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0lBYUM7SUFBQUEsYUFBQSxZQUFBQSxDQUFBO01BQUEsT0FBQUMsY0FBQTtJQUFBO0VBQUE7RUFBQSxPQUFBQSxjQUFBO0FBQUE7QUFBQUQsYUFBQTtBQUFBQSxhQUFBLEdBQUFFLENBQUE7Ozs7Ozs7QUFiRDs7Ozs7O0FBTUEsU0FBZ0JDLGFBQWFBLENBQUNDLFFBQXVCO0VBQUE7RUFBQUosYUFBQSxHQUFBSyxDQUFBO0VBQ3BELE1BQU1DLElBQUk7RUFBQTtFQUFBLENBQUFOLGFBQUEsR0FBQUUsQ0FBQSxPQUFHLE9BQU9FLFFBQVEsS0FBSyxRQUFRO0VBQUE7RUFBQSxDQUFBSixhQUFBLEdBQUFPLENBQUEsVUFBRyxJQUFJQyxJQUFJLENBQUNKLFFBQVEsQ0FBQztFQUFBO0VBQUEsQ0FBQUosYUFBQSxHQUFBTyxDQUFBLFVBQUdILFFBQVE7RUFDekUsTUFBTUssR0FBRztFQUFBO0VBQUEsQ0FBQVQsYUFBQSxHQUFBRSxDQUFBLE9BQUcsSUFBSU0sSUFBSSxFQUFFO0VBRXRCO0VBQUE7RUFBQVIsYUFBQSxHQUFBRSxDQUFBO0VBQ0EsSUFBSUksSUFBSSxHQUFHRyxHQUFHLEVBQUU7SUFBQTtJQUFBVCxhQUFBLEdBQUFPLENBQUE7SUFBQVAsYUFBQSxHQUFBRSxDQUFBO0lBQUEsT0FBTyxLQUFLO0VBQUEsQ0FBQztFQUFBO0VBQUE7SUFBQUYsYUFBQSxHQUFBTyxDQUFBO0VBQUE7RUFFN0I7RUFDQSxNQUFNRyxJQUFJO0VBQUE7RUFBQSxDQUFBVixhQUFBLEdBQUFFLENBQUEsT0FBR08sR0FBRyxDQUFDRSxXQUFXLEVBQUUsR0FBR0wsSUFBSSxDQUFDSyxXQUFXLEVBQUU7RUFBQztFQUFBWCxhQUFBLEdBQUFFLENBQUE7RUFDcEQsSUFBSVEsSUFBSSxHQUFHLEVBQUUsRUFBRTtJQUFBO0lBQUFWLGFBQUEsR0FBQU8sQ0FBQTtJQUFBUCxhQUFBLEdBQUFFLENBQUE7SUFBQSxPQUFPLEtBQUs7RUFBQSxDQUFDO0VBQUE7RUFBQTtJQUFBRixhQUFBLEdBQUFPLENBQUE7RUFBQTtFQUFBUCxhQUFBLEdBQUFFLENBQUE7RUFFNUIsT0FBTyxJQUFJO0FBQ1o7QUFBQztBQUFBRixhQUFBLEdBQUFFLENBQUE7QUFaRFUsT0FBQSxDQUFBVCxhQUFBLEdBQUFBLGFBQUEifQ==

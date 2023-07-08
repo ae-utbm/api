@@ -1,0 +1,28 @@
+acedcb0868d9c084330260ad7b74d590
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.UserBanner = void 0;
+const core_1 = require("@mikro-orm/core");
+const swagger_1 = require("@nestjs/swagger");
+const file_entity_1 = require("@modules/_mixin/entities/file.entity");
+const user_entity_1 = require("./user.entity");
+let UserBanner = exports.UserBanner = class UserBanner extends file_entity_1.FileEntity {
+};
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: Number, minimum: 1 }),
+    (0, core_1.OneToOne)(() => user_entity_1.User, (user) => user.banner, { owner: true, unique: true }),
+    __metadata("design:type", user_entity_1.User)
+], UserBanner.prototype, "user", void 0);
+exports.UserBanner = UserBanner = __decorate([
+    (0, core_1.Entity)({ tableName: 'users_banners' })
+], UserBanner);
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiL1VzZXJzL2p1a251bS9Eb2N1bWVudHMvQ29kZS9BRS9hcGkvc3JjL21vZHVsZXMvdXNlcnMvZW50aXRpZXMvdXNlci1iYW5uZXIuZW50aXR5LnRzIiwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7OztBQUVBLDBDQUFtRDtBQUNuRCw2Q0FBOEM7QUFFOUMsc0VBQWtFO0FBRWxFLCtDQUFxQztBQUc5QixJQUFNLFVBQVUsd0JBQWhCLE1BQU0sVUFBVyxTQUFRLHdCQUFVO0NBSXpDLENBQUE7QUFEQTtJQUZDLElBQUEscUJBQVcsRUFBQyxFQUFFLElBQUksRUFBRSxNQUFNLEVBQUUsT0FBTyxFQUFFLENBQUMsRUFBRSxDQUFDO0lBQ3pDLElBQUEsZUFBUSxFQUFDLEdBQUcsRUFBRSxDQUFDLGtCQUFJLEVBQUUsQ0FBQyxJQUFJLEVBQUUsRUFBRSxDQUFDLElBQUksQ0FBQyxNQUFNLEVBQUUsRUFBRSxLQUFLLEVBQUUsSUFBSSxFQUFFLE1BQU0sRUFBRSxJQUFJLEVBQUUsQ0FBQzs4QkFDckUsa0JBQUk7d0NBQUM7cUJBSEMsVUFBVTtJQUR0QixJQUFBLGFBQU0sRUFBQyxFQUFFLFNBQVMsRUFBRSxlQUFlLEVBQUUsQ0FBQztHQUMxQixVQUFVLENBSXRCIiwibmFtZXMiOltdLCJzb3VyY2VzIjpbIi9Vc2Vycy9qdWtudW0vRG9jdW1lbnRzL0NvZGUvQUUvYXBpL3NyYy9tb2R1bGVzL3VzZXJzL2VudGl0aWVzL3VzZXItYmFubmVyLmVudGl0eS50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgdHlwZSB7IFVzZXJCYW5uZXJFbnRpdHkgfSBmcm9tICdAdHlwZXMnO1xuXG5pbXBvcnQgeyBFbnRpdHksIE9uZVRvT25lIH0gZnJvbSAnQG1pa3JvLW9ybS9jb3JlJztcbmltcG9ydCB7IEFwaVByb3BlcnR5IH0gZnJvbSAnQG5lc3Rqcy9zd2FnZ2VyJztcblxuaW1wb3J0IHsgRmlsZUVudGl0eSB9IGZyb20gJ0Btb2R1bGVzL19taXhpbi9lbnRpdGllcy9maWxlLmVudGl0eSc7XG5cbmltcG9ydCB7IFVzZXIgfSBmcm9tICcuL3VzZXIuZW50aXR5JztcblxuQEVudGl0eSh7IHRhYmxlTmFtZTogJ3VzZXJzX2Jhbm5lcnMnIH0pXG5leHBvcnQgY2xhc3MgVXNlckJhbm5lciBleHRlbmRzIEZpbGVFbnRpdHkgaW1wbGVtZW50cyBVc2VyQmFubmVyRW50aXR5PFVzZXI+IHtcblx0QEFwaVByb3BlcnR5KHsgdHlwZTogTnVtYmVyLCBtaW5pbXVtOiAxIH0pXG5cdEBPbmVUb09uZSgoKSA9PiBVc2VyLCAodXNlcikgPT4gdXNlci5iYW5uZXIsIHsgb3duZXI6IHRydWUsIHVuaXF1ZTogdHJ1ZSB9KVxuXHR1c2VyOiBVc2VyO1xufVxuIl0sInZlcnNpb24iOjN9

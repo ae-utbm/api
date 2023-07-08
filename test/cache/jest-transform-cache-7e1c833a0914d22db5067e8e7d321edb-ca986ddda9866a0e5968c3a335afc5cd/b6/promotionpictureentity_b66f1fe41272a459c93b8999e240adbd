@@ -1,0 +1,28 @@
+bfc3e5a737f7bc2d1b620e5446176686
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PromotionPicture = void 0;
+const core_1 = require("@mikro-orm/core");
+const swagger_1 = require("@nestjs/swagger");
+const file_entity_1 = require("@modules/_mixin/entities/file.entity");
+const promotion_entity_1 = require("./promotion.entity");
+let PromotionPicture = exports.PromotionPicture = class PromotionPicture extends file_entity_1.FileEntity {
+};
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: () => Number }),
+    (0, core_1.OneToOne)(() => promotion_entity_1.Promotion, (promotion) => promotion.picture, { owner: true, unique: true }),
+    __metadata("design:type", promotion_entity_1.Promotion)
+], PromotionPicture.prototype, "promotion", void 0);
+exports.PromotionPicture = PromotionPicture = __decorate([
+    (0, core_1.Entity)({ tableName: 'promotions_pictures' })
+], PromotionPicture);
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiL1VzZXJzL2p1a251bS9Eb2N1bWVudHMvQ29kZS9BRS9hcGkvc3JjL21vZHVsZXMvcHJvbW90aW9ucy9lbnRpdGllcy9wcm9tb3Rpb24tcGljdHVyZS5lbnRpdHkudHMiLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7O0FBRUEsMENBQW1EO0FBQ25ELDZDQUE4QztBQUU5QyxzRUFBa0U7QUFFbEUseURBQStDO0FBR3hDLElBQU0sZ0JBQWdCLDhCQUF0QixNQUFNLGdCQUFpQixTQUFRLHdCQUFVO0NBSS9DLENBQUE7QUFEQTtJQUZDLElBQUEscUJBQVcsRUFBQyxFQUFFLElBQUksRUFBRSxHQUFHLEVBQUUsQ0FBQyxNQUFNLEVBQUUsQ0FBQztJQUNuQyxJQUFBLGVBQVEsRUFBQyxHQUFHLEVBQUUsQ0FBQyw0QkFBUyxFQUFFLENBQUMsU0FBUyxFQUFFLEVBQUUsQ0FBQyxTQUFTLENBQUMsT0FBTyxFQUFFLEVBQUUsS0FBSyxFQUFFLElBQUksRUFBRSxNQUFNLEVBQUUsSUFBSSxFQUFFLENBQUM7OEJBQ2hGLDRCQUFTO21EQUFDOzJCQUhULGdCQUFnQjtJQUQ1QixJQUFBLGFBQU0sRUFBQyxFQUFFLFNBQVMsRUFBRSxxQkFBcUIsRUFBRSxDQUFDO0dBQ2hDLGdCQUFnQixDQUk1QiIsIm5hbWVzIjpbXSwic291cmNlcyI6WyIvVXNlcnMvanVrbnVtL0RvY3VtZW50cy9Db2RlL0FFL2FwaS9zcmMvbW9kdWxlcy9wcm9tb3Rpb25zL2VudGl0aWVzL3Byb21vdGlvbi1waWN0dXJlLmVudGl0eS50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgdHlwZSB7IFByb21vdGlvblBpY3R1cmVFbnRpdHkgfSBmcm9tICdAdHlwZXMnO1xuXG5pbXBvcnQgeyBFbnRpdHksIE9uZVRvT25lIH0gZnJvbSAnQG1pa3JvLW9ybS9jb3JlJztcbmltcG9ydCB7IEFwaVByb3BlcnR5IH0gZnJvbSAnQG5lc3Rqcy9zd2FnZ2VyJztcblxuaW1wb3J0IHsgRmlsZUVudGl0eSB9IGZyb20gJ0Btb2R1bGVzL19taXhpbi9lbnRpdGllcy9maWxlLmVudGl0eSc7XG5cbmltcG9ydCB7IFByb21vdGlvbiB9IGZyb20gJy4vcHJvbW90aW9uLmVudGl0eSc7XG5cbkBFbnRpdHkoeyB0YWJsZU5hbWU6ICdwcm9tb3Rpb25zX3BpY3R1cmVzJyB9KVxuZXhwb3J0IGNsYXNzIFByb21vdGlvblBpY3R1cmUgZXh0ZW5kcyBGaWxlRW50aXR5IGltcGxlbWVudHMgUHJvbW90aW9uUGljdHVyZUVudGl0eTxQcm9tb3Rpb24+IHtcblx0QEFwaVByb3BlcnR5KHsgdHlwZTogKCkgPT4gTnVtYmVyIH0pXG5cdEBPbmVUb09uZSgoKSA9PiBQcm9tb3Rpb24sIChwcm9tb3Rpb24pID0+IHByb21vdGlvbi5waWN0dXJlLCB7IG93bmVyOiB0cnVlLCB1bmlxdWU6IHRydWUgfSlcblx0cHJvbW90aW9uOiBQcm9tb3Rpb247XG59XG4iXSwidmVyc2lvbiI6M30=

@@ -1,0 +1,163 @@
+05051b297f21cfe0adc44bfbd20db641
+"use strict";
+
+/* istanbul ignore next */
+function cov_238vh7zcj5() {
+  var path = "/Users/juknum/Documents/Code/AE/api/src/modules/auth/decorators/self.decorator.ts";
+  var hash = "44e451ea72906a93b2293736b46d54f5151261aa";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/juknum/Documents/Code/AE/api/src/modules/auth/decorators/self.decorator.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 2,
+          column: 62
+        }
+      },
+      "1": {
+        start: {
+          line: 3,
+          column: 0
+        },
+        end: {
+          line: 3,
+          column: 32
+        }
+      },
+      "2": {
+        start: {
+          line: 4,
+          column: 17
+        },
+        end: {
+          line: 4,
+          column: 42
+        }
+      },
+      "3": {
+        start: {
+          line: 9,
+          column: 23
+        },
+        end: {
+          line: 9,
+          column: 90
+        }
+      },
+      "4": {
+        start: {
+          line: 9,
+          column: 34
+        },
+        end: {
+          line: 9,
+          column: 90
+        }
+      },
+      "5": {
+        start: {
+          line: 10,
+          column: 0
+        },
+        end: {
+          line: 10,
+          column: 40
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 9,
+            column: 23
+          },
+          end: {
+            line: 9,
+            column: 24
+          }
+        },
+        loc: {
+          start: {
+            line: 9,
+            column: 34
+          },
+          end: {
+            line: 9,
+            column: 90
+          }
+        },
+        line: 9
+      }
+    },
+    branchMap: {},
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0
+    },
+    f: {
+      "0": 0
+    },
+    b: {},
+    inputSourceMap: {
+      file: "/Users/juknum/Documents/Code/AE/api/src/modules/auth/decorators/self.decorator.ts",
+      mappings: ";;;AAAA,2CAA6C;AAE7C;;;GAGG;AACI,MAAM,cAAc,GAAG,CAAC,KAAa,EAAE,EAAE,CAAC,IAAA,oBAAW,EAAC,sBAAsB,EAAE,KAAK,CAAC,CAAC;AAA/E,QAAA,cAAc,kBAAiE",
+      names: [],
+      sources: ["/Users/juknum/Documents/Code/AE/api/src/modules/auth/decorators/self.decorator.ts"],
+      sourcesContent: ["import { SetMetadata } from '@nestjs/common';\n\n/**\n * Set up the name of the parameter that contains the user id concerned by the route\n * @param {string} param The name of the parameter that contains the user id\n */\nexport const GuardSelfParam = (param: string) => SetMetadata('guard_self_param_key', param);\n"],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "44e451ea72906a93b2293736b46d54f5151261aa"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_238vh7zcj5 = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_238vh7zcj5();
+cov_238vh7zcj5().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_238vh7zcj5().s[1]++;
+exports.GuardSelfParam = void 0;
+const common_1 =
+/* istanbul ignore next */
+(cov_238vh7zcj5().s[2]++, require("@nestjs/common"));
+/**
+ * Set up the name of the parameter that contains the user id concerned by the route
+ * @param {string} param The name of the parameter that contains the user id
+ */
+/* istanbul ignore next */
+cov_238vh7zcj5().s[3]++;
+const GuardSelfParam = param => {
+  /* istanbul ignore next */
+  cov_238vh7zcj5().f[0]++;
+  cov_238vh7zcj5().s[4]++;
+  return (0, common_1.SetMetadata)('guard_self_param_key', param);
+};
+/* istanbul ignore next */
+cov_238vh7zcj5().s[5]++;
+exports.GuardSelfParam = GuardSelfParam;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb21tb25fMSIsImNvdl8yMzh2aDd6Y2o1IiwicyIsInJlcXVpcmUiLCJHdWFyZFNlbGZQYXJhbSIsInBhcmFtIiwiZiIsIlNldE1ldGFkYXRhIiwiZXhwb3J0cyJdLCJzb3VyY2VzIjpbIi9Vc2Vycy9qdWtudW0vRG9jdW1lbnRzL0NvZGUvQUUvYXBpL3NyYy9tb2R1bGVzL2F1dGgvZGVjb3JhdG9ycy9zZWxmLmRlY29yYXRvci50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBTZXRNZXRhZGF0YSB9IGZyb20gJ0BuZXN0anMvY29tbW9uJztcblxuLyoqXG4gKiBTZXQgdXAgdGhlIG5hbWUgb2YgdGhlIHBhcmFtZXRlciB0aGF0IGNvbnRhaW5zIHRoZSB1c2VyIGlkIGNvbmNlcm5lZCBieSB0aGUgcm91dGVcbiAqIEBwYXJhbSB7c3RyaW5nfSBwYXJhbSBUaGUgbmFtZSBvZiB0aGUgcGFyYW1ldGVyIHRoYXQgY29udGFpbnMgdGhlIHVzZXIgaWRcbiAqL1xuZXhwb3J0IGNvbnN0IEd1YXJkU2VsZlBhcmFtID0gKHBhcmFtOiBzdHJpbmcpID0+IFNldE1ldGFkYXRhKCdndWFyZF9zZWxmX3BhcmFtX2tleScsIHBhcmFtKTtcbiJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSxNQUFBQSxRQUFBO0FBQUE7QUFBQSxDQUFBQyxjQUFBLEdBQUFDLENBQUEsT0FBQUMsT0FBQTtBQUVBOzs7O0FBQUE7QUFBQUYsY0FBQSxHQUFBQyxDQUFBO0FBSU8sTUFBTUUsY0FBYyxHQUFJQyxLQUFhLElBQUs7RUFBQTtFQUFBSixjQUFBLEdBQUFLLENBQUE7RUFBQUwsY0FBQSxHQUFBQyxDQUFBO0VBQUEsV0FBQUYsUUFBQSxDQUFBTyxXQUFXLEVBQUMsc0JBQXNCLEVBQUVGLEtBQUssQ0FBQztBQUFELENBQUM7QUFBQztBQUFBSixjQUFBLEdBQUFDLENBQUE7QUFBL0VNLE9BQUEsQ0FBQUosY0FBYyxHQUFBQSxjQUFBIn0=

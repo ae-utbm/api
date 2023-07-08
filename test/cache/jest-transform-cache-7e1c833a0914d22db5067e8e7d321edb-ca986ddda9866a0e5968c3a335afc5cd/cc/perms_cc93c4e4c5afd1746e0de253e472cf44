@@ -1,0 +1,77 @@
+060d5de953ec0bfabf31f8be83fc78e2
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PERMISSIONS_NAMES = exports.PERMISSIONS = void 0;
+/**
+ * This file contains all the permissions available in the API.
+ *! Please note that permissions are not stored in the database, they are hardcoded.
+ */
+exports.PERMISSIONS = [
+    {
+        name: 'ROOT',
+        description: 'As access to everything',
+    },
+    // LOGS
+    {
+        name: 'CAN_READ_LOGS_OF_USER',
+        description: 'Can read logs of users',
+    },
+    {
+        name: 'CAN_DELETE_LOGS_OF_USER',
+        description: 'Can delete logs of users',
+    },
+    // PERMISSIONS
+    {
+        name: 'CAN_EDIT_PERMISSIONS_OF_USER',
+        description: 'Can assign/remove permissions of users',
+    },
+    {
+        name: 'CAN_EDIT_PERMISSIONS_OF_ROLE',
+        description: 'Can assign/remove permissions of existing roles',
+    },
+    {
+        name: 'CAN_READ_PERMISSIONS_OF_USER',
+        description: 'Can read permissions users',
+    },
+    {
+        name: 'CAN_READ_PERMISSIONS_OF_ROLE',
+        description: 'Can read permissions roles',
+    },
+    // ROLES
+    {
+        name: 'CAN_EDIT_ROLE',
+        description: 'Can edit/create roles',
+    },
+    {
+        name: 'CAN_READ_ROLE',
+        description: 'Can read all roles that exist',
+    },
+    // USERS
+    {
+        name: 'CAN_EDIT_USER',
+        description: 'Can create a new user or edit an existing one',
+    },
+    {
+        name: 'CAN_DELETE_USER',
+        description: 'Can delete users',
+    },
+    {
+        name: 'CAN_READ_USER',
+        description: 'Can read filtered information of users',
+    },
+    {
+        name: 'CAN_READ_USER_PRIVATE',
+        description: 'Can read all information of users',
+    },
+    // PROMOTIONS
+    {
+        name: 'CAN_READ_PROMOTION',
+        description: "Can read a promotion's information",
+    },
+    {
+        name: 'CAN_EDIT_PROMOTION',
+        description: 'Can edit a promotion (name, description, etc.)',
+    },
+];
+exports.PERMISSIONS_NAMES = exports.PERMISSIONS.map((p) => p.name);
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiL1VzZXJzL2p1a251bS9Eb2N1bWVudHMvQ29kZS9BRS9hcGkvc3JjL3R5cGVzL2FwaS9wZXJtaXNzaW9ucy9wZXJtcy50cyIsIm1hcHBpbmdzIjoiOzs7QUFFQTs7O0dBR0c7QUFDVSxRQUFBLFdBQVcsR0FBRztJQUMxQjtRQUNDLElBQUksRUFBRSxNQUFNO1FBQ1osV0FBVyxFQUFFLHlCQUF5QjtLQUN0QztJQUVELE9BQU87SUFDUDtRQUNDLElBQUksRUFBRSx1QkFBdUI7UUFDN0IsV0FBVyxFQUFFLHdCQUF3QjtLQUNyQztJQUNEO1FBQ0MsSUFBSSxFQUFFLHlCQUF5QjtRQUMvQixXQUFXLEVBQUUsMEJBQTBCO0tBQ3ZDO0lBRUQsY0FBYztJQUNkO1FBQ0MsSUFBSSxFQUFFLDhCQUE4QjtRQUNwQyxXQUFXLEVBQUUsd0NBQXdDO0tBQ3JEO0lBQ0Q7UUFDQyxJQUFJLEVBQUUsOEJBQThCO1FBQ3BDLFdBQVcsRUFBRSxpREFBaUQ7S0FDOUQ7SUFDRDtRQUNDLElBQUksRUFBRSw4QkFBOEI7UUFDcEMsV0FBVyxFQUFFLDRCQUE0QjtLQUN6QztJQUNEO1FBQ0MsSUFBSSxFQUFFLDhCQUE4QjtRQUNwQyxXQUFXLEVBQUUsNEJBQTRCO0tBQ3pDO0lBRUQsUUFBUTtJQUNSO1FBQ0MsSUFBSSxFQUFFLGVBQWU7UUFDckIsV0FBVyxFQUFFLHVCQUF1QjtLQUNwQztJQUNEO1FBQ0MsSUFBSSxFQUFFLGVBQWU7UUFDckIsV0FBVyxFQUFFLCtCQUErQjtLQUM1QztJQUVELFFBQVE7SUFDUjtRQUNDLElBQUksRUFBRSxlQUFlO1FBQ3JCLFdBQVcsRUFBRSwrQ0FBK0M7S0FDNUQ7SUFDRDtRQUNDLElBQUksRUFBRSxpQkFBaUI7UUFDdkIsV0FBVyxFQUFFLGtCQUFrQjtLQUMvQjtJQUNEO1FBQ0MsSUFBSSxFQUFFLGVBQWU7UUFDckIsV0FBVyxFQUFFLHdDQUF3QztLQUNyRDtJQUNEO1FBQ0MsSUFBSSxFQUFFLHVCQUF1QjtRQUM3QixXQUFXLEVBQUUsbUNBQW1DO0tBQ2hEO0lBRUQsYUFBYTtJQUNiO1FBQ0MsSUFBSSxFQUFFLG9CQUFvQjtRQUMxQixXQUFXLEVBQUUsb0NBQW9DO0tBQ2pEO0lBQ0Q7UUFDQyxJQUFJLEVBQUUsb0JBQW9CO1FBQzFCLFdBQVcsRUFBRSxnREFBZ0Q7S0FDN0Q7Q0FDUSxDQUFDO0FBRUUsUUFBQSxpQkFBaUIsR0FBcUIsbUJBQVcsQ0FBQyxHQUFHLENBQUMsQ0FBQyxDQUFDLEVBQUUsRUFBRSxDQUFDLENBQUMsQ0FBQyxJQUFJLENBQUMsQ0FBQyIsIm5hbWVzIjpbXSwic291cmNlcyI6WyIvVXNlcnMvanVrbnVtL0RvY3VtZW50cy9Db2RlL0FFL2FwaS9zcmMvdHlwZXMvYXBpL3Blcm1pc3Npb25zL3Blcm1zLnRzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB0eXBlIHsgUGVybWlzc2lvbk5hbWUgfSBmcm9tICcuJztcblxuLyoqXG4gKiBUaGlzIGZpbGUgY29udGFpbnMgYWxsIHRoZSBwZXJtaXNzaW9ucyBhdmFpbGFibGUgaW4gdGhlIEFQSS5cbiAqISBQbGVhc2Ugbm90ZSB0aGF0IHBlcm1pc3Npb25zIGFyZSBub3Qgc3RvcmVkIGluIHRoZSBkYXRhYmFzZSwgdGhleSBhcmUgaGFyZGNvZGVkLlxuICovXG5leHBvcnQgY29uc3QgUEVSTUlTU0lPTlMgPSBbXG5cdHtcblx0XHRuYW1lOiAnUk9PVCcsXG5cdFx0ZGVzY3JpcHRpb246ICdBcyBhY2Nlc3MgdG8gZXZlcnl0aGluZycsXG5cdH0sXG5cblx0Ly8gTE9HU1xuXHR7XG5cdFx0bmFtZTogJ0NBTl9SRUFEX0xPR1NfT0ZfVVNFUicsXG5cdFx0ZGVzY3JpcHRpb246ICdDYW4gcmVhZCBsb2dzIG9mIHVzZXJzJyxcblx0fSxcblx0e1xuXHRcdG5hbWU6ICdDQU5fREVMRVRFX0xPR1NfT0ZfVVNFUicsXG5cdFx0ZGVzY3JpcHRpb246ICdDYW4gZGVsZXRlIGxvZ3Mgb2YgdXNlcnMnLFxuXHR9LFxuXG5cdC8vIFBFUk1JU1NJT05TXG5cdHtcblx0XHRuYW1lOiAnQ0FOX0VESVRfUEVSTUlTU0lPTlNfT0ZfVVNFUicsXG5cdFx0ZGVzY3JpcHRpb246ICdDYW4gYXNzaWduL3JlbW92ZSBwZXJtaXNzaW9ucyBvZiB1c2VycycsXG5cdH0sXG5cdHtcblx0XHRuYW1lOiAnQ0FOX0VESVRfUEVSTUlTU0lPTlNfT0ZfUk9MRScsXG5cdFx0ZGVzY3JpcHRpb246ICdDYW4gYXNzaWduL3JlbW92ZSBwZXJtaXNzaW9ucyBvZiBleGlzdGluZyByb2xlcycsXG5cdH0sXG5cdHtcblx0XHRuYW1lOiAnQ0FOX1JFQURfUEVSTUlTU0lPTlNfT0ZfVVNFUicsXG5cdFx0ZGVzY3JpcHRpb246ICdDYW4gcmVhZCBwZXJtaXNzaW9ucyB1c2VycycsXG5cdH0sXG5cdHtcblx0XHRuYW1lOiAnQ0FOX1JFQURfUEVSTUlTU0lPTlNfT0ZfUk9MRScsXG5cdFx0ZGVzY3JpcHRpb246ICdDYW4gcmVhZCBwZXJtaXNzaW9ucyByb2xlcycsXG5cdH0sXG5cblx0Ly8gUk9MRVNcblx0e1xuXHRcdG5hbWU6ICdDQU5fRURJVF9ST0xFJyxcblx0XHRkZXNjcmlwdGlvbjogJ0NhbiBlZGl0L2NyZWF0ZSByb2xlcycsXG5cdH0sXG5cdHtcblx0XHRuYW1lOiAnQ0FOX1JFQURfUk9MRScsXG5cdFx0ZGVzY3JpcHRpb246ICdDYW4gcmVhZCBhbGwgcm9sZXMgdGhhdCBleGlzdCcsXG5cdH0sXG5cblx0Ly8gVVNFUlNcblx0e1xuXHRcdG5hbWU6ICdDQU5fRURJVF9VU0VSJyxcblx0XHRkZXNjcmlwdGlvbjogJ0NhbiBjcmVhdGUgYSBuZXcgdXNlciBvciBlZGl0IGFuIGV4aXN0aW5nIG9uZScsXG5cdH0sXG5cdHtcblx0XHRuYW1lOiAnQ0FOX0RFTEVURV9VU0VSJyxcblx0XHRkZXNjcmlwdGlvbjogJ0NhbiBkZWxldGUgdXNlcnMnLFxuXHR9LFxuXHR7XG5cdFx0bmFtZTogJ0NBTl9SRUFEX1VTRVInLFxuXHRcdGRlc2NyaXB0aW9uOiAnQ2FuIHJlYWQgZmlsdGVyZWQgaW5mb3JtYXRpb24gb2YgdXNlcnMnLFxuXHR9LFxuXHR7XG5cdFx0bmFtZTogJ0NBTl9SRUFEX1VTRVJfUFJJVkFURScsXG5cdFx0ZGVzY3JpcHRpb246ICdDYW4gcmVhZCBhbGwgaW5mb3JtYXRpb24gb2YgdXNlcnMnLFxuXHR9LFxuXG5cdC8vIFBST01PVElPTlNcblx0e1xuXHRcdG5hbWU6ICdDQU5fUkVBRF9QUk9NT1RJT04nLFxuXHRcdGRlc2NyaXB0aW9uOiBcIkNhbiByZWFkIGEgcHJvbW90aW9uJ3MgaW5mb3JtYXRpb25cIixcblx0fSxcblx0e1xuXHRcdG5hbWU6ICdDQU5fRURJVF9QUk9NT1RJT04nLFxuXHRcdGRlc2NyaXB0aW9uOiAnQ2FuIGVkaXQgYSBwcm9tb3Rpb24gKG5hbWUsIGRlc2NyaXB0aW9uLCBldGMuKScsXG5cdH0sXG5dIGFzIGNvbnN0O1xuXG5leHBvcnQgY29uc3QgUEVSTUlTU0lPTlNfTkFNRVM6IFBlcm1pc3Npb25OYW1lW10gPSBQRVJNSVNTSU9OUy5tYXAoKHApID0+IHAubmFtZSk7XG4iXSwidmVyc2lvbiI6M30=

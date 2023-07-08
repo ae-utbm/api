@@ -1,0 +1,204 @@
+018dcda5dbfa5941d179356e4cc10660
+"use strict";
+
+/* istanbul ignore next */
+function cov_ov1cxbfcz() {
+  var path = "/Users/juknum/Documents/Code/AE/api/src/types/api/permissions/perms.ts";
+  var hash = "9cfa46eeb307b2f627cb20d4f19ecf62910b3b42";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/juknum/Documents/Code/AE/api/src/types/api/permissions/perms.ts",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 2,
+          column: 62
+        }
+      },
+      "1": {
+        start: {
+          line: 3,
+          column: 0
+        },
+        end: {
+          line: 3,
+          column: 57
+        }
+      },
+      "2": {
+        start: {
+          line: 8,
+          column: 0
+        },
+        end: {
+          line: 74,
+          column: 2
+        }
+      },
+      "3": {
+        start: {
+          line: 75,
+          column: 0
+        },
+        end: {
+          line: 75,
+          column: 67
+        }
+      },
+      "4": {
+        start: {
+          line: 75,
+          column: 59
+        },
+        end: {
+          line: 75,
+          column: 65
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 75,
+            column: 52
+          },
+          end: {
+            line: 75,
+            column: 53
+          }
+        },
+        loc: {
+          start: {
+            line: 75,
+            column: 59
+          },
+          end: {
+            line: 75,
+            column: 65
+          }
+        },
+        line: 75
+      }
+    },
+    branchMap: {},
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0
+    },
+    f: {
+      "0": 0
+    },
+    b: {},
+    inputSourceMap: {
+      file: "/Users/juknum/Documents/Code/AE/api/src/types/api/permissions/perms.ts",
+      mappings: ";;;AAEA;;;GAGG;AACU,QAAA,WAAW,GAAG;IAC1B;QACC,IAAI,EAAE,MAAM;QACZ,WAAW,EAAE,yBAAyB;KACtC;IAED,OAAO;IACP;QACC,IAAI,EAAE,uBAAuB;QAC7B,WAAW,EAAE,wBAAwB;KACrC;IACD;QACC,IAAI,EAAE,yBAAyB;QAC/B,WAAW,EAAE,0BAA0B;KACvC;IAED,cAAc;IACd;QACC,IAAI,EAAE,8BAA8B;QACpC,WAAW,EAAE,wCAAwC;KACrD;IACD;QACC,IAAI,EAAE,8BAA8B;QACpC,WAAW,EAAE,iDAAiD;KAC9D;IACD;QACC,IAAI,EAAE,8BAA8B;QACpC,WAAW,EAAE,4BAA4B;KACzC;IACD;QACC,IAAI,EAAE,8BAA8B;QACpC,WAAW,EAAE,4BAA4B;KACzC;IAED,QAAQ;IACR;QACC,IAAI,EAAE,eAAe;QACrB,WAAW,EAAE,uBAAuB;KACpC;IACD;QACC,IAAI,EAAE,eAAe;QACrB,WAAW,EAAE,+BAA+B;KAC5C;IAED,QAAQ;IACR;QACC,IAAI,EAAE,eAAe;QACrB,WAAW,EAAE,+CAA+C;KAC5D;IACD;QACC,IAAI,EAAE,iBAAiB;QACvB,WAAW,EAAE,kBAAkB;KAC/B;IACD;QACC,IAAI,EAAE,eAAe;QACrB,WAAW,EAAE,wCAAwC;KACrD;IACD;QACC,IAAI,EAAE,uBAAuB;QAC7B,WAAW,EAAE,mCAAmC;KAChD;IAED,aAAa;IACb;QACC,IAAI,EAAE,oBAAoB;QAC1B,WAAW,EAAE,oCAAoC;KACjD;IACD;QACC,IAAI,EAAE,oBAAoB;QAC1B,WAAW,EAAE,gDAAgD;KAC7D;CACQ,CAAC;AAEE,QAAA,iBAAiB,GAAqB,mBAAW,CAAC,GAAG,CAAC,CAAC,CAAC,EAAE,EAAE,CAAC,CAAC,CAAC,IAAI,CAAC,CAAC",
+      names: [],
+      sources: ["/Users/juknum/Documents/Code/AE/api/src/types/api/permissions/perms.ts"],
+      sourcesContent: ["import type { PermissionName } from '.';\n\n/**\n * This file contains all the permissions available in the API.\n *! Please note that permissions are not stored in the database, they are hardcoded.\n */\nexport const PERMISSIONS = [\n\t{\n\t\tname: 'ROOT',\n\t\tdescription: 'As access to everything',\n\t},\n\n\t// LOGS\n\t{\n\t\tname: 'CAN_READ_LOGS_OF_USER',\n\t\tdescription: 'Can read logs of users',\n\t},\n\t{\n\t\tname: 'CAN_DELETE_LOGS_OF_USER',\n\t\tdescription: 'Can delete logs of users',\n\t},\n\n\t// PERMISSIONS\n\t{\n\t\tname: 'CAN_EDIT_PERMISSIONS_OF_USER',\n\t\tdescription: 'Can assign/remove permissions of users',\n\t},\n\t{\n\t\tname: 'CAN_EDIT_PERMISSIONS_OF_ROLE',\n\t\tdescription: 'Can assign/remove permissions of existing roles',\n\t},\n\t{\n\t\tname: 'CAN_READ_PERMISSIONS_OF_USER',\n\t\tdescription: 'Can read permissions users',\n\t},\n\t{\n\t\tname: 'CAN_READ_PERMISSIONS_OF_ROLE',\n\t\tdescription: 'Can read permissions roles',\n\t},\n\n\t// ROLES\n\t{\n\t\tname: 'CAN_EDIT_ROLE',\n\t\tdescription: 'Can edit/create roles',\n\t},\n\t{\n\t\tname: 'CAN_READ_ROLE',\n\t\tdescription: 'Can read all roles that exist',\n\t},\n\n\t// USERS\n\t{\n\t\tname: 'CAN_EDIT_USER',\n\t\tdescription: 'Can create a new user or edit an existing one',\n\t},\n\t{\n\t\tname: 'CAN_DELETE_USER',\n\t\tdescription: 'Can delete users',\n\t},\n\t{\n\t\tname: 'CAN_READ_USER',\n\t\tdescription: 'Can read filtered information of users',\n\t},\n\t{\n\t\tname: 'CAN_READ_USER_PRIVATE',\n\t\tdescription: 'Can read all information of users',\n\t},\n\n\t// PROMOTIONS\n\t{\n\t\tname: 'CAN_READ_PROMOTION',\n\t\tdescription: \"Can read a promotion's information\",\n\t},\n\t{\n\t\tname: 'CAN_EDIT_PROMOTION',\n\t\tdescription: 'Can edit a promotion (name, description, etc.)',\n\t},\n] as const;\n\nexport const PERMISSIONS_NAMES: PermissionName[] = PERMISSIONS.map((p) => p.name);\n"],
+      version: 3
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "9cfa46eeb307b2f627cb20d4f19ecf62910b3b42"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_ov1cxbfcz = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_ov1cxbfcz();
+cov_ov1cxbfcz().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_ov1cxbfcz().s[1]++;
+exports.PERMISSIONS_NAMES = exports.PERMISSIONS = void 0;
+/**
+ * This file contains all the permissions available in the API.
+ *! Please note that permissions are not stored in the database, they are hardcoded.
+ */
+/* istanbul ignore next */
+cov_ov1cxbfcz().s[2]++;
+exports.PERMISSIONS = [{
+  name: 'ROOT',
+  description: 'As access to everything'
+},
+// LOGS
+{
+  name: 'CAN_READ_LOGS_OF_USER',
+  description: 'Can read logs of users'
+}, {
+  name: 'CAN_DELETE_LOGS_OF_USER',
+  description: 'Can delete logs of users'
+},
+// PERMISSIONS
+{
+  name: 'CAN_EDIT_PERMISSIONS_OF_USER',
+  description: 'Can assign/remove permissions of users'
+}, {
+  name: 'CAN_EDIT_PERMISSIONS_OF_ROLE',
+  description: 'Can assign/remove permissions of existing roles'
+}, {
+  name: 'CAN_READ_PERMISSIONS_OF_USER',
+  description: 'Can read permissions users'
+}, {
+  name: 'CAN_READ_PERMISSIONS_OF_ROLE',
+  description: 'Can read permissions roles'
+},
+// ROLES
+{
+  name: 'CAN_EDIT_ROLE',
+  description: 'Can edit/create roles'
+}, {
+  name: 'CAN_READ_ROLE',
+  description: 'Can read all roles that exist'
+},
+// USERS
+{
+  name: 'CAN_EDIT_USER',
+  description: 'Can create a new user or edit an existing one'
+}, {
+  name: 'CAN_DELETE_USER',
+  description: 'Can delete users'
+}, {
+  name: 'CAN_READ_USER',
+  description: 'Can read filtered information of users'
+}, {
+  name: 'CAN_READ_USER_PRIVATE',
+  description: 'Can read all information of users'
+},
+// PROMOTIONS
+{
+  name: 'CAN_READ_PROMOTION',
+  description: "Can read a promotion's information"
+}, {
+  name: 'CAN_EDIT_PROMOTION',
+  description: 'Can edit a promotion (name, description, etc.)'
+}];
+/* istanbul ignore next */
+cov_ov1cxbfcz().s[3]++;
+exports.PERMISSIONS_NAMES = exports.PERMISSIONS.map(p => {
+  /* istanbul ignore next */
+  cov_ov1cxbfcz().f[0]++;
+  cov_ov1cxbfcz().s[4]++;
+  return p.name;
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3Zfb3YxY3hiZmN6IiwiYWN0dWFsQ292ZXJhZ2UiLCJzIiwiZXhwb3J0cyIsIlBFUk1JU1NJT05TIiwibmFtZSIsImRlc2NyaXB0aW9uIiwiUEVSTUlTU0lPTlNfTkFNRVMiLCJtYXAiLCJwIiwiZiJdLCJzb3VyY2VzIjpbIi9Vc2Vycy9qdWtudW0vRG9jdW1lbnRzL0NvZGUvQUUvYXBpL3NyYy90eXBlcy9hcGkvcGVybWlzc2lvbnMvcGVybXMudHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHR5cGUgeyBQZXJtaXNzaW9uTmFtZSB9IGZyb20gJy4nO1xuXG4vKipcbiAqIFRoaXMgZmlsZSBjb250YWlucyBhbGwgdGhlIHBlcm1pc3Npb25zIGF2YWlsYWJsZSBpbiB0aGUgQVBJLlxuICohIFBsZWFzZSBub3RlIHRoYXQgcGVybWlzc2lvbnMgYXJlIG5vdCBzdG9yZWQgaW4gdGhlIGRhdGFiYXNlLCB0aGV5IGFyZSBoYXJkY29kZWQuXG4gKi9cbmV4cG9ydCBjb25zdCBQRVJNSVNTSU9OUyA9IFtcblx0e1xuXHRcdG5hbWU6ICdST09UJyxcblx0XHRkZXNjcmlwdGlvbjogJ0FzIGFjY2VzcyB0byBldmVyeXRoaW5nJyxcblx0fSxcblxuXHQvLyBMT0dTXG5cdHtcblx0XHRuYW1lOiAnQ0FOX1JFQURfTE9HU19PRl9VU0VSJyxcblx0XHRkZXNjcmlwdGlvbjogJ0NhbiByZWFkIGxvZ3Mgb2YgdXNlcnMnLFxuXHR9LFxuXHR7XG5cdFx0bmFtZTogJ0NBTl9ERUxFVEVfTE9HU19PRl9VU0VSJyxcblx0XHRkZXNjcmlwdGlvbjogJ0NhbiBkZWxldGUgbG9ncyBvZiB1c2VycycsXG5cdH0sXG5cblx0Ly8gUEVSTUlTU0lPTlNcblx0e1xuXHRcdG5hbWU6ICdDQU5fRURJVF9QRVJNSVNTSU9OU19PRl9VU0VSJyxcblx0XHRkZXNjcmlwdGlvbjogJ0NhbiBhc3NpZ24vcmVtb3ZlIHBlcm1pc3Npb25zIG9mIHVzZXJzJyxcblx0fSxcblx0e1xuXHRcdG5hbWU6ICdDQU5fRURJVF9QRVJNSVNTSU9OU19PRl9ST0xFJyxcblx0XHRkZXNjcmlwdGlvbjogJ0NhbiBhc3NpZ24vcmVtb3ZlIHBlcm1pc3Npb25zIG9mIGV4aXN0aW5nIHJvbGVzJyxcblx0fSxcblx0e1xuXHRcdG5hbWU6ICdDQU5fUkVBRF9QRVJNSVNTSU9OU19PRl9VU0VSJyxcblx0XHRkZXNjcmlwdGlvbjogJ0NhbiByZWFkIHBlcm1pc3Npb25zIHVzZXJzJyxcblx0fSxcblx0e1xuXHRcdG5hbWU6ICdDQU5fUkVBRF9QRVJNSVNTSU9OU19PRl9ST0xFJyxcblx0XHRkZXNjcmlwdGlvbjogJ0NhbiByZWFkIHBlcm1pc3Npb25zIHJvbGVzJyxcblx0fSxcblxuXHQvLyBST0xFU1xuXHR7XG5cdFx0bmFtZTogJ0NBTl9FRElUX1JPTEUnLFxuXHRcdGRlc2NyaXB0aW9uOiAnQ2FuIGVkaXQvY3JlYXRlIHJvbGVzJyxcblx0fSxcblx0e1xuXHRcdG5hbWU6ICdDQU5fUkVBRF9ST0xFJyxcblx0XHRkZXNjcmlwdGlvbjogJ0NhbiByZWFkIGFsbCByb2xlcyB0aGF0IGV4aXN0Jyxcblx0fSxcblxuXHQvLyBVU0VSU1xuXHR7XG5cdFx0bmFtZTogJ0NBTl9FRElUX1VTRVInLFxuXHRcdGRlc2NyaXB0aW9uOiAnQ2FuIGNyZWF0ZSBhIG5ldyB1c2VyIG9yIGVkaXQgYW4gZXhpc3Rpbmcgb25lJyxcblx0fSxcblx0e1xuXHRcdG5hbWU6ICdDQU5fREVMRVRFX1VTRVInLFxuXHRcdGRlc2NyaXB0aW9uOiAnQ2FuIGRlbGV0ZSB1c2VycycsXG5cdH0sXG5cdHtcblx0XHRuYW1lOiAnQ0FOX1JFQURfVVNFUicsXG5cdFx0ZGVzY3JpcHRpb246ICdDYW4gcmVhZCBmaWx0ZXJlZCBpbmZvcm1hdGlvbiBvZiB1c2VycycsXG5cdH0sXG5cdHtcblx0XHRuYW1lOiAnQ0FOX1JFQURfVVNFUl9QUklWQVRFJyxcblx0XHRkZXNjcmlwdGlvbjogJ0NhbiByZWFkIGFsbCBpbmZvcm1hdGlvbiBvZiB1c2VycycsXG5cdH0sXG5cblx0Ly8gUFJPTU9USU9OU1xuXHR7XG5cdFx0bmFtZTogJ0NBTl9SRUFEX1BST01PVElPTicsXG5cdFx0ZGVzY3JpcHRpb246IFwiQ2FuIHJlYWQgYSBwcm9tb3Rpb24ncyBpbmZvcm1hdGlvblwiLFxuXHR9LFxuXHR7XG5cdFx0bmFtZTogJ0NBTl9FRElUX1BST01PVElPTicsXG5cdFx0ZGVzY3JpcHRpb246ICdDYW4gZWRpdCBhIHByb21vdGlvbiAobmFtZSwgZGVzY3JpcHRpb24sIGV0Yy4pJyxcblx0fSxcbl0gYXMgY29uc3Q7XG5cbmV4cG9ydCBjb25zdCBQRVJNSVNTSU9OU19OQU1FUzogUGVybWlzc2lvbk5hbWVbXSA9IFBFUk1JU1NJT05TLm1hcCgocCkgPT4gcC5uYW1lKTtcbiJdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0lBZUU7SUFBQUEsYUFBQSxZQUFBQSxDQUFBO01BQUEsT0FBQUMsY0FBQTtJQUFBO0VBQUE7RUFBQSxPQUFBQSxjQUFBO0FBQUE7QUFBQUQsYUFBQTtBQUFBQSxhQUFBLEdBQUFFLENBQUE7Ozs7Ozs7QUFiRjs7OztBQUFBO0FBQUFGLGFBQUEsR0FBQUUsQ0FBQTtBQUlhQyxPQUFBLENBQUFDLFdBQVcsR0FBRyxDQUMxQjtFQUNDQyxJQUFJLEVBQUUsTUFBTTtFQUNaQyxXQUFXLEVBQUU7Q0FDYjtBQUVEO0FBQ0E7RUFDQ0QsSUFBSSxFQUFFLHVCQUF1QjtFQUM3QkMsV0FBVyxFQUFFO0NBQ2IsRUFDRDtFQUNDRCxJQUFJLEVBQUUseUJBQXlCO0VBQy9CQyxXQUFXLEVBQUU7Q0FDYjtBQUVEO0FBQ0E7RUFDQ0QsSUFBSSxFQUFFLDhCQUE4QjtFQUNwQ0MsV0FBVyxFQUFFO0NBQ2IsRUFDRDtFQUNDRCxJQUFJLEVBQUUsOEJBQThCO0VBQ3BDQyxXQUFXLEVBQUU7Q0FDYixFQUNEO0VBQ0NELElBQUksRUFBRSw4QkFBOEI7RUFDcENDLFdBQVcsRUFBRTtDQUNiLEVBQ0Q7RUFDQ0QsSUFBSSxFQUFFLDhCQUE4QjtFQUNwQ0MsV0FBVyxFQUFFO0NBQ2I7QUFFRDtBQUNBO0VBQ0NELElBQUksRUFBRSxlQUFlO0VBQ3JCQyxXQUFXLEVBQUU7Q0FDYixFQUNEO0VBQ0NELElBQUksRUFBRSxlQUFlO0VBQ3JCQyxXQUFXLEVBQUU7Q0FDYjtBQUVEO0FBQ0E7RUFDQ0QsSUFBSSxFQUFFLGVBQWU7RUFDckJDLFdBQVcsRUFBRTtDQUNiLEVBQ0Q7RUFDQ0QsSUFBSSxFQUFFLGlCQUFpQjtFQUN2QkMsV0FBVyxFQUFFO0NBQ2IsRUFDRDtFQUNDRCxJQUFJLEVBQUUsZUFBZTtFQUNyQkMsV0FBVyxFQUFFO0NBQ2IsRUFDRDtFQUNDRCxJQUFJLEVBQUUsdUJBQXVCO0VBQzdCQyxXQUFXLEVBQUU7Q0FDYjtBQUVEO0FBQ0E7RUFDQ0QsSUFBSSxFQUFFLG9CQUFvQjtFQUMxQkMsV0FBVyxFQUFFO0NBQ2IsRUFDRDtFQUNDRCxJQUFJLEVBQUUsb0JBQW9CO0VBQzFCQyxXQUFXLEVBQUU7Q0FDYixDQUNRO0FBQUM7QUFBQU4sYUFBQSxHQUFBRSxDQUFBO0FBRUVDLE9BQUEsQ0FBQUksaUJBQWlCLEdBQXFCSixPQUFBLENBQUFDLFdBQVcsQ0FBQ0ksR0FBRyxDQUFFQyxDQUFDLElBQUs7RUFBQTtFQUFBVCxhQUFBLEdBQUFVLENBQUE7RUFBQVYsYUFBQSxHQUFBRSxDQUFBO0VBQUEsT0FBQU8sQ0FBQyxDQUFDSixJQUFJO0FBQUosQ0FBSSxDQUFDIn0=
