@@ -17,8 +17,6 @@ let i18n: I18nService<I18nTranslations>;
 let app: NestExpressApplication;
 let orm: MikroORM;
 
-jest.disableAutomock();
-
 /**
  * This file is used to setup the ORM & the NestJS application before running each suite of tests.
  * > A suite is made of all the tests in the same file.
@@ -26,6 +24,8 @@ jest.disableAutomock();
 
 // So this runs before all tests of the suite
 beforeAll(async () => {
+	jest.resetModules(); // Should avoid this error : TypeError: Method Map.prototype.set called on incompatible receiver #<Map>
+
 	const moduleFixture: TestingModule = await Test.createTestingModule({
 		imports: [
 			AppModule,

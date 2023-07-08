@@ -2,7 +2,6 @@ import type { JestConfigWithTsJest } from 'ts-jest';
 
 const config: JestConfigWithTsJest = {
 	preset: 'ts-jest',
-	automock: false,
 	modulePathIgnorePatterns: ['<rootDir>/dist'],
 	testEnvironment: 'node',
 	globalSetup: '<rootDir>/test/globalSetup.ts',
