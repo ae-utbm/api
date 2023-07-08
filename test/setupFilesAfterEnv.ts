@@ -24,7 +24,7 @@ let orm: MikroORM;
 
 // So this runs before all tests of the suite
 beforeAll(async () => {
-	jest.resetModules(); // Should avoid this error : TypeError: Method Map.prototype.set called on incompatible receiver #<Map>
+	jest.clearAllMocks(); // Should avoid this error : TypeError: Method Map.prototype.set called on incompatible receiver #<Map>
 
 	const moduleFixture: TestingModule = await Test.createTestingModule({
 		imports: [
