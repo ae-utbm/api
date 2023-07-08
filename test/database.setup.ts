@@ -8,9 +8,9 @@ import { DatabaseSeeder } from '@database/seeders/database.seeder';
 import config from '@mikro-orm.config';
 
 /**
- * This file is used to setup the database before running the tests.
+ * This function is used to setup the database before running the tests.
  */
-export default async () => {
+async function setup() {
 	const orm = await MikroORM.init({
 		...config,
 		debug: false, // Hide debug logs for the database setup
@@ -19,6 +19,7 @@ export default async () => {
 		entitiesTs: [path.join(__dirname, '../src/modules/**/*.entity.ts')],
 	});
 
+	// Drop and re-create the database schema
 	const generator = orm.getSchemaGenerator();
 	await generator.dropSchema();
 	await generator.createSchema();
@@ -28,4 +29,6 @@ export default async () => {
 	await seeder.seed(DatabaseSeeder);
 
 	await orm.close(true);
-};
+}
+
+export default setup;

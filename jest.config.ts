@@ -1,22 +1,7 @@
 import type { JestConfigWithTsJest } from 'ts-jest';
 
 const config: JestConfigWithTsJest = {
-	preset: 'ts-jest',
-	modulePathIgnorePatterns: ['<rootDir>/dist'],
-	testEnvironment: 'node',
-	globalSetup: '<rootDir>/test/globalSetup.ts',
-	setupFilesAfterEnv: ['<rootDir>/test/setupFilesAfterEnv.ts'],
-	moduleNameMapper: {
-		'@env': '<rootDir>/src/env.ts',
-		'@mikro-orm.config': '<rootDir>/src/mikro-orm.config.ts',
-		'@app.module': '<rootDir>/src/app.module.ts',
-		'^src/(.*)$': '<rootDir>/src/$1',
-		'^@modules/(.*)$': '<rootDir>/src/modules/$1',
-		'^@utils/(.*)$': '<rootDir>/src/utils/$1',
-		'^@types/(.*)$': '<rootDir>/src/types/$1',
-		'^@database/(.*)$': '<rootDir>/src/database/$1',
-		'^@templates/(.*)$': '<rootDir>/src/templates/$1',
-	},
+	cache: false,
 	coverageReporters: ['text', 'lcov'],
 	collectCoverage: true,
 	coverageDirectory: 'coverage',
@@ -28,8 +13,25 @@ const config: JestConfigWithTsJest = {
 			statements: 100,
 		},
 	},
+	detectOpenHandles: false,
+	forceExit: true,
+	globalSetup: '<rootDir>/test/database.setup.ts',
+	moduleNameMapper: {
+		'@env': '<rootDir>/src/env.ts',
+		'@mikro-orm.config': '<rootDir>/src/mikro-orm.config.ts',
+		'@app.module': '<rootDir>/src/app.module.ts',
+		'^src/(.*)$': '<rootDir>/src/$1',
+		'^@modules/(.*)$': '<rootDir>/src/modules/$1',
+		'^@utils/(.*)$': '<rootDir>/src/utils/$1',
+		'^@types/(.*)$': '<rootDir>/src/types/$1',
+		'^@database/(.*)$': '<rootDir>/src/database/$1',
+		'^@templates/(.*)$': '<rootDir>/src/templates/$1',
+	},
+	modulePathIgnorePatterns: ['<rootDir>/dist'],
+	preset: 'ts-jest',
+	testEnvironment: 'node',
 	testRegex: '.(spec|test).ts$',
-	moduleFileExtensions: ['ts', 'js', 'json'],
+	verbose: true,
 };
 
 export default config;

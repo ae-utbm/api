@@ -4,7 +4,7 @@ import { TokenDTO } from '@modules/auth/dto/token.dto';
 import { User } from '@modules/users/entities/user.entity';
 import { emailNotVerified, idInvalid, idNotFound } from '@utils/responses';
 
-import { app, i18n } from '../setupFilesAfterEnv';
+import { app, i18n } from '../base.setup';
 
 describe('LogsController (e2e)', () => {
 	let tokenUnverified: string;

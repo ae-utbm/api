@@ -18,7 +18,7 @@ import {
 	idOrEmailMissing,
 } from '@utils/responses';
 
-import { app, i18n, orm } from '../setupFilesAfterEnv';
+import { orm, app, i18n } from '../base.setup';
 
 describe('AuthController (e2e)', () => {
 	describe('/api/auth/login (POST)', () => {
