@@ -1,3 +1,5 @@
+import { join } from 'path';
+
 import { MikroORMOptions, IDatabaseDriver, Connection } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
@@ -19,8 +21,8 @@ const config: Partial<MikroORMOptions<IDatabaseDriver<Connection>>> = {
 	user: process.env['DB_USER'] ?? 'postgres',
 	password: process.env['DB_PASSWORD'] ?? 'postgres',
 	debug: process.env['DEBUG'] === 'true',
-	entities: ['./dist/modules/**/entities/*.entity.js'],
-	entitiesTs: ['./src/modules/**/entities/*.entity.ts'],
+	entities: [join(__dirname, '../src/modules/**/entities/*.entity.js')],
+	entitiesTs: [join(__dirname, '../../src/modules/**/entities/*.entity.ts')],
 	highlighter: new SqlHighlighter(),
 	migrations: {
 		transactional: true,

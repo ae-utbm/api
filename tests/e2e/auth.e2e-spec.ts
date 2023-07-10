@@ -1,8 +1,13 @@
-import type { Email } from '@types';
+import type { Email, I18nTranslations } from '@types';
 
+import { MikroORM } from '@mikro-orm/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { Test } from '@nestjs/testing';
 import { hashSync } from 'bcrypt';
+import { I18nService } from 'nestjs-i18n';
 import request from 'supertest';
 
+import { AppModule } from '@app.module';
 import { UserPostDTO } from '@modules/auth/dto/register.dto';
 import { User } from '@modules/users/entities/user.entity';
 import {

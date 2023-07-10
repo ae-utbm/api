@@ -1,6 +1,5 @@
 import 'tsconfig-paths/register';
-
-import path from 'path';
+import { join } from 'path';
 
 import { MikroORM } from '@mikro-orm/core';
 
@@ -14,9 +13,8 @@ async function setup() {
 	const orm = await MikroORM.init({
 		...config,
 		debug: false, // Hide debug logs for the database setup
-		// Entities paths are relative to the root of the project so we need to update them
-		entities: [path.join(__dirname, '../../dist/src/modules/**/*.entity.js')],
-		entitiesTs: [path.join(__dirname, '../src/modules/**/*.entity.ts')],
+		entities: [join(__dirname, '../../dist/src/modules/**/*.entity.js')],
+		entitiesTs: [join(__dirname, '../src/modules/**/*.entity.ts')],
 	});
 
 	// Drop and re-create the database schema
