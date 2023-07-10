@@ -20,7 +20,6 @@ module.exports = {
 	},
 	ignorePatterns: [
 		'.eslintrc.js',
-		'jest.config.js',
 		'dist',
 		'node_modules',
 		'coverage',

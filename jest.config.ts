@@ -12,6 +12,7 @@ const config: JestConfigWithTsJest = {
 			statements: 100,
 		},
 	},
+	detectOpenHandles: true,
 	globalSetup: '<rootDir>/tests/database.setup.ts',
 	moduleNameMapper: {
 		'@env': '<rootDir>/src/env.ts',

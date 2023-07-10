@@ -1,4 +1,4 @@
-import path from 'path';
+import { join } from 'path';
 
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
@@ -28,17 +28,17 @@ import config from './mikro-orm.config';
 		MikroOrmModule.forRoot({
 			...config,
 			// Entities paths are relative to the root of the project so we need to update them
-			entities: [path.join(__dirname, '../../dist/src/modules/**/*.entity.js')],
-			entitiesTs: [path.join(__dirname, '/modules/**/*.entity.ts')],
+			entities: [join(__dirname, '../../dist/src/modules/**/*.entity.js')],
+			entitiesTs: [join(__dirname, '/modules/**/*.entity.ts')],
 		}),
 		I18nModule.forRoot({
 			fallbackLanguage: 'en-US',
 			loaderOptions: {
-				path: path.join(__dirname, '/i18n/'),
+				path: join(__dirname, '/i18n/'),
 				watch: true,
 			},
 			resolvers: [AcceptLanguageResolver],
-			typesOutputPath: path.join(__dirname, '../../src/types/api/i18n.d.ts'),
+			typesOutputPath: join(__dirname, '../../src/types/api/i18n.d.ts'),
 		}),
 		AuthModule,
 		LogsModule,

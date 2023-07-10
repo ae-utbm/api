@@ -26,6 +26,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Lint Typescript & HTML
+      - name: Lint Typescript
         run: pnpm workflow:lint
 
