@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import 'tsconfig-paths/register';
 import { join } from 'path';
 
@@ -29,4 +31,6 @@ async function setup() {
 	await orm.close(true);
 }
 
-export default setup;
+setup()
+	.then(() => console.log('Database setup done.'))
+	.catch(console.error);

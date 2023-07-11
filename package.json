@@ -16,9 +16,10 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest --config jest.config.ts",
+    "test": "pnpm workflow:init_db && jest --config jest.config.ts",
     "workflow:lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --max-warnings=0",
-    "workflow:test": "jest --config jest.config.ts --forceExit"
+    "workflow:test": "jest --config jest.config.ts --forceExit",
+    "workflow:init_db": "pnpm ts-node tests/database.setup.ts"
   },
   "dependencies": {
     "@mikro-orm/cli": "^5.7.12",

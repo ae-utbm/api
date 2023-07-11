@@ -1,13 +1,8 @@
-import type { Email, I18nTranslations } from '@types';
+import type { Email } from '@types';
 
-import { MikroORM } from '@mikro-orm/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { Test } from '@nestjs/testing';
 import { hashSync } from 'bcrypt';
-import { I18nService } from 'nestjs-i18n';
 import request from 'supertest';
 
-import { AppModule } from '@app.module';
 import { UserPostDTO } from '@modules/auth/dto/register.dto';
 import { User } from '@modules/users/entities/user.entity';
 import {
@@ -23,7 +18,7 @@ import {
 	idOrEmailMissing,
 } from '@utils/responses';
 
-import { orm, app, i18n } from '../base.setup';
+import { orm, app, i18n } from '..';
 
 describe('AuthController (e2e)', () => {
 	describe('/api/auth/login (POST)', () => {
@@ -288,10 +283,8 @@ describe('AuthController (e2e)', () => {
 				subscriber_account: null,
 				updated_at: expect.any(String) as string,
 			});
-		});
 
-		it('should return 308 when redirect_url is provided', async () => {
-			// Reset user email_verified to false (because of the previous test)
+			// Reset user email_verified to false (for other tests)
 			const em = orm.em.fork();
 			const user = await em.findOne(User, { id: user_id });
 
@@ -301,12 +294,25 @@ describe('AuthController (e2e)', () => {
 			await em.persistAndFlush(user);
 			em.clear();
 			// --
+		});
 
+		it('should return 308 when redirect_url is provided', async () => {
 			const response = await request(app.getHttpServer())
 				.get(`/api/auth/confirm/${user_id}/${token}/${encodeURIComponent('https://example.com')}`)
 				.expect(308);
 
 			expect((response.header as { location: string }).location).toEqual('https://example.com');
+
+			// Reset user email_verified to false (for other tests)
+			const em = orm.em.fork();
+			const user = await em.findOne(User, { id: user_id });
+
+			user.email_verified = false;
+			user.email_verification = hashSync(token, 10);
+
+			await em.persistAndFlush(user);
+			em.clear();
+			// --
 		});
 	});
 });

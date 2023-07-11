@@ -40,6 +40,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Setup database for tests
+        run: pnpm workflow:init_db
+
       - name: Run tests
         run: pnpm workflow:test
         env:

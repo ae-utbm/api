@@ -20,15 +20,17 @@ export function checkEmail(email: Email): boolean {
 	return regex.test(email);
 }
 
-const transporter = createTransport({
-	host: env().email.host,
-	port: env().email.port,
-	secure: env().email.secure,
-	auth: {
-		user: env().email.auth.user,
-		pass: env().email.auth.pass,
-	},
-});
+const transporter = env().email.disabled
+	? createTransport({
+			host: env().email.host,
+			port: env().email.port,
+			secure: env().email.secure,
+			auth: {
+				user: env().email.auth.user,
+				pass: env().email.auth.pass,
+			},
+	  })
+	: undefined;
 
 interface EmailOptions {
 	to: string[];
@@ -42,7 +44,7 @@ interface EmailOptions {
  * @param {EmailOptions} options the options for the email
  */
 export async function sendEmail(options: EmailOptions): Promise<void> {
-	if (env().email.disabled) return;
+	if (transporter === undefined) return;
 
 	await transporter.sendMail({
 		from: options.from ?? `ae.noreply@utbm.fr`,
