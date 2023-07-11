@@ -1,0 +1,17 @@
+import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { Module } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+
+import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
+import { User } from '@modules/users/entities/user.entity';
+
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
+
+@Module({
+	imports: [MikroOrmModule.forFeature([User, UserVisibility])],
+	providers: [UsersService, JwtService],
+	controllers: [UsersController],
+	exports: [UsersService],
+})
+export class UsersModule {}

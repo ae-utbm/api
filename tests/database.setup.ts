@@ -1,0 +1,36 @@
+/* eslint-disable no-console */
+
+import 'tsconfig-paths/register';
+import { join } from 'path';
+
+import { MikroORM } from '@mikro-orm/core';
+
+import { DatabaseSeeder } from '@database/seeders/database.seeder';
+import config from '@mikro-orm.config';
+
+/**
+ * This function is used to setup the database before running the tests.
+ */
+async function setup() {
+	const orm = await MikroORM.init({
+		...config,
+		debug: false, // Hide debug logs for the database setup
+		entities: [join(__dirname, '../../dist/src/modules/**/*.entity.js')],
+		entitiesTs: [join(__dirname, '../src/modules/**/*.entity.ts')],
+	});
+
+	// Drop and re-create the database schema
+	const generator = orm.getSchemaGenerator();
+	await generator.dropSchema();
+	await generator.createSchema();
+
+	// Seed the database with some basic data
+	const seeder = orm.getSeeder();
+	await seeder.seed(DatabaseSeeder);
+
+	await orm.close(true);
+}
+
+setup()
+	.then(() => console.log('Database setup done.'))
+	.catch(console.error);

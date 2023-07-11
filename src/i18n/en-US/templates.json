@@ -1,0 +1,29 @@
+{
+  "register_common": {
+    "subject": "Welcome to the site",
+    "title": "Welcome {username} !",
+    "body": {
+      "text": "We are delighted that you have created an account on our website.",
+      "questions": "If you have any questions or need assistance, please do not hesitate to contact us via our email address:",
+      "politeness": "Kind regards,",
+      "signature": "The UTBM Student Association"
+    }
+  },
+  "register_user": {
+    "body": {
+      "text": "Please click on the link below to confirm your email address and fully access your account:",
+      "link": {
+        "text": "Confirm my email address",
+        "href": "{link}"
+      },
+      "remark": "Please note that your account must be verified within {days} days of your registration. If you do not verify it within this timeframe, your account will be deleted.",
+      "info": "If you are unable to click on the link, you can also copy and paste it into the address bar of your browser."
+    }
+  },
+  "register_user_by_admin": {
+    "body": {
+      "text": "Please find below the temporary password to log in to your account:",
+      "password": "{password}"
+    }
+  }
+}
