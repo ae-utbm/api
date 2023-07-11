@@ -38,7 +38,7 @@ import config from './mikro-orm.config';
 				watch: true,
 			},
 			resolvers: [AcceptLanguageResolver],
-			typesOutputPath: join(__dirname, '../../src/types/api/i18n.d.ts'),
+			typesOutputPath: join(__dirname, '../src/types/api/i18n.d.ts'),
 		}),
 		AuthModule,
 		LogsModule,
