@@ -21,7 +21,8 @@ export function checkEmail(email: Email): boolean {
 }
 
 const transporter = env().email.disabled
-	? createTransport({
+	? undefined
+	: createTransport({
 			host: env().email.host,
 			port: env().email.port,
 			secure: env().email.secure,
@@ -29,8 +30,7 @@ const transporter = env().email.disabled
 				user: env().email.auth.user,
 				pass: env().email.auth.pass,
 			},
-	  })
-	: undefined;
+	  });
 
 interface EmailOptions {
 	to: string[];
@@ -44,7 +44,7 @@ interface EmailOptions {
  * @param {EmailOptions} options the options for the email
  */
 export async function sendEmail(options: EmailOptions): Promise<void> {
-	if (transporter === undefined) return;
+	if (!transporter) return;
 
 	await transporter.sendMail({
 		from: options.from ?? `ae.noreply@utbm.fr`,
