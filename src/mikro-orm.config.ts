@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import { join } from 'path';
 
 import { MikroORMOptions, IDatabaseDriver, Connection } from '@mikro-orm/core';
