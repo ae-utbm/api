@@ -59,10 +59,8 @@ export class PermissionGuard implements CanActivate {
 		const acquiredPerms = [...perms, ...rolesPerms];
 
 		// If the user has the ROOT permission, they have all permissions.
-		if (acquiredPerms.includes('ROOT')) return true;
-
 		// If the user has any of the required permissions, they have permission.
-		if (acquiredPerms.some((p) => permsToValidate.includes(p))) return true;
+		if (acquiredPerms.includes('ROOT') || acquiredPerms.some((p) => permsToValidate.includes(p))) return true;
 
 		// Otherwise, they don't have permission.
 		return false;

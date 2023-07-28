@@ -32,11 +32,11 @@ export function getTemplate(
 ): string {
 	let inputString = fs.readFileSync(path.join(__dirname, `../templates/${templateName}.html`), 'utf8');
 	const regex = /\{\{([^}]+)\}\}/g;
-	const matches = [];
+	const matches: PathImpl2<I18nTranslations>[] = [];
 
 	let match: RegExpExecArray;
 	while ((match = regex.exec(inputString)) !== null) {
-		const variant = match[1].trim();
+		const variant = match[1].trim() as PathImpl2<I18nTranslations>;
 		matches.push(variant);
 	}
 

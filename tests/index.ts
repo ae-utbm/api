@@ -1,8 +1,10 @@
 import type { I18nTranslations } from '@types';
 
 import 'tsconfig-paths/register';
+import '@utils/index';
 
 import { MikroORM } from '@mikro-orm/core';
+import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { TestingModule, Test } from '@nestjs/testing';
 import { I18nService } from 'nestjs-i18n';
@@ -10,6 +12,8 @@ import { I18nService } from 'nestjs-i18n';
 import { AppModule } from '@app.module';
 import env from '@env';
 
+let moduleFixture: TestingModule;
+let config: ConfigService;
 let i18n: I18nService<I18nTranslations>;
 let app: NestExpressApplication;
 let orm: MikroORM;
@@ -21,7 +25,7 @@ let orm: MikroORM;
 
 // So this runs before all tests of the suite
 beforeAll(async () => {
-	const moduleFixture: TestingModule = await Test.createTestingModule({
+	moduleFixture = await Test.createTestingModule({
 		imports: [AppModule],
 	}).compile();
 
@@ -32,6 +36,9 @@ beforeAll(async () => {
 
 	orm = moduleFixture.get<MikroORM>(MikroORM);
 	i18n = moduleFixture.get<I18nService<I18nTranslations>>(I18nService);
+	config = moduleFixture.get<ConfigService>(ConfigService);
+
+	orm.config.set('allowGlobalContext', true);
 
 	await app.init();
 });
@@ -42,4 +49,4 @@ afterAll(async () => {
 	await app.close();
 });
 
-export { app, orm, i18n };
+export { moduleFixture, config, app, orm, i18n };

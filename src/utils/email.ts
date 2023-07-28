@@ -44,7 +44,7 @@ interface EmailOptions {
  * @param {EmailOptions} options the options for the email
  */
 export async function sendEmail(options: EmailOptions): Promise<void> {
-	if (!transporter) return;
+	if (!transporter || env().email.disabled) return;
 
 	await transporter.sendMail({
 		from: options.from ?? `ae.noreply@utbm.fr`,

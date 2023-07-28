@@ -1,4 +1,4 @@
-import { createReadStream, ReadStream, unlinkSync } from 'fs';
+import { createReadStream, ReadStream, rmSync } from 'fs';
 
 import sharp from 'sharp';
 
@@ -41,7 +41,7 @@ export async function convertToWebp(imagePath: string): Promise<string> {
 		.webp()
 		.toFile(newPath, (err, info) => {
 			// delete the old image
-			if (!err && info) unlinkSync(imagePath);
+			if (!err && info) rmSync(imagePath);
 		});
 
 	return newPath;
@@ -52,16 +52,25 @@ export async function convertToWebp(imagePath: string): Promise<string> {
  * @param {string} path The path to the file
  * @param {number} attempts Number of attempts to try to create the stream @default 10
  * @returns {ReadStream} The read stream
- * @throws {Error} If the file can't be read after the attempts
+ * @throws {Error} If the file can't be read after all attempts
  */
-export function getStreamableFile(path: string, attempts = 10): ReadStream {
-	try {
-		return createReadStream(path);
-	} catch (error) {
-		if (attempts === 0) throw error;
+export function getStreamableFile(path: string, attempts: number = 10): Promise<ReadStream> {
+	return new Promise((resolve, reject) => {
+		const tryCreateStream = (remainingAttempts: number) => {
+			try {
+				const stream = createReadStream(path);
+				resolve(stream);
+			} catch (error) {
+				if (remainingAttempts === 0) {
+					reject(error);
+				} else {
+					setTimeout(() => {
+						tryCreateStream(remainingAttempts - 1);
+					}, 1000);
+				}
+			}
+		};
 
-		setTimeout(() => {
-			return getStreamableFile(path, --attempts);
-		}, 1000);
-	}
+		tryCreateStream(attempts);
+	});
 }

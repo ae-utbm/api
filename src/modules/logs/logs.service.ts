@@ -7,7 +7,7 @@ import { I18nService } from 'nestjs-i18n';
 
 import { User } from '@modules/users/entities/user.entity';
 import { UsersService } from '@modules/users/users.service';
-import { idInvalid } from '@utils/responses';
+import { deleteSuccess, idInvalid } from '@utils/responses';
 
 import { Log } from './entities/log.entity';
 
@@ -39,10 +39,13 @@ export class LogsService {
 	}
 
 	async deleteUserLogs(id: number) {
+		if (typeof id === 'string' && parseInt(id, 10) != id)
+			throw new BadRequestException(idInvalid({ i18n: this.i18n, type: User, id }));
+
 		const user = await this.usersService.findOne({ id });
 		await user.logs.init();
 		user.logs.removeAll();
 
-		return { message: 'User logs deleted' };
+		return { message: deleteSuccess({ i18n: this.i18n, type: Log }), statusCode: 200 };
 	}
 }

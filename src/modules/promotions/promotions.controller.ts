@@ -11,7 +11,18 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+	ApiBadRequestResponse,
+	ApiBearerAuth,
+	ApiBody,
+	ApiConsumes,
+	ApiNotFoundResponse,
+	ApiOkResponse,
+	ApiOperation,
+	ApiParam,
+	ApiTags,
+	ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
@@ -33,45 +44,20 @@ export class PromotionsController {
 	@GuardPermissions('CAN_READ_PROMOTION')
 	@ApiOkResponse({ type: [PromotionResponseDTO] })
 	@ApiOperation({ summary: 'Get all promotions' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getAll() {
 		return this.promotionsService.findAll();
 	}
 
-	@Get(':number')
-	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiOkResponse({ type: PromotionResponseDTO })
-	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
-	@ApiOperation({ summary: 'Get the specified promotion' })
-	async get(@Param('number') number: number) {
-		return this.promotionsService.findOne(number);
-	}
-
-	@Get(':number/users')
-	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiOkResponse({ type: [BaseUserResponseDTO] })
-	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
-	@ApiOperation({ summary: 'Get users of the specified promotions' })
-	async getUsers(@Param('number') number: number) {
-		return this.promotionsService.getUsers(number);
-	}
-
-	@Get('latest')
-	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiOkResponse({ type: PromotionResponseDTO })
-	@ApiOperation({ summary: 'Get the latest promotion created' })
-	async getLatest() {
-		return this.promotionsService.findLatest();
-	}
-
-	@Post('logo/:number')
+	@Post(':number/logo')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PROMOTION')
 	@ApiConsumes('multipart/form-data')
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Update the promotion logo' })
+	@ApiNotFoundResponse({ description: 'Promotion not found' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiBadRequestResponse({ description: 'Invalid file' })
 	@ApiBody({
 		schema: {
 			type: 'object',
@@ -85,25 +71,54 @@ export class PromotionsController {
 	})
 	@UseInterceptors(FileInterceptor('file'))
 	async editLogo(@UploadedFile() file: Express.Multer.File, @Param('number') number: number) {
-		return this.promotionsService.updateLogo({ number, file });
+		return this.promotionsService.updateLogo(number, file);
 	}
 
-	@Get('logo/:number')
+	@Get(':number/logo')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Get the promotion logo' })
+	@ApiNotFoundResponse({ description: 'Promotion not found' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiNotFoundResponse({ description: 'Promotion not found or promotion has no logo' })
 	async getLogo(@Param('number') number: number) {
 		const logo = await this.promotionsService.getLogo(number);
-		return new StreamableFile(getStreamableFile(logo.path));
+		return new StreamableFile(await getStreamableFile(logo.path));
 	}
 
-	@Delete('logo/:number')
+	@Delete(':number/logo')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PROMOTION')
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Delete the promotion logo' })
+	@ApiNotFoundResponse({ description: 'Promotion not found' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async deleteLogo(@Param('number') number: number) {
 		return this.promotionsService.deleteLogo(number);
+	}
+
+	@Get(':number')
+	@UseGuards(PermissionGuard)
+	@GuardPermissions('CAN_READ_PROMOTION')
+	@ApiOkResponse({ type: PromotionResponseDTO })
+	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
+	@ApiOperation({ summary: 'Get the specified promotion' })
+	@ApiNotFoundResponse({ description: 'Promotion not found' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	async get(@Param('number') number: number) {
+		return this.promotionsService.findOne(number);
+	}
+
+	@Get(':number/users')
+	@UseGuards(PermissionGuard)
+	@GuardPermissions('CAN_READ_PROMOTION')
+	@ApiOkResponse({ type: [BaseUserResponseDTO] })
+	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
+	@ApiOperation({ summary: 'Get users of the specified promotions' })
+	@ApiNotFoundResponse({ description: 'Promotion not found' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	async getUsers(@Param('number') number: number) {
+		return this.promotionsService.getUsers(number);
 	}
 }

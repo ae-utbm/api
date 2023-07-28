@@ -13,11 +13,11 @@ export abstract class BaseEntity extends BE<BaseEntity, 'id'> implements BEI {
 	@ApiProperty({ minimum: 1 })
 	id: number;
 
-	@Property({ type: 'date', onCreate: () => new Date() })
+	@Property({ type: Date, onCreate: () => new Date() })
 	@ApiProperty({ type: Date })
-	created_at = new Date();
+	created_at: Date;
 
-	@Property({ type: 'date', onCreate: () => new Date(), onUpdate: () => new Date() })
+	@Property({ type: Date, onCreate: () => new Date(), onUpdate: () => new Date() })
 	@ApiProperty({ type: Date })
-	updated_at = new Date();
+	updated_at: Date;
 }

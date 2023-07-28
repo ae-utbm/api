@@ -8,6 +8,8 @@ import env from '@env';
 import { AppModule } from './app.module';
 import pkg from '../package.json';
 
+import './utils';
+
 /**
  * Base server bootstrap
  */

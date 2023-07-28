@@ -1,12 +1,12 @@
 import type { I18nTranslations, JWTPayload } from '@types';
 
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { I18nService } from 'nestjs-i18n';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import { authInvalidPayload } from '@utils/responses';
+import { validateObject } from '@utils/validate';
 
 import { AuthService } from '../auth.service';
 
@@ -33,9 +33,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	 * @param payload - The payload from the JWT
 	 */
 	async validate(payload: JWTPayload) {
-		const user = await this.authService.validateUser(payload);
+		validateObject({
+			object: payload,
+			type: 'JWTPayload',
+			requiredKeys: ['sub', 'email', 'iat', 'exp'],
+			i18n: this.i18n,
+		});
 
-		if (!user) throw new UnauthorizedException(authInvalidPayload({ i18n: this.i18n }));
-		return user;
+		// Find the user from the payload
+		// > If the user is not found, throw an error (Not found)
+		// > If the user is not verified, throw an error (Unauthorized)
+		return this.authService.validateUser(payload);
 	}
 }

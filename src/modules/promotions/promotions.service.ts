@@ -1,12 +1,16 @@
-import fs from 'fs';
+import type { I18nTranslations } from '@types';
+
+import { mkdirSync, writeFileSync, createWriteStream, rmSync } from 'fs';
 import { join } from 'path';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
+import { I18nService } from 'nestjs-i18n';
 
 import { convertToWebp, isSquare } from '@utils/images';
+import { idNotFound, imageInvalidAspectRatio, imageInvalidMimeType, promotionLogoNotFound } from '@utils/responses';
 
 import { PromotionResponseDTO } from './dto/promotion.dto';
 import { PromotionPicture } from './entities/promotion-picture.entity';
@@ -15,7 +19,11 @@ import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
 
 @Injectable()
 export class PromotionsService {
-	constructor(private readonly orm: MikroORM, private readonly configService: ConfigService) {}
+	constructor(
+		private readonly orm: MikroORM,
+		private readonly i18n: I18nService<I18nTranslations>,
+		private readonly configService: ConfigService,
+	) {}
 
 	/**
 	 * Create a new promotion each year on the 15th of July
@@ -56,7 +64,7 @@ export class PromotionsService {
 	@UseRequestContext()
 	async findOne(number: number): Promise<PromotionResponseDTO> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['*', 'picture', 'users'] });
-		if (!promotion) throw new NotFoundException(`Promotion with number ${number} not found`);
+		if (!promotion) throw new NotFoundException(idNotFound({ type: Promotion, id: number, i18n: this.i18n }));
 
 		return {
 			...promotion,
@@ -67,7 +75,7 @@ export class PromotionsService {
 	@UseRequestContext()
 	async getUsers(number: number): Promise<BaseUserResponseDTO[]> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['users'] });
-		if (!promotion) throw new NotFoundException(`Promotion with number ${number} not found`);
+		if (!promotion) throw new NotFoundException(idNotFound({ type: Promotion, id: number, i18n: this.i18n }));
 
 		const res: BaseUserResponseDTO[] = [];
 
@@ -86,31 +94,36 @@ export class PromotionsService {
 	}
 
 	@UseRequestContext()
-	async updateLogo({ number, file }: { number: number; file: Express.Multer.File }) {
-		const promotion = await this.orm.em.findOneOrFail(Promotion, { number });
+	async updateLogo(number: number, file: Express.Multer.File): Promise<Promotion> {
+		const promotion = await this.orm.em.findOne(Promotion, { number });
+		if (!promotion) throw new NotFoundException(idNotFound({ type: Promotion, id: number, i18n: this.i18n }));
 		if (promotion.picture) await promotion.picture.init();
 
 		const { buffer, mimetype } = file;
+		if (!mimetype.startsWith('image/')) throw new BadRequestException(imageInvalidMimeType({ i18n: this.i18n }));
+
 		const imageDir = join(this.configService.get<string>('files.promotions'), 'logo');
 		const extension = mimetype.replace('image/', '.');
 		const filename = `${promotion.number}${extension}`;
 		const imagePath = join(imageDir, filename);
 
 		// write the file
-		fs.mkdirSync(imageDir, { recursive: true });
-		fs.writeFileSync(imagePath, buffer);
+		mkdirSync(imageDir, { recursive: true });
+		writeFileSync(imagePath, buffer);
 
 		if (!(await isSquare(imagePath))) {
-			fs.unlinkSync(imagePath);
-			throw new HttpException('The logo must be square', HttpStatus.BAD_REQUEST);
+			rmSync(imagePath);
+			throw new BadRequestException(imageInvalidAspectRatio({ i18n: this.i18n, aspect_ratio: '1:1' }));
 		}
 
 		// remove the old picture (if any)
-		if (promotion.picture && promotion.picture.path && promotion.picture.path !== imagePath)
-			fs.unlinkSync(promotion.picture.path);
+		if (promotion.picture && promotion.picture.path && promotion.picture.path !== imagePath) {
+			rmSync(promotion.picture.path);
+		}
 
-		// convert to webp
-		fs.createWriteStream(await convertToWebp(imagePath));
+		// convert to webp if not already (or GIF)
+		const convertedPath = await convertToWebp(imagePath);
+		if (convertedPath !== imagePath) createWriteStream(convertedPath).close();
 
 		// update the database
 		if (!promotion.picture)
@@ -131,24 +144,31 @@ export class PromotionsService {
 		}
 
 		await this.orm.em.persistAndFlush(promotion);
+
+		delete promotion.picture.promotion;
+		return promotion;
 	}
 
 	@UseRequestContext()
 	async getLogo(number: number) {
-		const promotion = await this.orm.em.findOneOrFail(Promotion, { number });
-		if (!promotion.picture) throw new HttpException('This promotion has no logo', HttpStatus.NOT_FOUND);
+		const promotion = await this.orm.em.findOne(Promotion, { number });
+		if (!promotion) throw new NotFoundException(idNotFound({ type: Promotion, id: number, i18n: this.i18n }));
+		if (!promotion.picture) throw new NotFoundException(promotionLogoNotFound({ i18n: this.i18n, number }));
 
 		await promotion.picture.init();
 		return promotion.picture;
 	}
 
 	@UseRequestContext()
-	async deleteLogo(number: number) {
-		const promotion = await this.orm.em.findOneOrFail(Promotion, { number });
-		if (!promotion.picture) throw new HttpException('This promotion has no logo', HttpStatus.NOT_FOUND);
+	async deleteLogo(number: number): Promise<Promotion> {
+		const promotion = await this.orm.em.findOne(Promotion, { number });
+		if (!promotion) throw new NotFoundException(idNotFound({ type: Promotion, id: number, i18n: this.i18n }));
+		if (!promotion.picture) throw new NotFoundException(promotionLogoNotFound({ i18n: this.i18n, number }));
 
 		await promotion.picture.init();
-		fs.unlinkSync(promotion.picture.path);
+		rmSync(promotion.picture.path);
 		await this.orm.em.remove(promotion.picture).flush();
+
+		return promotion;
 	}
 }

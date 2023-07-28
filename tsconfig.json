@@ -1,40 +1,44 @@
 {
   "compilerOptions": {
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
-    "module": "CommonJS",
-    "target": "ESNext",
-    "sourceMap": true,
-    "outDir": "./dist",
+    "alwaysStrict": true,
     "baseUrl": ".",
-    "incremental": true,
-    "skipLibCheck": true,
-    "strictNullChecks": false,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "strict": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noImplicitReturns": false,
+    "declaration": true,
     "downlevelIteration": true,
-    "useDefineForClassFields": false,
-    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
-    "typeRoots": [
-      "src/types",
-      "node_modules/@types"
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    "lib": [
+      "ES2022",
+      "ESNext.AsyncIterable"
     ],
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "outDir": "./dist",
     "paths": {
       "@*": [
         "src/*"
       ]
-    }
+    },
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "strictBindCallApply": false,
+    "strictNullChecks": false,
+    "target": "ESNext",
+    "typeRoots": [
+      "src/types",
+      "node_modules/@types"
+    ],
+    "useDefineForClassFields": false
   }
 }

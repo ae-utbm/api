@@ -1,8 +1,5 @@
 {
   "errors": {
-    "auth": {
-      "invalid_payload": "JWT payload is invalid."
-    },
     "birthday": {
       "invalid": "The date '{date}' is invalid, either too young or in the future."
     },
@@ -26,9 +23,26 @@
     },
     "id_or_email": {
       "missing": "Missing '{type}' ID or email fields."
+    },
+    "image": {
+      "invalid_aspect_ratio": "The given image does not respect the expected '{aspect_ratio}' aspect ratio.",
+      "invalid_mime_type": "The given file is not an image."
+    },
+    "password": {
+      "mismatch": "Password mismatch"
+    },
+    "permission": {
+      "invalid": "Permission '{permission}' does not exist.",
+      "not_found_on_user": "Permission '{permission}' not found on user '{user}'.",
+      "already_on_user": "User '{user}' has already the '{permission}' permission."
     }
   },
   "success": {
     "deleted": "'{type}' successfully deleted."
+  },
+  "not_found": {
+    "promotion": {
+      "logo": "The promotion '{number}' does not have a logo."
+    }
   }
 }

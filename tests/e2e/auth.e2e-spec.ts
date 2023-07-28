@@ -222,7 +222,7 @@ describe('AuthController (e2e)', () => {
 		const user_id = 2;
 		const token = 'token';
 
-		it('should return 400 when user_id is not a number', async () => {
+		it('should return 400 when "user_id" is not a number', async () => {
 			const fakeId = 'invalid';
 			const response = await request(app.getHttpServer()).get(`/api/auth/confirm/${fakeId}/${token}`).expect(400);
 
@@ -285,15 +285,14 @@ describe('AuthController (e2e)', () => {
 			});
 
 			// Reset user email_verified to false (for other tests)
-			const em = orm.em.fork();
-			const user = await em.findOne(User, { id: user_id });
+			const user = await orm.em.findOne(User, { id: user_id });
 
 			user.email_verified = false;
 			user.email_verification = hashSync(token, 10);
 
-			await em.persistAndFlush(user);
-			em.clear();
-			// --
+			await orm.em.persistAndFlush(user);
+			orm.em.clear();
+			// ------------------------------
 		});
 
 		it('should return 308 when redirect_url is provided', async () => {
@@ -304,15 +303,14 @@ describe('AuthController (e2e)', () => {
 			expect((response.header as { location: string }).location).toEqual('https://example.com');
 
 			// Reset user email_verified to false (for other tests)
-			const em = orm.em.fork();
-			const user = await em.findOne(User, { id: user_id });
+			const user = await orm.em.findOne(User, { id: user_id });
 
 			user.email_verified = false;
 			user.email_verification = hashSync(token, 10);
 
-			await em.persistAndFlush(user);
-			em.clear();
-			// --
+			await orm.em.persistAndFlush(user);
+			orm.em.clear();
+			// ------------------------------
 		});
 	});
 });

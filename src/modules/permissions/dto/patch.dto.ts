@@ -10,6 +10,10 @@ export class PermissionPatchDTO implements PermissionPatchDto {
 	@IsInt()
 	id: number;
 
+	@ApiProperty({ required: true, minimum: 1 })
+	@IsInt()
+	user_id: number;
+
 	@ApiProperty({ enum: PERMISSIONS_NAMES })
 	@IsString()
 	name: PermissionName;

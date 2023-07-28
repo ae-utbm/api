@@ -143,7 +143,7 @@ export class UsersController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getPicture(@Param('id') id: number) {
 		const picture = await this.usersService.getPicture(id);
-		return new StreamableFile(getStreamableFile(picture.path));
+		return new StreamableFile(await getStreamableFile(picture.path));
 	}
 
 	@Post(':id/banner')
@@ -184,7 +184,7 @@ export class UsersController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getBanner(@Param('id') id: number) {
 		const banner = await this.usersService.getBanner(id);
-		return new StreamableFile(getStreamableFile(banner.path));
+		return new StreamableFile(await getStreamableFile(banner.path));
 	}
 
 	@Get(':id/roles')

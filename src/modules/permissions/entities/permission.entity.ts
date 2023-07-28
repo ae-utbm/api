@@ -13,9 +13,9 @@ export class Permission extends BaseEntity implements PermissionEntity<User> {
 	@ApiProperty({ enum: PERMISSIONS_NAMES })
 	name: PermissionName;
 
-	@Property({ name: 'is_revoked', onCreate: () => false })
+	@Property({ name: 'is_revoked', default: false })
 	@ApiProperty({ type: Boolean })
-	revoked = false;
+	revoked: boolean;
 
 	@Property({ name: 'expires_at' })
 	@ApiProperty()

@@ -15,11 +15,11 @@ const logger = new Logger('MikroORM');
  */
 const config: Partial<MikroORMOptions<IDatabaseDriver<Connection>>> = {
 	driver: PostgreSqlDriver,
-	dbName: process.env['DB_NAME'] ?? 'ae_test',
-	port: parseInt(process.env['DB_PORT'], 10) ?? 5432,
-	host: process.env['DB_HOST'] ?? 'localhost',
-	user: process.env['DB_USER'] ?? 'postgres',
-	password: process.env['DB_PASSWORD'] ?? 'postgres',
+	dbName: process.env['DB_NAME'],
+	port: parseInt(process.env['DB_PORT'], 10),
+	host: process.env['DB_HOST'],
+	user: process.env['DB_USER'],
+	password: process.env['DB_PASSWORD'],
 	debug: process.env['DEBUG'] === 'true',
 	entities: [join(__dirname, '../src/modules/**/entities/*.entity.js')],
 	entitiesTs: [join(__dirname, '../../src/modules/**/entities/*.entity.ts')],

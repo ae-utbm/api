@@ -1,8 +1,9 @@
 import request from 'supertest';
 
 import { TokenDTO } from '@modules/auth/dto/token.dto';
+import { Log } from '@modules/logs/entities/log.entity';
 import { User } from '@modules/users/entities/user.entity';
-import { emailNotVerified, idInvalid, idNotFound } from '@utils/responses';
+import { deleteSuccess, emailNotVerified, idInvalid, idNotFound } from '@utils/responses';
 
 import { app, i18n } from '..';
 
@@ -135,6 +136,54 @@ describe('LogsController (e2e)', () => {
 	});
 
 	describe('/api/logs/{user} (DELETE)', () => {
-		// it();
+		it('should return 401 when the user is not authenticated', async () => {
+			const response = await request(app.getHttpServer()).get('/api/logs/user/1').expect(401);
+
+			expect(response.body).toEqual({
+				// TODO: add an error message ('Unauthorized') and translate the message field (add more context too)
+				statusCode: 401,
+				message: 'Unauthorized',
+			});
+		});
+
+		it('should return 403 when the user is not authorized', async () => {
+			const response = await request(app.getHttpServer())
+				.get(`/api/logs/user/${userIdUnverified}`)
+				.set('Authorization', `Bearer ${tokenUnauthorized}`)
+				.expect(403);
+
+			expect(response.body).toEqual({
+				error: 'Forbidden',
+				statusCode: 403,
+				message: 'Forbidden resource', // TODO translate this
+			});
+		});
+
+		it('should return 400 when the user ID is invalid', async () => {
+			const fakeId = 'invalid';
+
+			const response = await request(app.getHttpServer())
+				.delete(`/api/logs/user/${fakeId}`)
+				.set('Authorization', `Bearer ${tokenLogModerator}`)
+				.expect(400);
+
+			expect(response.body).toEqual({
+				error: 'Bad Request',
+				statusCode: 400,
+				message: idInvalid({ i18n, type: User, id: fakeId }),
+			});
+		});
+
+		it('should return 200 when the user is authorized', async () => {
+			const response = await request(app.getHttpServer())
+				.delete(`/api/logs/user/${userIdLogModerator}`)
+				.set('Authorization', `Bearer ${tokenLogModerator}`)
+				.expect(200);
+
+			expect(response.body).toEqual({
+				statusCode: 200,
+				message: deleteSuccess({ i18n, type: Log }),
+			});
+		});
 	});
 });

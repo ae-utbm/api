@@ -7,7 +7,7 @@ import { I18nService } from 'nestjs-i18n';
 
 import { User } from '@modules/users/entities/user.entity';
 import { UsersService } from '@modules/users/users.service';
-import { emailNotVerified } from '@utils/responses';
+import { emailNotVerified, passwordMismatch } from '@utils/responses';
 
 import { TokenDTO } from './dto/token.dto';
 
@@ -23,7 +23,7 @@ export class AuthService {
 		const user: User = await this.usersService.findOne({ email: email }, false);
 
 		if (user.password !== pass && !compareSync(pass, user.password)) {
-			throw new UnauthorizedException('Password mismatch');
+			throw new UnauthorizedException(passwordMismatch({ i18n: this.i18n }));
 		}
 
 		const payload = { sub: user.id, email: user.email };

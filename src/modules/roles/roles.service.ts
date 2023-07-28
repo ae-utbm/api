@@ -61,7 +61,8 @@ export class RolesService {
 		const role = this.orm.em.create(Role, { name, permissions, expires });
 		await this.orm.em.persistAndFlush(role);
 
-		return { ...role, users: undefined };
+		delete role.users;
+		return { ...role };
 	}
 
 	@UseRequestContext()

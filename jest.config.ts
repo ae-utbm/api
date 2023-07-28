@@ -13,6 +13,7 @@ const config: JestConfigWithTsJest = {
 	// 	},
 	// },
 	detectOpenHandles: true,
+	maxConcurrency: 1,
 	moduleNameMapper: {
 		'@env': '<rootDir>/src/env.ts',
 		'@mikro-orm.config': '<rootDir>/src/mikro-orm.config.ts',

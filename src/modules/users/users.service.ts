@@ -1,4 +1,4 @@
-import type { I18nTranslations, ObjectKeysArray } from '@types';
+import type { I18nTranslations } from '@types';
 
 import fs from 'fs';
 import path from 'path';
@@ -26,13 +26,12 @@ import {
 	emailInvalid,
 	emailInvalidToken,
 	emailNotFound,
-	fieldMissing,
-	fieldUnexpected,
 	idInvalid,
 	idNotFound,
 	idOrEmailMissing,
 } from '@utils/responses';
 import { getTemplate } from '@utils/template';
+import { validateObject } from '@utils/validate';
 
 import { UserPatchDTO } from './dto/patch.dto';
 
@@ -66,9 +65,10 @@ export class UsersService {
 	public async checkVisibility(user: User): Promise<Partial<User>> {
 		const visibility = await this.orm.em.findOneOrFail(UserVisibility, { user });
 
-		for (const key in visibility) {
-			if (visibility[key] === false) user[key] = undefined;
-		}
+		Object.entries(visibility).forEach(([key, value]) => {
+			// @ts-ignore
+			if (value === false) user[key] = undefined;
+		});
 
 		return user;
 	}
@@ -123,22 +123,18 @@ export class UsersService {
 
 	@UseRequestContext()
 	async register(input: UserPostDTO): Promise<User> {
-		Object.keys(input).forEach((key) => {
-			const value = input[key] as unknown;
+		validateObject({
+			object: input,
+			type: UserPostDTO,
+			requiredKeys: ['password', 'first_name', 'last_name', 'email', 'birthday'],
+			i18n: this.i18n,
+		});
+
+		Object.entries(input).forEach(([key, value]) => {
 			if (typeof value === 'string') {
+				// @ts-ignore
 				input[key] = value.trim();
 			}
-		});
-
-		const requiredFields: ObjectKeysArray<UserPostDTO> = ['password', 'first_name', 'last_name', 'email', 'birthday']; // Add other required fields as necessary
-
-		requiredFields.forEach((field) => {
-			if (!input[field]) throw new BadRequestException(fieldMissing({ i18n: this.i18n, type: UserPostDTO, field }));
-		});
-
-		(Object.keys(input) as ObjectKeysArray<UserPostDTO>).forEach((field) => {
-			if (!requiredFields.includes(field))
-				throw new BadRequestException(fieldUnexpected({ i18n: this.i18n, type: UserPostDTO, field }));
 		});
 
 		if (!checkEmail(input.email)) throw new BadRequestException(emailInvalid({ i18n: this.i18n, email: input.email }));
@@ -154,16 +150,10 @@ export class UsersService {
 
 		// Add the email verification token & create the user
 		const email_token = generateRandomPassword(12);
-
-		let user: User;
-		try {
-			user = this.orm.em.create(User, {
-				...input,
-				email_verification: hashSync(email_token, 10),
-			});
-		} catch (e) {
-			throw new BadRequestException('Invalid input, please check your data');
-		}
+		const user = this.orm.em.create(User, {
+			...input,
+			email_verification: hashSync(email_token, 10),
+		});
 
 		// Save changes to the database & create the user's visibility parameters
 		this.orm.em.create(UserVisibility, { user });
@@ -291,12 +281,12 @@ export class UsersService {
 
 		// test if the image is square
 		if (!(await isSquare(imagePath))) {
-			fs.unlinkSync(imagePath);
+			fs.rmSync(imagePath);
 			throw new BadRequestException('The user picture must be square');
 		}
 
 		// remove the old picture (if any)
-		if (user.picture && user.picture.path && user.picture.path !== imagePath) fs.unlinkSync(user.picture.path);
+		if (user.picture && user.picture.path && user.picture.path !== imagePath) fs.rmSync(user.picture.path);
 
 		// convert to webp
 		fs.createWriteStream(await convertToWebp(imagePath));
@@ -331,7 +321,7 @@ export class UsersService {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['picture'] });
 		if (!user.picture) throw new NotFoundException('User has no picture to be deleted');
 
-		fs.unlinkSync(user.picture.path);
+		fs.rmSync(user.picture.path);
 		await this.orm.em.removeAndFlush(user.picture);
 	}
 
@@ -351,12 +341,12 @@ export class UsersService {
 
 		// test if the image is square
 		if (!(await isBannerAspectRation(imagePath))) {
-			fs.unlinkSync(imagePath);
+			fs.rmSync(imagePath);
 			throw new BadRequestException('The image must be of 1:3 aspect ratio');
 		}
 
 		// remove old banner if path differs
-		if (user.banner && user.banner.path && user.banner.path !== imagePath) fs.unlinkSync(user.banner.path);
+		if (user.banner && user.banner.path && user.banner.path !== imagePath) fs.rmSync(user.banner.path);
 
 		// convert to webp
 		fs.createWriteStream(await convertToWebp(imagePath));
@@ -391,7 +381,7 @@ export class UsersService {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['banner'] });
 		if (!user.banner) throw new NotFoundException('User has no banner to be deleted');
 
-		fs.unlinkSync(user.banner.path);
+		fs.rmSync(user.banner.path);
 		await this.orm.em.removeAndFlush(user.banner);
 	}
 

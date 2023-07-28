@@ -1,3 +1,5 @@
+import type { PermissionEntity } from '@types';
+
 import { Body, Controller, Get, Param, Post, UseGuards, Patch } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -15,7 +17,7 @@ import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { Role } from '@modules/roles/entities/role.entity';
 
 import { PermissionPatchDTO } from './dto/patch.dto';
-import { PermissionPostDTO } from './dto/post.dto';
+import { PermissionPostDTO, RolePermissionsDto } from './dto/post.dto';
 import { Permission } from './entities/permission.entity';
 import { PermissionsService } from './permissions.service';
 
@@ -33,8 +35,8 @@ export class PermissionsController {
 	@ApiOkResponse({ description: 'The added permission', type: Permission })
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	addToUser(@Body() body: PermissionPostDTO): Promise<Permission> {
-		return this.permsService.addPermissionToUser(body.permission, body.id, body.expires);
+	addToUser(@Body() body: PermissionPostDTO): Promise<PermissionEntity<number>> {
+		return this.permsService.addPermissionToUser(body);
 	}
 
 	@Patch('user')
@@ -44,8 +46,8 @@ export class PermissionsController {
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiOkResponse({ description: 'The modified user permission', type: Permission })
-	removePermissionFromUser(@Body() body: PermissionPatchDTO) {
-		return this.permsService.editPermissionOfUser(body.id, body);
+	editPermissionFromUser(@Body() body: PermissionPatchDTO) {
+		return this.permsService.editPermissionOfUser(body);
 	}
 
 	@Get('user/:id')
@@ -54,21 +56,21 @@ export class PermissionsController {
 	@ApiOperation({ summary: 'Get all permissions of a user (active, revoked and expired)' })
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiOkResponse({ description: 'User permissions retrieved', type: [Permission] })
+	@ApiOkResponse({ description: 'User permission(s) retrieved', type: [Permission] })
 	@ApiParam({ name: 'id', description: 'The user ID' })
 	getUserPermissions(@Param('id') id: number) {
-		return this.permsService.getPermissionsOfUser(id, { show_expired: true, show_revoked: true });
+		return this.permsService.getPermissionsOfUser(id, true);
 	}
 
 	@Post('role')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PERMISSIONS_OF_ROLE')
-	@ApiOperation({ summary: 'Add a permission to a role' })
-	@ApiOkResponse({ description: 'Permission added to role', type: Role })
+	@ApiOperation({ summary: 'Add a permission(s) to a role' })
+	@ApiOkResponse({ description: 'Permission(s) added to role', type: Role })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	addToRole(@Body() body: PermissionPostDTO) {
-		return this.permsService.addPermissionToRole(body.permission, body.id);
+	addToRole(@Body() body: RolePermissionsDto) {
+		return this.permsService.addPermissionsToRole(body.permissions, body.id);
 	}
 
 	@Get('role/:id')
