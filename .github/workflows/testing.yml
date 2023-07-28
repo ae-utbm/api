@@ -14,9 +14,11 @@ jobs:
         ports:
           - 5432:5432
         env:
+          POSTGRES_DB: ae_test
+          POSTGRES_HOST: '127.0.0.1'
+          POSTGRES_PORT: 5432
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: ae_test
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -46,11 +48,11 @@ jobs:
       - name: Run tests
         run: pnpm workflow:test
         env:
-          DB_NAME: ae_test
-          DB_USER: postgres
-          DB_PASSWORD: postgres
-          DB_HOST: localhost
-          DB_PORT: 5432
+          POSTGRES_DB: ae_test
+          POSTGRES_HOST: '127.0.0.1'
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
           DEBUG: true
           EMAIL_DISABLED: true
           JWT_KEY: secret_jwt_key
