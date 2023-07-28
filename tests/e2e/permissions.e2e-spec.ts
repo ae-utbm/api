@@ -15,7 +15,7 @@ import {
 
 import { app, i18n, orm } from '..';
 
-describe('PermissionsController (e2e)', () => {
+describe('Permissions (e2e)', () => {
 	let tokenUnauthorized: string;
 	let tokenPermissionModerator: string;
 

@@ -7,7 +7,7 @@ import { deleteSuccess, emailNotVerified, idInvalid, idNotFound } from '@utils/r
 
 import { app, i18n } from '..';
 
-describe('LogsController (e2e)', () => {
+describe('Logs (e2e)', () => {
 	let tokenUnverified: string;
 	let userIdUnverified: number;
 
@@ -112,13 +112,52 @@ describe('LogsController (e2e)', () => {
 			});
 		});
 
+		it('should return 200 when user is asking for himself', async () => {
+			const response = await request(app.getHttpServer())
+				.get(`/api/logs/user/${userIdUnauthorized}`)
+				.set('Authorization', `Bearer ${tokenUnauthorized}`)
+				.expect(200);
+
+			// Expect that all elements in the array have the same type
+			const body = response.body as Array<unknown>;
+
+			expect(body).toBeInstanceOf(Array);
+			expect(body.length).toBeGreaterThanOrEqual(0);
+			expect(body.haveEqualObjects()).toBe(true);
+		});
+
 		it('should return 200 when user is asking for another user with the right permission', async () => {
 			const response = await request(app.getHttpServer())
 				.get(`/api/logs/user/${userIdUnauthorized}`)
 				.set('Authorization', `Bearer ${tokenLogModerator}`)
 				.expect(200);
 
-			expect(response.body).toEqual(expect.any(Array));
+			// Expect that all elements in the array have the same type
+			const body = response.body as Array<unknown>;
+
+			expect(body).toBeInstanceOf(Array);
+			expect(body.length).toBeGreaterThan(0);
+			expect(body.haveEqualObjects()).toBe(true);
+
+			expect(body[0]).toEqual({
+				id: expect.any(Number) as number,
+				created_at: expect.any(String) as string,
+				updated_at: expect.any(String) as string,
+				user: userIdUnauthorized,
+				action: expect.any(String) as string,
+				ip: expect.any(String) as string,
+				user_agent: expect.any(String) as string,
+				route: expect.any(String) as string,
+				method: expect.any(String) as string,
+				body: expect.any(String) as string,
+				query: expect.any(String) as string,
+				params: expect.any(String) as string,
+				response: null,
+				status_code: expect.any(Number) as number,
+				error: null,
+				error_stack: null,
+				error_message: null,
+			});
 		});
 
 		it('should return 403 when user is asking for another user without the permission', async () => {

@@ -12,6 +12,7 @@ declare global {
 		/**
 		 * Returns true if all objects in the array have the same type.
 		 * @returns {boolean} True if all elements in the array have the same type.
+		 * @example [].haveEqualObjects() // true
 		 * @example [{ a: 1 }, { a: 2 }].haveEqualObjects() // true
 		 * @example [{ a: 1 }, { a: 2, b: 'unexpected' }].haveEqualObjects() // false
 		 */
@@ -33,6 +34,7 @@ if (!Array.prototype.remove) {
 
 if (!Array.prototype.haveEqualObjects) {
 	Array.prototype.haveEqualObjects = function <T>(this: T[]): boolean {
+		if (this.length === 0) return true;
 		const keysToHave = Object.keys(this[0]);
 
 		for (let i = 1; i < this.length; i++) {

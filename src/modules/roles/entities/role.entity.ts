@@ -21,7 +21,7 @@ export class Role extends BaseEntity implements RoleEntity<Permission, User> {
 	/** Determine wether the role is still active */
 	@Property({ name: 'is_revoked', onCreate: () => false })
 	@ApiProperty({ type: Boolean, default: false })
-	revoked = false;
+	revoked: boolean;
 
 	/** Specify when the role should expires */
 	@Property({ name: 'expires_at' })

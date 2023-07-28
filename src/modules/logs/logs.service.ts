@@ -24,7 +24,7 @@ export class LogsService {
 	 */
 	@Cron('0 0 7 * * *')
 	@UseRequestContext()
-	async handleCron() {
+	async deleteOldLogs() {
 		await this.orm.em.nativeDelete(Log, { created_at: { $lt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60) } });
 	}
 

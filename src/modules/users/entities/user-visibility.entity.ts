@@ -11,61 +11,61 @@ import { User } from './user.entity';
 export class UserVisibility extends BaseEntity implements UserVisibilityEntity<User> {
 	/** Specify to which user those parameters belongs */
 	@OneToOne(() => User, { onDelete: 'cascade', joinColumn: 'user_id' })
-	@ApiProperty({ type: Number })
+	@ApiProperty({ type: Number, minimum: 1 })
 	user: User;
 
 	/** Wether the user email should be visible or not */
 	@Property({ onCreate: () => false })
-	@ApiProperty({ type: Boolean })
-	email = false;
+	@ApiProperty({ type: Boolean, default: false })
+	email: boolean;
 
 	/** Wether the user email should be visible or not */
 	@Property({ onCreate: () => false })
-	@ApiProperty({ type: Boolean })
-	secondary_email = false;
+	@ApiProperty({ type: Boolean, default: false })
+	secondary_email: boolean;
 
 	/** Wether the user birthday should be visible or not */
 	@Property({ onCreate: () => true })
-	@ApiProperty({ type: Boolean })
-	birthday = true;
+	@ApiProperty({ type: Boolean, default: true })
+	birthday: boolean;
 
 	/** Wether the user nickname should be visible or not */
 	@Property({ onCreate: () => true })
-	@ApiProperty({ type: Boolean })
-	nickname = true;
+	@ApiProperty({ type: Boolean, default: true })
+	nickname: boolean;
 
 	/** Wether the user gender should be visible or not */
 	@Property({ onCreate: () => false })
-	@ApiProperty({ type: Boolean })
-	gender = false;
+	@ApiProperty({ type: Boolean, default: false })
+	gender: boolean;
 
 	/** Wether the user gender should be visible or not */
 	@Property({ onCreate: () => false })
-	@ApiProperty({ type: Boolean })
-	pronouns = false;
+	@ApiProperty({ type: Boolean, default: false })
+	pronouns: boolean;
 
 	/** Wether the user cursus should be visible or not */
 	@Property({ onCreate: () => true })
-	@ApiProperty({ type: Boolean })
-	cursus = true;
+	@ApiProperty({ type: Boolean, default: true })
+	cursus: boolean;
 
 	/** Wether the user cursus should be visible or not */
 	@Property({ onCreate: () => true })
-	@ApiProperty({ type: Boolean })
-	specialty = true;
+	@ApiProperty({ type: Boolean, default: true })
+	specialty: boolean;
 
 	/** Wether the user promotion should be visible or not */
 	@Property({ onCreate: () => true })
-	@ApiProperty({ type: Boolean })
-	promotion = true;
+	@ApiProperty({ type: Boolean, default: true })
+	promotion: boolean;
 
 	/** Wether the user phone should be visible or not */
 	@Property({ onCreate: () => false })
-	@ApiProperty({ type: Boolean })
-	phone = false;
+	@ApiProperty({ type: Boolean, default: false })
+	phone: boolean;
 
 	/** Wether the user parent's contact should be visible or not */
 	@Property({ onCreate: () => false })
-	@ApiProperty({ type: Boolean })
-	parent_contact = false;
+	@ApiProperty({ type: Boolean, default: false })
+	parent_contact: boolean;
 }

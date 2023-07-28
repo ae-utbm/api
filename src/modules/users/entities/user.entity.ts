@@ -40,8 +40,8 @@ export class User
 	last_name: string;
 
 	@Property({ onCreate: () => false })
-	@ApiProperty({ type: Boolean })
-	email_verified = false;
+	@ApiProperty({ type: Boolean, default: false })
+	email_verified: boolean;
 
 	@Property({ nullable: true, hidden: true })
 	email_verification?: string;

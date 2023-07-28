@@ -280,7 +280,7 @@ export class UsersService {
 		fs.writeFileSync(imagePath, buffer);
 
 		// test if the image is square
-		if (!(await isSquare(imagePath))) {
+		if (!(await isSquare(buffer))) {
 			fs.rmSync(imagePath);
 			throw new BadRequestException('The user picture must be square');
 		}
@@ -289,7 +289,7 @@ export class UsersService {
 		if (user.picture && user.picture.path && user.picture.path !== imagePath) fs.rmSync(user.picture.path);
 
 		// convert to webp
-		fs.createWriteStream(await convertToWebp(imagePath));
+		fs.createWriteStream(await convertToWebp(buffer));
 
 		// update database
 		if (!user.picture)
@@ -340,7 +340,7 @@ export class UsersService {
 		fs.writeFileSync(imagePath, buffer);
 
 		// test if the image is square
-		if (!(await isBannerAspectRation(imagePath))) {
+		if (!(await isBannerAspectRation(buffer))) {
 			fs.rmSync(imagePath);
 			throw new BadRequestException('The image must be of 1:3 aspect ratio');
 		}
@@ -349,7 +349,7 @@ export class UsersService {
 		if (user.banner && user.banner.path && user.banner.path !== imagePath) fs.rmSync(user.banner.path);
 
 		// convert to webp
-		fs.createWriteStream(await convertToWebp(imagePath));
+		fs.createWriteStream(await convertToWebp(buffer));
 
 		// update database
 		if (!user.banner)

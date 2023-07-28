@@ -29,6 +29,7 @@ import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { getStreamableFile } from '@utils/images';
 
 import { PromotionResponseDTO } from './dto/promotion.dto';
+import { Promotion } from './entities/promotion.entity';
 import { PromotionsService } from './promotions.service';
 import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
 
@@ -58,6 +59,7 @@ export class PromotionsController {
 	@ApiNotFoundResponse({ description: 'Promotion not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiBadRequestResponse({ description: 'Invalid file' })
+	@ApiOkResponse({ type: Promotion })
 	@ApiBody({
 		schema: {
 			type: 'object',
@@ -93,6 +95,7 @@ export class PromotionsController {
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Delete the promotion logo' })
 	@ApiNotFoundResponse({ description: 'Promotion not found' })
+	@ApiOkResponse({ type: Promotion })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async deleteLogo(@Param('number') number: number) {
 		return this.promotionsService.deleteLogo(number);

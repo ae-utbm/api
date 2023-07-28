@@ -4,12 +4,13 @@ import { JwtService } from '@nestjs/jwt';
 
 import { UsersService } from '@modules/users/users.service';
 
+import { PromotionPicture } from './entities/promotion-picture.entity';
 import { Promotion } from './entities/promotion.entity';
 import { PromotionsController } from './promotions.controller';
 import { PromotionsService } from './promotions.service';
 
 @Module({
-	imports: [MikroOrmModule.forFeature([Promotion])],
+	imports: [MikroOrmModule.forFeature([Promotion, PromotionPicture])],
 	providers: [PromotionsService, JwtService, UsersService],
 	controllers: [PromotionsController],
 	exports: [PromotionsService],

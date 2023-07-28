@@ -50,7 +50,8 @@ export class RolesService {
 
 	@UseRequestContext()
 	async createRole(name: Uppercase<string>, permissions: PermissionName[], expires: Date) {
-		if (name.toUpperCase() !== name) throw new BadRequestException('Role name must be uppercase');
+		if (name.toUpperCase() !== name) name = name.toUpperCase();
+
 		if (await this.orm.em.findOne(Role, { name }))
 			throw new BadRequestException(`Role with name ${name} already exists`);
 

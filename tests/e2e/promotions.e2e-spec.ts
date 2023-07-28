@@ -10,7 +10,7 @@ import { idNotFound, imageInvalidAspectRatio, imageInvalidMimeType, promotionLog
 
 import { app, config, i18n, orm } from '..';
 
-describe('PromotionsController (e2e)', () => {
+describe('Promotions (e2e)', () => {
 	let tokenUnauthorized: string;
 	let tokenPromotionModerator: string;
 
@@ -230,7 +230,7 @@ describe('PromotionsController (e2e)', () => {
 			const logo = orm.em.create(PromotionPicture, {
 				filename: '21.webp',
 				mimetype: 'image/webp',
-				path: join(process.cwd(), './tests/files/promo_21.webp'),
+				path: join(process.cwd(), './tests/files/promo_21.png'),
 				promotion: 21,
 				size: 0,
 				visibility: 'public',
@@ -318,7 +318,7 @@ describe('PromotionsController (e2e)', () => {
 			const response = await request(app.getHttpServer())
 				.post('/api/promotions/21/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`)
-				.attach('file', `./tests/files/promo_21.webp`);
+				.attach('file', `./tests/files/promo_21.png`);
 
 			// expect registered data to be returned
 			expect(response.body).toEqual({
@@ -330,7 +330,8 @@ describe('PromotionsController (e2e)', () => {
 					id: expect.any(Number) as number,
 					created_at: expect.any(String) as string,
 					updated_at: expect.any(String) as string,
-					filename: '21.webp',
+					filename: expect.any(String) as string,
+					description: 'Promotion logo',
 					mimetype: 'image/webp',
 					size: 117280,
 					visibility: 'public',
@@ -338,7 +339,47 @@ describe('PromotionsController (e2e)', () => {
 			});
 
 			// expect the file to be created on disk
-			expect(existsSync(join(config.get<string>('files.promotions'), 'logo', '21.webp'))).toBe(true);
+			expect(
+				existsSync(join(config.get<string>('files.promotions'), 'logo', (response.body as Promotion).picture.filename)),
+			).toBe(true);
+		});
+
+		it('should return 200 when the promotion has a logo and update the logo', async () => {
+			// * Note: The logo is deleted in 'should return 200 when the promotion exists and delete the logo' * //
+
+			// Get the old logo
+			const oldLogo = await orm.em.findOne(PromotionPicture, { promotion: 21 });
+
+			const response = await request(app.getHttpServer())
+				.post('/api/promotions/21/logo')
+				.set('Authorization', `Bearer ${tokenPromotionModerator}`)
+				.attach('file', `./tests/files/promo_21.png`);
+
+			// expect registered data to be returned
+			expect(response.body).toEqual({
+				id: 21,
+				created_at: expect.any(String) as string,
+				updated_at: expect.any(String) as string,
+				number: 21,
+				picture: {
+					id: expect.any(Number) as number,
+					created_at: expect.any(String) as string,
+					updated_at: expect.any(String) as string,
+					filename: expect.any(String) as string,
+					description: 'Promotion logo',
+					mimetype: 'image/webp',
+					size: 117280,
+					visibility: 'public',
+				},
+			});
+
+			// expect the old file to be deleted from disk
+			expect(existsSync(join(config.get<string>('files.promotions'), 'logo', oldLogo.filename))).toBe(false);
+
+			// expect the new file to be created on disk
+			expect(
+				existsSync(join(config.get<string>('files.promotions'), 'logo', (response.body as Promotion).picture.filename)),
+			).toBe(true);
 		});
 	});
 
@@ -389,6 +430,9 @@ describe('PromotionsController (e2e)', () => {
 		});
 
 		it('should return 200 when the promotion exists and delete the logo', async () => {
+			// Get the logo filename
+			const logo = await orm.em.findOne(PromotionPicture, { promotion: 21 });
+
 			const response = await request(app.getHttpServer())
 				.delete('/api/promotions/21/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
@@ -402,9 +446,7 @@ describe('PromotionsController (e2e)', () => {
 			});
 
 			// expect the file to be deleted from disk
-			// * This would fail on Windows, as Node does not allow to delete a file that is in use (by itself)
-			if (process.platform !== 'win32')
-				expect(existsSync(join(config.get<string>('files.promotions'), 'logo', '21.webp'))).toBe(false);
+			expect(existsSync(join(config.get<string>('files.promotions'), 'logo', logo.filename))).toBe(false);
 		});
 	});
 });

@@ -23,6 +23,7 @@ export class DatabaseSeeder extends Seeder {
 		const logsUser = users.find((u) => u.email === 'logs@email.com');
 		const permUser = users.find((u) => u.email === 'perms@email.com');
 		const promosUser = users.find((u) => u.email === 'promos@email.com');
+		const rolesUser = users.find((u) => u.email === 'roles@email.com');
 
 		// Assign permission to users
 		const perms = [
@@ -48,6 +49,7 @@ export class DatabaseSeeder extends Seeder {
 		// Assign roles to users
 		permUser.roles.add(roles.find((r) => r.name === 'PERMISSIONS_MODERATOR'));
 		promosUser.roles.add(roles.find((r) => r.name === 'PROMOTIONS_MODERATOR'));
+		rolesUser.roles.add(roles.find((r) => r.name === 'ROLES_MODERATOR'));
 
 		// Assign promotion to users
 		rootUser.promotion = promotions.find((p) => p.number === 21);
@@ -83,6 +85,11 @@ export class DatabaseSeeder extends Seeder {
 			{
 				name: 'PROMOTIONS_MODERATOR',
 				permissions: ['CAN_READ_PROMOTION', 'CAN_EDIT_PROMOTION'],
+				expires: new Date('9999-12-31'),
+			},
+			{
+				name: 'ROLES_MODERATOR',
+				permissions: ['CAN_READ_ROLE', 'CAN_EDIT_ROLE'],
 				expires: new Date('9999-12-31'),
 			},
 		];
@@ -154,6 +161,16 @@ export class DatabaseSeeder extends Seeder {
 			// > CAN_READ_PROMOTION & CAN_EDIT_PROMOTION permissions
 			{
 				email: 'promos@email.com',
+				email_verified: true,
+				password: hashSync('root', 10),
+				first_name: 'promos',
+				last_name: 'moderator',
+				birthday: new Date('2000-01-01'),
+			},
+			// Role moderator user
+			// > CAN_READ_ROLE & CAN_EDIT_ROLE permissions
+			{
+				email: 'roles@email.com',
 				email_verified: true,
 				password: hashSync('root', 10),
 				first_name: 'promos',

@@ -1,50 +1,50 @@
-import { createReadStream, ReadStream, rmSync } from 'fs';
+import { createReadStream, ReadStream } from 'fs';
 
 import sharp from 'sharp';
 
 /**
  * Check if an image is square
- * @param {string} imagePath The path to the image
+ * @param {string} buffer The path to the image
  * @returns {boolean} True if the image is square, false otherwise
  */
-export async function isSquare(imagePath: string): Promise<boolean> {
-	const { width, height } = await sharp(imagePath).metadata();
+export async function isSquare(buffer: Buffer): Promise<boolean> {
+	const { width, height } = await sharp(buffer).metadata();
 	return width === height;
 }
 
 /**
  * Determine if the image is using a 1:3 aspect ratio
- * @param {string} imagePath The path to the image
+ * @param {Buffer} buffer The path to the image
  * @returns {boolean} True if the image is using a 1:3 aspect ratio, false otherwise
  */
-export async function isBannerAspectRation(imagePath: string): Promise<boolean> {
-	const { width, height } = await sharp(imagePath).metadata();
+export async function isBannerAspectRation(buffer: Buffer): Promise<boolean> {
+	const { width, height } = await sharp(buffer).metadata();
 	return width / height === 1 / 3;
 }
 
 /**
  * Convert any static image format to webp
- * @param {string} imagePath The path to the image
- * @returns {string} The path to the converted image
+ * @param {Buffer} buffer The buffer of the image
+ * @returns {Buffer} The buffer of the converted image
  *
  * @info GIF images are not converted
  */
-export async function convertToWebp(imagePath: string): Promise<string> {
-	const { format } = await sharp(imagePath).metadata();
-	if (format === 'gif' || format === 'webp') return imagePath;
+export async function convertToWebp(buffer: Buffer): Promise<Buffer> {
+	const { format } = await sharp(buffer).metadata();
+	if (format === 'gif' || format === 'webp') return buffer;
 
-	const newPath = imagePath.replace(/\.[^/.]+$/, '.webp');
+	// convert the image to webp otherwise
+	return sharp(buffer).webp().toBuffer();
+}
 
-	// convert the image to webp
-	const buffer = await sharp(imagePath).toBuffer();
-	sharp(buffer)
-		.webp()
-		.toFile(newPath, (err, info) => {
-			// delete the old image
-			if (!err && info) rmSync(imagePath);
-		});
-
-	return newPath;
+/**
+ * Get the extension of a file
+ * @param {Buffer} buffer The buffer of the file
+ * @returns {string} The extension of the file (without the dot)
+ */
+export async function getFileExtension(buffer: Buffer): Promise<string> {
+	const { format } = await sharp(buffer).metadata();
+	return format;
 }
 
 /**

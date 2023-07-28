@@ -20,7 +20,7 @@ import {
 
 import { orm, app, i18n } from '..';
 
-describe('AuthController (e2e)', () => {
+describe('Auth (e2e)', () => {
 	describe('/api/auth/login (POST)', () => {
 		it('should return 400 when email/password is not provided', async () => {
 			const response = await request(app.getHttpServer())
