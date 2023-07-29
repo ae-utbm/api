@@ -5,9 +5,9 @@ import { JwtService } from '@nestjs/jwt';
 import { compareSync } from 'bcrypt';
 import { I18nService } from 'nestjs-i18n';
 
+import { Errors } from '@i18n';
 import { User } from '@modules/users/entities/user.entity';
 import { UsersService } from '@modules/users/users.service';
-import { emailNotVerified, passwordMismatch } from '@utils/responses';
 
 import { TokenDTO } from './dto/token.dto';
 
@@ -23,7 +23,7 @@ export class AuthService {
 		const user: User = await this.usersService.findOne({ email: email }, false);
 
 		if (user.password !== pass && !compareSync(pass, user.password)) {
-			throw new UnauthorizedException(passwordMismatch({ i18n: this.i18n }));
+			throw new UnauthorizedException(Errors.Generic.passwordMismatch({ i18n: this.i18n }));
 		}
 
 		const payload = { sub: user.id, email: user.email };
@@ -42,7 +42,9 @@ export class AuthService {
 		const user = await this.usersService.findOne({ email: payload.email }, false);
 
 		// throw if user not verified
-		if (!user.email_verified) throw new UnauthorizedException(emailNotVerified({ i18n: this.i18n, type: User }));
+		if (!user.email_verified)
+			throw new UnauthorizedException(Errors.Email.NotVerified({ i18n: this.i18n, type: User }));
+
 		return user;
 	}
 }

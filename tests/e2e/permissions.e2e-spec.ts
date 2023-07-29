@@ -1,17 +1,11 @@
 import request from 'supertest';
 
+import { Errors } from '@i18n';
 import { TokenDTO } from '@modules/auth/dto/token.dto';
 import { PermissionPostDTO, RolePermissionsDto } from '@modules/permissions/dto/post.dto';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { Role } from '@modules/roles/entities/role.entity';
 import { User } from '@modules/users/entities/user.entity';
-import {
-	fieldMissing,
-	idNotFound,
-	permissionAlreadyOnUser,
-	permissionInvalid,
-	permissionNotFoundOnUser,
-} from '@utils/responses';
 
 import { app, i18n, orm } from '..';
 
@@ -70,7 +64,7 @@ describe('Permissions (e2e)', () => {
 			expect(response.body).toEqual({
 				statusCode: 404,
 				error: 'Not Found',
-				message: idNotFound({ i18n, id: 999999, type: User }),
+				message: Errors.Generic.IdNotFound({ i18n, id: 999999, type: User }),
 			});
 		});
 
@@ -84,7 +78,7 @@ describe('Permissions (e2e)', () => {
 			expect(response.body).toEqual({
 				statusCode: 400,
 				error: 'Bad Request',
-				message: permissionInvalid({ i18n, permission: 'INVALID' }),
+				message: Errors.Permission.Invalid({ i18n, permission: 'INVALID' }),
 			});
 		});
 
@@ -98,7 +92,7 @@ describe('Permissions (e2e)', () => {
 			expect(response.body).toEqual({
 				statusCode: 400,
 				error: 'Bad Request',
-				message: fieldMissing({ i18n, field: 'expires', type: PermissionPostDTO }),
+				message: Errors.Generic.FieldMissing({ i18n, field: 'expires', type: PermissionPostDTO }),
 			});
 		});
 
@@ -112,7 +106,7 @@ describe('Permissions (e2e)', () => {
 			expect(response.body).toEqual({
 				statusCode: 400,
 				error: 'Bad Request',
-				message: permissionAlreadyOnUser({ i18n, permission: 'ROOT', user: 'root root' }),
+				message: Errors.Permission.AlreadyOnUser({ i18n, permission: 'ROOT', user: 'root root' }),
 			});
 		});
 
@@ -124,12 +118,12 @@ describe('Permissions (e2e)', () => {
 				.expect(201);
 
 			expect(response.body).toEqual({
-				id: expect.any(Number) as number,
-				created_at: expect.any(String) as string,
-				expires: expect.any(String) as string,
+				id: expect.any(Number),
+				created_at: expect.any(String),
+				expires: expect.any(String),
 				name: 'CAN_EDIT_PROMOTION',
 				revoked: false,
-				updated_at: expect.any(String) as string,
+				updated_at: expect.any(String),
 				user: 1,
 			});
 
@@ -174,7 +168,7 @@ describe('Permissions (e2e)', () => {
 			expect(response.body).toEqual({
 				statusCode: 404,
 				error: 'Not Found',
-				message: idNotFound({ i18n, id: 999999, type: User }),
+				message: Errors.Generic.IdNotFound({ i18n, id: 999999, type: User }),
 			});
 		});
 
@@ -188,7 +182,7 @@ describe('Permissions (e2e)', () => {
 			expect(response.body).toEqual({
 				statusCode: 404,
 				error: 'Not Found',
-				message: permissionNotFoundOnUser({ i18n, user: 'root root', permission: 'ROOT' }),
+				message: Errors.Permission.NotFoundOnUser({ i18n, user: 'root root', permission: 'ROOT' }),
 			});
 		});
 
@@ -201,11 +195,11 @@ describe('Permissions (e2e)', () => {
 
 			expect(response.body).toEqual({
 				id: 1,
-				created_at: expect.any(String) as string,
-				expires: expect.any(String) as string,
+				created_at: expect.any(String),
+				expires: expect.any(String),
 				name: 'ROOT',
 				revoked: false,
-				updated_at: expect.any(String) as string,
+				updated_at: expect.any(String),
 				user: 1,
 			});
 		});
@@ -243,7 +237,7 @@ describe('Permissions (e2e)', () => {
 			expect(response.body).toEqual({
 				statusCode: 404,
 				error: 'Not Found',
-				message: idNotFound({ i18n, id: 999999, type: User }),
+				message: Errors.Generic.IdNotFound({ i18n, id: 999999, type: User }),
 			});
 		});
 
@@ -255,12 +249,12 @@ describe('Permissions (e2e)', () => {
 
 			expect(response.body).toEqual([
 				{
-					created_at: expect.any(String) as string,
-					expires: expect.any(String) as string,
+					created_at: expect.any(String),
+					expires: expect.any(String),
 					id: 1,
 					name: 'ROOT',
 					revoked: false,
-					updated_at: expect.any(String) as string,
+					updated_at: expect.any(String),
 					user: 1,
 				},
 			]);
@@ -303,7 +297,7 @@ describe('Permissions (e2e)', () => {
 			expect(response.body).toEqual({
 				statusCode: 404,
 				error: 'Not Found',
-				message: idNotFound({ i18n, id: 999999, type: Role }),
+				message: Errors.Generic.IdNotFound({ i18n, id: 999999, type: Role }),
 			});
 		});
 
@@ -316,7 +310,7 @@ describe('Permissions (e2e)', () => {
 			expect(response.body).toEqual({
 				statusCode: 400,
 				error: 'Bad Request',
-				message: fieldMissing({ i18n, field: 'permissions', type: RolePermissionsDto }),
+				message: Errors.Generic.FieldMissing({ i18n, field: 'permissions', type: RolePermissionsDto }),
 			});
 		});
 
@@ -333,7 +327,7 @@ describe('Permissions (e2e)', () => {
 			expect(response.body).toEqual({
 				statusCode: 400,
 				error: 'Bad Request',
-				message: permissionInvalid({ i18n, permission: 'INVALID' }),
+				message: Errors.Permission.Invalid({ i18n, permission: 'INVALID' }),
 			});
 		});
 
@@ -348,8 +342,8 @@ describe('Permissions (e2e)', () => {
 				.expect(201);
 
 			expect(response.body).toEqual({
-				created_at: expect.any(String) as string,
-				expires: expect.any(String) as string,
+				created_at: expect.any(String),
+				expires: expect.any(String),
 				id: 1,
 				name: 'PERMISSIONS_MODERATOR',
 				permissions: [
@@ -360,7 +354,7 @@ describe('Permissions (e2e)', () => {
 					'ROOT',
 				],
 				revoked: false,
-				updated_at: expect.any(String) as string,
+				updated_at: expect.any(String),
 			});
 
 			// Remove the permission to avoid problems with other tests
@@ -408,7 +402,7 @@ describe('Permissions (e2e)', () => {
 			expect(response.body).toEqual({
 				statusCode: 404,
 				error: 'Not Found',
-				message: idNotFound({ i18n, type: Role, id: 9999 }),
+				message: Errors.Generic.IdNotFound({ i18n, type: Role, id: 9999 }),
 			});
 		});
 

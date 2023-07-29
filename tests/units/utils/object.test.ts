@@ -1,4 +1,4 @@
-import '@utils/object';
+import '@utils/index';
 
 describe('Object properties extensions', () => {
 	describe('isObject', () => {

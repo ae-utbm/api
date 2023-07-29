@@ -10,6 +10,7 @@ import { Cron } from '@nestjs/schedule';
 import { compareSync, hashSync } from 'bcrypt';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 
+import { Errors } from '@i18n';
 import { UserPostByAdminDTO, UserPostDTO } from '@modules/auth/dto/register.dto';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';
@@ -19,17 +20,6 @@ import { checkBirthday } from '@utils/dates';
 import { checkEmail, sendEmail } from '@utils/email';
 import { convertToWebp, isBannerAspectRation, isSquare } from '@utils/images';
 import { generateRandomPassword } from '@utils/password';
-import {
-	birthdayInvalid,
-	emailAlreadyUsed,
-	emailAlreadyVerified,
-	emailInvalid,
-	emailInvalidToken,
-	emailNotFound,
-	idInvalid,
-	idNotFound,
-	idOrEmailMissing,
-} from '@utils/responses';
 import { getTemplate } from '@utils/template';
 import { validateObject } from '@utils/validate';
 
@@ -98,9 +88,9 @@ export class UsersService {
 		if (id) user = await this.orm.em.findOne(User, { id });
 		if (email) user = await this.orm.em.findOne(User, { email });
 
-		if (!id && !email) throw new BadRequestException(idOrEmailMissing({ i18n: this.i18n, type: User }));
-		if (!user && id) throw new NotFoundException(idNotFound({ i18n: this.i18n, type: User, id }));
-		if (!user && email) throw new NotFoundException(emailNotFound({ i18n: this.i18n, type: User, email }));
+		if (!id && !email) throw new BadRequestException(Errors.Generic.IdOrEmailMissing({ i18n: this.i18n, type: User }));
+		if (!user && id) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id }));
+		if (!user && email) throw new NotFoundException(Errors.Email.NotFound({ i18n: this.i18n, type: User, email }));
 
 		return filter ? await this.checkVisibility(user) : user;
 	}
@@ -108,7 +98,7 @@ export class UsersService {
 	@UseRequestContext()
 	async findVisibility({ id }: Partial<Pick<User, 'id'>>): Promise<UserVisibility> {
 		const user = await this.orm.em.findOne(User, { id });
-		if (!user) throw new NotFoundException(idNotFound({ i18n: this.i18n, type: User, id }));
+		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id }));
 
 		return await this.orm.em.findOne(UserVisibility, { user });
 	}
@@ -137,13 +127,14 @@ export class UsersService {
 			}
 		});
 
-		if (!checkEmail(input.email)) throw new BadRequestException(emailInvalid({ i18n: this.i18n, email: input.email }));
+		if (!checkEmail(input.email))
+			throw new BadRequestException(Errors.Email.Invalid({ i18n: this.i18n, email: input.email }));
 
 		if (!checkBirthday(input.birthday))
-			throw new BadRequestException(birthdayInvalid({ i18n: this.i18n, date: input.birthday }));
+			throw new BadRequestException(Errors.Birthday.Invalid({ i18n: this.i18n, date: input.birthday }));
 
 		if (await this.orm.em.findOne(User, { email: input.email }))
-			throw new BadRequestException(emailAlreadyUsed({ i18n: this.i18n, email: input.email }));
+			throw new BadRequestException(Errors.Email.AlreadyUsed({ i18n: this.i18n, email: input.email }));
 
 		// Check if the password is already hashed
 		if (input.password.length !== 60) input.password = hashSync(input.password, 10);
@@ -186,15 +177,16 @@ export class UsersService {
 		if (!user_id || !token) throw new BadRequestException('Missing user id or token');
 
 		if (typeof user_id === 'string' && parseInt(user_id, 10) != user_id)
-			throw new BadRequestException(idInvalid({ i18n: this.i18n, type: User, id: user_id }));
+			throw new BadRequestException(Errors.Generic.IdInvalid({ i18n: this.i18n, type: User, id: user_id }));
 
 		const user = await this.orm.em.findOne(User, { id: user_id });
-		if (!user) throw new NotFoundException(idNotFound({ i18n: this.i18n, type: User, id: user_id }));
+		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id: user_id }));
 
-		if (user.email_verified) throw new BadRequestException(emailAlreadyVerified({ i18n: this.i18n, type: User }));
+		if (user.email_verified)
+			throw new BadRequestException(Errors.Email.AlreadyVerified({ i18n: this.i18n, type: User }));
 
 		if (!compareSync(token, user.email_verification))
-			throw new UnauthorizedException(emailInvalidToken({ i18n: this.i18n }));
+			throw new UnauthorizedException(Errors.Email.InvalidVerificationToken({ i18n: this.i18n }));
 
 		user.email_verified = true;
 		user.email_verification = null;
@@ -208,10 +200,11 @@ export class UsersService {
 		if (await this.orm.em.findOne(User, { email: input.email }))
 			throw new BadRequestException(`User already with the email '${input.email}' already exists`);
 
-		if (!checkEmail(input.email)) throw new BadRequestException(emailInvalid({ i18n: this.i18n, email: input.email }));
+		if (!checkEmail(input.email))
+			throw new BadRequestException(Errors.Email.Invalid({ i18n: this.i18n, email: input.email }));
 
 		if (!checkBirthday(input.birthday))
-			throw new BadRequestException(birthdayInvalid({ i18n: this.i18n, date: input.birthday }));
+			throw new BadRequestException(Errors.Birthday.Invalid({ i18n: this.i18n, date: input.birthday }));
 
 		// Generate a random password & hash it
 		const password = generateRandomPassword(12);
@@ -238,7 +231,7 @@ export class UsersService {
 		if (!user) throw new NotFoundException(`User with id ${input.id} not found`);
 
 		if (input.email && !checkEmail(input.email))
-			throw new BadRequestException(emailInvalid({ i18n: this.i18n, email: input.email }));
+			throw new BadRequestException(Errors.Email.Invalid({ i18n: this.i18n, email: input.email }));
 
 		if (input.hasOwnProperty('birthday') || input.hasOwnProperty('first_name') || input.hasOwnProperty('last_name')) {
 			const currentUser = await this.findOne({ id: requestUserId }, false);

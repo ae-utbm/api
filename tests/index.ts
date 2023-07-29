@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import type { I18nTranslations } from '@types';
 
 import 'tsconfig-paths/register';

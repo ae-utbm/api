@@ -3,7 +3,7 @@ import type { Class, I18nTranslations, ObjectKeysArray } from '@types';
 import { BadRequestException } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 
-import { fieldMissing, fieldUnexpected } from './responses';
+import { Errors } from '@i18n';
 
 /**
  * Validate fields of an object
@@ -24,15 +24,15 @@ export function validateObject<T extends object, C extends Class<unknown>>(optio
 	fields.forEach((field) => {
 		// If the field is not required, throw an error (Unexpected field)
 		if (!options.requiredKeys.includes(field))
-			throw new BadRequestException(fieldUnexpected({ i18n: options.i18n, type: options.type, field }));
+			throw new BadRequestException(Errors.Generic.FieldUnexpected({ i18n: options.i18n, type: options.type, field }));
 	});
 
 	options.requiredKeys.forEach((field) => {
 		// If the field is required and it is not present, throw an error (Missing field)
 		if (!fields.includes(field))
-			throw new BadRequestException(fieldMissing({ i18n: options.i18n, type: options.type, field }));
+			throw new BadRequestException(Errors.Generic.FieldMissing({ i18n: options.i18n, type: options.type, field }));
 
 		if (options.object[field] === undefined || options.object[field] === null)
-			throw new BadRequestException(fieldMissing({ i18n: options.i18n, type: options.type, field }));
+			throw new BadRequestException(Errors.Generic.FieldMissing({ i18n: options.i18n, type: options.type, field }));
 	});
 }

@@ -10,8 +10,8 @@ import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { I18nService } from 'nestjs-i18n';
 
+import { Errors } from '@i18n';
 import { convertToWebp, getFileExtension, isSquare } from '@utils/images';
-import { idNotFound, imageInvalidAspectRatio, imageInvalidMimeType, promotionLogoNotFound } from '@utils/responses';
 
 import { PromotionResponseDTO } from './dto/promotion.dto';
 import { PromotionPicture } from './entities/promotion-picture.entity';
@@ -65,7 +65,8 @@ export class PromotionsService {
 	@UseRequestContext()
 	async findOne(number: number): Promise<PromotionResponseDTO> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['*', 'picture', 'users'] });
-		if (!promotion) throw new NotFoundException(idNotFound({ type: Promotion, id: number, i18n: this.i18n }));
+		if (!promotion)
+			throw new NotFoundException(Errors.Generic.IdNotFound({ type: Promotion, id: number, i18n: this.i18n }));
 
 		return {
 			...promotion,
@@ -76,7 +77,8 @@ export class PromotionsService {
 	@UseRequestContext()
 	async getUsers(number: number): Promise<BaseUserResponseDTO[]> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['users'] });
-		if (!promotion) throw new NotFoundException(idNotFound({ type: Promotion, id: number, i18n: this.i18n }));
+		if (!promotion)
+			throw new NotFoundException(Errors.Generic.IdNotFound({ type: Promotion, id: number, i18n: this.i18n }));
 
 		const res: BaseUserResponseDTO[] = [];
 
@@ -97,16 +99,18 @@ export class PromotionsService {
 	@UseRequestContext()
 	async updateLogo(number: number, file: Express.Multer.File): Promise<Promotion> {
 		const promotion = await this.orm.em.findOne(Promotion, { number });
-		if (!promotion) throw new NotFoundException(idNotFound({ type: Promotion, id: number, i18n: this.i18n }));
+		if (!promotion)
+			throw new NotFoundException(Errors.Generic.IdNotFound({ type: Promotion, id: number, i18n: this.i18n }));
 
 		let { buffer, mimetype } = file;
-		if (!mimetype.startsWith('image/')) throw new BadRequestException(imageInvalidMimeType({ i18n: this.i18n }));
+		if (!mimetype.startsWith('image/'))
+			throw new BadRequestException(Errors.Image.InvalidMimeType({ i18n: this.i18n }));
 
 		const imageDir = join(this.configService.get<string>('files.promotions'), 'logo');
 
 		// Check if the file respect the aspect ratio
 		if (!(await isSquare(buffer)))
-			throw new BadRequestException(imageInvalidAspectRatio({ i18n: this.i18n, aspect_ratio: '1:1' }));
+			throw new BadRequestException(Errors.Image.InvalidAspectRatio({ i18n: this.i18n, aspect_ratio: '1:1' }));
 
 		// Convert the file to webp (unless it's a GIF or webp already)
 		buffer = await convertToWebp(buffer);
@@ -161,8 +165,10 @@ export class PromotionsService {
 	@UseRequestContext()
 	async getLogo(number: number) {
 		const promotion = await this.orm.em.findOne(Promotion, { number });
-		if (!promotion) throw new NotFoundException(idNotFound({ type: Promotion, id: number, i18n: this.i18n }));
-		if (!promotion.picture) throw new NotFoundException(promotionLogoNotFound({ i18n: this.i18n, number }));
+		if (!promotion)
+			throw new NotFoundException(Errors.Generic.IdNotFound({ type: Promotion, id: number, i18n: this.i18n }));
+
+		if (!promotion.picture) throw new NotFoundException(Errors.Promotion.LogoNotFound({ i18n: this.i18n, number }));
 
 		await promotion.picture.init();
 		return promotion.picture;
@@ -171,8 +177,10 @@ export class PromotionsService {
 	@UseRequestContext()
 	async deleteLogo(number: number): Promise<Promotion> {
 		const promotion = await this.orm.em.findOne(Promotion, { number });
-		if (!promotion) throw new NotFoundException(idNotFound({ type: Promotion, id: number, i18n: this.i18n }));
-		if (!promotion.picture) throw new NotFoundException(promotionLogoNotFound({ i18n: this.i18n, number }));
+		if (!promotion)
+			throw new NotFoundException(Errors.Generic.IdNotFound({ type: Promotion, id: number, i18n: this.i18n }));
+
+		if (!promotion.picture) throw new NotFoundException(Errors.Promotion.LogoNotFound({ i18n: this.i18n, number }));
 
 		await promotion.picture.init();
 		rmSync(promotion.picture.path);

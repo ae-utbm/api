@@ -3,20 +3,9 @@ import type { Email } from '@types';
 import { hashSync } from 'bcrypt';
 import request from 'supertest';
 
+import { Errors } from '@i18n';
 import { UserPostDTO } from '@modules/auth/dto/register.dto';
 import { User } from '@modules/users/entities/user.entity';
-import {
-	birthdayInvalid,
-	emailAlreadyUsed,
-	emailAlreadyVerified,
-	emailInvalid,
-	emailInvalidToken,
-	emailNotFound,
-	fieldMissing,
-	fieldUnexpected,
-	idInvalid,
-	idOrEmailMissing,
-} from '@utils/responses';
 
 import { orm, app, i18n } from '..';
 
@@ -31,7 +20,7 @@ describe('Auth (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: idOrEmailMissing({ i18n, type: User }),
+				message: Errors.Generic.IdOrEmailMissing({ i18n, type: User }),
 			});
 		});
 
@@ -45,7 +34,7 @@ describe('Auth (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Not Found',
 				statusCode: 404,
-				message: emailNotFound({ i18n, type: User, email }),
+				message: Errors.Email.NotFound({ i18n, type: User, email }),
 			});
 		});
 
@@ -69,8 +58,8 @@ describe('Auth (e2e)', () => {
 				.expect(201);
 
 			expect(response.body).toEqual({
-				token: expect.any(String) as string,
-				user_id: expect.any(Number) as number,
+				token: expect.any(String),
+				user_id: expect.any(Number),
 			});
 		});
 	});
@@ -96,7 +85,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: birthdayInvalid({ i18n, date: tomorrow }),
+					message: Errors.Birthday.Invalid({ i18n, date: tomorrow }),
 				});
 			});
 
@@ -111,7 +100,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: birthdayInvalid({ i18n, date: birthday }),
+					message: Errors.Birthday.Invalid({ i18n, date: birthday }),
 				});
 			});
 		});
@@ -127,7 +116,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: emailInvalid({ i18n, email: email as unknown as Email }),
+					message: Errors.Email.Invalid({ i18n, email: email as unknown as Email }),
 				});
 			});
 
@@ -141,7 +130,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: emailInvalid({ i18n, email: email as unknown as Email }),
+					message: Errors.Email.Invalid({ i18n, email: email as unknown as Email }),
 				});
 			});
 
@@ -155,7 +144,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: emailAlreadyUsed({ i18n, email }),
+					message: Errors.Email.AlreadyUsed({ i18n, email }),
 				});
 			});
 		});
@@ -169,7 +158,7 @@ describe('Auth (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: fieldMissing({ i18n, type: UserPostDTO, field: 'first_name' }),
+				message: Errors.Generic.FieldMissing({ i18n, type: UserPostDTO, field: 'first_name' }),
 			});
 		});
 
@@ -182,7 +171,7 @@ describe('Auth (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: fieldUnexpected({ i18n, type: UserPostDTO, field: 'never_gonna' }),
+				message: Errors.Generic.FieldUnexpected({ i18n, type: UserPostDTO, field: 'never_gonna' }),
 			});
 		});
 
@@ -199,12 +188,12 @@ describe('Auth (e2e)', () => {
 					return Math.abs(age.getUTCFullYear() - 1970);
 				})(),
 				birthday: '2000-01-01T00:00:00.000Z',
-				created_at: expect.any(String) as string,
+				created_at: expect.any(String),
 				email: 'johndoe@domain.com',
 				email_verified: false,
 				first_name: 'John',
 				full_name: 'John Doe',
-				id: expect.any(Number) as number,
+				id: expect.any(Number),
 				is_currently_subscribed: false,
 				is_minor: false,
 				last_name: 'Doe',
@@ -212,7 +201,7 @@ describe('Auth (e2e)', () => {
 				permissions: [],
 				roles: [],
 				subscriptions: [],
-				updated_at: expect.any(String) as string,
+				updated_at: expect.any(String),
 			});
 		});
 	});
@@ -229,7 +218,7 @@ describe('Auth (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: idInvalid({ i18n, type: User, id: fakeId }),
+				message: Errors.Generic.IdInvalid({ i18n, type: User, id: fakeId }),
 			});
 		});
 
@@ -239,7 +228,7 @@ describe('Auth (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Unauthorized',
 				statusCode: 401,
-				message: emailInvalidToken({ i18n }),
+				message: Errors.Email.InvalidVerificationToken({ i18n }),
 			});
 		});
 
@@ -249,7 +238,7 @@ describe('Auth (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: emailAlreadyVerified({ i18n, type: User }),
+				message: Errors.Email.AlreadyVerified({ i18n, type: User }),
 			});
 		});
 
@@ -257,10 +246,10 @@ describe('Auth (e2e)', () => {
 			const response = await request(app.getHttpServer()).get(`/api/auth/confirm/${user_id}/${token}`).expect(200);
 
 			expect(response.body).toEqual({
-				age: expect.any(Number) as number,
+				age: expect.any(Number),
 				banner: null,
 				birthday: '2000-01-01T00:00:00.000Z',
-				created_at: expect.any(String) as string,
+				created_at: expect.any(String),
 				cursus: null,
 				email: 'unverified@email.com',
 				email_verified: true,
@@ -281,7 +270,7 @@ describe('Auth (e2e)', () => {
 				secondary_email: null,
 				specialty: null,
 				subscriber_account: null,
-				updated_at: expect.any(String) as string,
+				updated_at: expect.any(String),
 			});
 
 			// Reset user email_verified to false (for other tests)

@@ -15,7 +15,8 @@
     "mikro",
     "postgres",
     "postgresql",
-    "Streamable"
+    "Streamable",
+    "BLURPLE"
   ],
   "files.eol": "\n",
   "editor.formatOnSave": true,

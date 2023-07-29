@@ -3,11 +3,17 @@ export {};
 declare global {
 	interface Array<T> {
 		/**
-		 * Remove specified items from the array.
+		 * Remove specified items from the array. Removes any duplicates.
 		 * @param {T[]} items Items to remove.
 		 * @returns {T[]} The array without the specified items.
 		 */
 		remove(...items: T[]): T[];
+
+		/**
+		 * Remove duplicate items from the array.
+		 * @returns {T[]} The array without duplicate items.
+		 */
+		unique(): T[];
 
 		/**
 		 * Returns true if all objects in the array have the same type.
@@ -23,12 +29,21 @@ declare global {
 if (!Array.prototype.remove) {
 	Array.prototype.remove = function <T>(this: T[], ...items: T[]): T[] {
 		items.forEach((item) => {
-			const index = this.indexOf(item);
+			let index = this.indexOf(item);
 
-			if (index !== -1) this.splice(index, 1);
+			while (index !== -1) {
+				this.splice(index, 1);
+				index = this.indexOf(item); // Look for the next occurrence.
+			}
 		});
 
 		return this;
+	};
+}
+
+if (!Array.prototype.unique) {
+	Array.prototype.unique = function <T>(this: T[]): T[] {
+		return this.filter((item, index) => this.indexOf(item) === index);
 	};
 }
 

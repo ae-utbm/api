@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import type { Email } from '@types';
 
 import { createTransport } from 'nodemailer';

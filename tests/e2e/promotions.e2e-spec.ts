@@ -3,10 +3,10 @@ import { join } from 'path';
 
 import request from 'supertest';
 
+import { Errors } from '@i18n';
 import { TokenDTO } from '@modules/auth/dto/token.dto';
 import { PromotionPicture } from '@modules/promotions/entities/promotion-picture.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
-import { idNotFound, imageInvalidAspectRatio, imageInvalidMimeType, promotionLogoNotFound } from '@utils/responses';
 
 import { app, config, i18n, orm } from '..';
 
@@ -68,8 +68,8 @@ describe('Promotions (e2e)', () => {
 
 			expect(body[0]).toEqual({
 				id: 1,
-				created_at: expect.any(String) as string,
-				updated_at: expect.any(String) as string,
+				created_at: expect.any(String),
+				updated_at: expect.any(String),
 				number: 1,
 				picture: null,
 				users: 0,
@@ -107,7 +107,7 @@ describe('Promotions (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Not Found',
 				statusCode: 404,
-				message: idNotFound({ id: 999999, type: Promotion, i18n }),
+				message: Errors.Generic.IdNotFound({ id: 999999, type: 'Promotion', i18n }),
 			});
 		});
 
@@ -118,8 +118,8 @@ describe('Promotions (e2e)', () => {
 
 			expect(response.body).toEqual({
 				id: 21,
-				created_at: expect.any(String) as string,
-				updated_at: expect.any(String) as string,
+				created_at: expect.any(String),
+				updated_at: expect.any(String),
 				number: 21,
 				picture: null,
 				users: 1,
@@ -157,7 +157,7 @@ describe('Promotions (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Not Found',
 				statusCode: 404,
-				message: idNotFound({ id: 999999, type: Promotion, i18n }),
+				message: Errors.Generic.IdNotFound({ id: 999999, type: Promotion, i18n }),
 			});
 		});
 
@@ -169,8 +169,8 @@ describe('Promotions (e2e)', () => {
 			expect(response.body).toEqual([
 				{
 					id: 1,
-					created_at: expect.any(String) as string,
-					updated_at: expect.any(String) as string,
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
 					first_name: 'root',
 					last_name: 'root',
 					nickname: 'noot noot',
@@ -209,7 +209,7 @@ describe('Promotions (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Not Found',
 				statusCode: 404,
-				message: idNotFound({ id: 999999, type: Promotion, i18n }),
+				message: Errors.Generic.IdNotFound({ id: 999999, type: Promotion, i18n }),
 			});
 		});
 
@@ -221,7 +221,7 @@ describe('Promotions (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Not Found',
 				statusCode: 404,
-				message: promotionLogoNotFound({ number: 21, i18n }),
+				message: Errors.Promotion.LogoNotFound({ number: 21, i18n }),
 			});
 		});
 
@@ -282,7 +282,7 @@ describe('Promotions (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Not Found',
 				statusCode: 404,
-				message: idNotFound({ id: 999999, type: Promotion, i18n }),
+				message: Errors.Generic.IdNotFound({ id: 999999, type: Promotion, i18n }),
 			});
 		});
 
@@ -295,7 +295,7 @@ describe('Promotions (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: imageInvalidMimeType({ i18n }),
+				message: Errors.Image.InvalidMimeType({ i18n }),
 			});
 		});
 
@@ -308,7 +308,7 @@ describe('Promotions (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: imageInvalidAspectRatio({ i18n, aspect_ratio: '1:1' }),
+				message: Errors.Image.InvalidAspectRatio({ i18n, aspect_ratio: '1:1' }),
 			});
 		});
 
@@ -323,14 +323,14 @@ describe('Promotions (e2e)', () => {
 			// expect registered data to be returned
 			expect(response.body).toEqual({
 				id: 21,
-				created_at: expect.any(String) as string,
-				updated_at: expect.any(String) as string,
+				created_at: expect.any(String),
+				updated_at: expect.any(String),
 				number: 21,
 				picture: {
-					id: expect.any(Number) as number,
-					created_at: expect.any(String) as string,
-					updated_at: expect.any(String) as string,
-					filename: expect.any(String) as string,
+					id: expect.any(Number),
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
+					filename: expect.any(String),
 					description: 'Promotion logo',
 					mimetype: 'image/webp',
 					size: 117280,
@@ -358,14 +358,14 @@ describe('Promotions (e2e)', () => {
 			// expect registered data to be returned
 			expect(response.body).toEqual({
 				id: 21,
-				created_at: expect.any(String) as string,
-				updated_at: expect.any(String) as string,
+				created_at: expect.any(String),
+				updated_at: expect.any(String),
 				number: 21,
 				picture: {
-					id: expect.any(Number) as number,
-					created_at: expect.any(String) as string,
-					updated_at: expect.any(String) as string,
-					filename: expect.any(String) as string,
+					id: expect.any(Number),
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
+					filename: expect.any(String),
 					description: 'Promotion logo',
 					mimetype: 'image/webp',
 					size: 117280,
@@ -413,7 +413,7 @@ describe('Promotions (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Not Found',
 				statusCode: 404,
-				message: idNotFound({ id: 999999, type: Promotion, i18n }),
+				message: Errors.Generic.IdNotFound({ id: 999999, type: Promotion, i18n }),
 			});
 		});
 
@@ -425,7 +425,7 @@ describe('Promotions (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Not Found',
 				statusCode: 404,
-				message: promotionLogoNotFound({ number: 20, i18n }),
+				message: Errors.Promotion.LogoNotFound({ number: 20, i18n }),
 			});
 		});
 
@@ -439,8 +439,8 @@ describe('Promotions (e2e)', () => {
 
 			expect(response.body).toEqual({
 				id: 21,
-				created_at: expect.any(String) as string,
-				updated_at: expect.any(String) as string,
+				created_at: expect.any(String),
+				updated_at: expect.any(String),
 				number: 21,
 				picture: undefined,
 			});

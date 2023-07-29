@@ -35,14 +35,15 @@
       "invalid": "Permission '{permission}' does not exist.",
       "not_found_on_user": "Permission '{permission}' not found on user '{user}'.",
       "already_on_user": "User '{user}' has already the '{permission}' permission."
+    },
+    "promotion": {
+      "logo_not_found": "The promotion '{number}' does not have a logo."
+    },
+    "role": {
+      "name_used": "Role name '{name}' is already taken."
     }
   },
   "success": {
     "deleted": "'{type}' successfully deleted."
-  },
-  "not_found": {
-    "promotion": {
-      "logo": "The promotion '{number}' does not have a logo."
-    }
   }
 }

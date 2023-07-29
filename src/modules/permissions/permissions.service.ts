@@ -5,7 +5,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { Cron } from '@nestjs/schedule';
 import { I18nService } from 'nestjs-i18n';
 
-import { idNotFound, permissionAlreadyOnUser, permissionInvalid, permissionNotFoundOnUser } from '@utils/responses';
+import { Errors } from '@i18n';
 import { validateObject } from '@utils/validate';
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
@@ -55,11 +55,11 @@ export class PermissionsService {
 
 		// Check if the permission is valid
 		if (!PERMISSIONS_NAMES.includes(data.permission))
-			throw new BadRequestException(permissionInvalid({ i18n: this.i18n, permission: data.permission }));
+			throw new BadRequestException(Errors.Permission.Invalid({ i18n: this.i18n, permission: data.permission }));
 
 		// Find the user
 		const user = await this.orm.em.findOne(User, { id: data.id });
-		if (!user) throw new NotFoundException(idNotFound({ i18n: this.i18n, type: User, id: data.id }));
+		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id: data.id }));
 
 		// Check if the user already has the permission
 		await user.permissions.init();
@@ -70,7 +70,7 @@ export class PermissionsService {
 				.includes(data.permission)
 		)
 			throw new BadRequestException(
-				permissionAlreadyOnUser({ i18n: this.i18n, permission: data.permission, user: user.full_name }),
+				Errors.Permission.AlreadyOnUser({ i18n: this.i18n, permission: data.permission, user: user.full_name }),
 			);
 
 		// Add the permission to the user
@@ -102,11 +102,11 @@ export class PermissionsService {
 		});
 
 		const role = await this.orm.em.findOne(Role, { id: id });
-		if (!role) throw new NotFoundException(idNotFound({ i18n: this.i18n, type: Role, id }));
+		if (!role) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: Role, id }));
 
 		permissions.forEach((n) => {
 			if (!PERMISSIONS_NAMES.includes(n))
-				throw new BadRequestException(permissionInvalid({ i18n: this.i18n, permission: n }));
+				throw new BadRequestException(Errors.Permission.Invalid({ i18n: this.i18n, permission: n }));
 
 			if (!role.permissions.includes(n)) {
 				role.permissions.push(n);
@@ -125,7 +125,7 @@ export class PermissionsService {
 	@UseRequestContext()
 	async getPermissionsOfUser(id: number, revoked?: boolean): Promise<Permission[]> {
 		const user = await this.orm.em.findOne(User, { id });
-		if (!user) throw new NotFoundException(idNotFound({ i18n: this.i18n, type: User, id }));
+		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id }));
 
 		const permissions = await user.permissions.loadItems();
 		if (revoked) permissions.filter((p) => p.revoked === false);
@@ -141,7 +141,7 @@ export class PermissionsService {
 	@UseRequestContext()
 	async getPermissionsOfRole(role_id: number): Promise<PermissionName[]> {
 		const role = await this.orm.em.findOne(Role, { id: role_id });
-		if (!role) throw new NotFoundException(idNotFound({ i18n: this.i18n, type: Role, id: role_id }));
+		if (!role) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: Role, id: role_id }));
 
 		return role.permissions;
 	}
@@ -149,12 +149,13 @@ export class PermissionsService {
 	@UseRequestContext()
 	async editPermissionOfUser(data: PermissionPatchDTO): Promise<Permission> {
 		const user = await this.orm.em.findOne(User, { id: data.user_id });
-		if (!user) throw new NotFoundException(idNotFound({ i18n: this.i18n, type: User, id: data.user_id }));
+		if (!user)
+			throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id: data.user_id }));
 
 		const perm = await this.orm.em.findOne(Permission, { id: data.id, user });
 		if (!perm)
 			throw new NotFoundException(
-				permissionNotFoundOnUser({ i18n: this.i18n, user: user.full_name, permission: data.name }),
+				Errors.Permission.NotFoundOnUser({ i18n: this.i18n, user: user.full_name, permission: data.name }),
 			);
 
 		if (data.name) perm.name = data.name;

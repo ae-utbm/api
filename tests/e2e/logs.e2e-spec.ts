@@ -1,9 +1,9 @@
 import request from 'supertest';
 
+import { Errors, Success } from '@i18n';
 import { TokenDTO } from '@modules/auth/dto/token.dto';
 import { Log } from '@modules/logs/entities/log.entity';
 import { User } from '@modules/users/entities/user.entity';
-import { deleteSuccess, emailNotVerified, idInvalid, idNotFound } from '@utils/responses';
 
 import { app, i18n } from '..';
 
@@ -80,7 +80,7 @@ describe('Logs (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Not Found',
 				statusCode: 404,
-				message: idNotFound({ i18n, type: User, id: fakeId }),
+				message: Errors.Generic.IdNotFound({ i18n, type: User, id: fakeId }),
 			});
 		});
 
@@ -95,7 +95,7 @@ describe('Logs (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: idInvalid({ i18n, type: User, id: fakeId }),
+				message: Errors.Generic.IdInvalid({ i18n, type: User, id: fakeId }),
 			});
 		});
 
@@ -107,7 +107,7 @@ describe('Logs (e2e)', () => {
 
 			expect(response.body).toEqual({
 				statusCode: 401,
-				message: emailNotVerified({ i18n, type: User }),
+				message: Errors.Email.NotVerified({ i18n, type: User }),
 				error: 'Unauthorized',
 			});
 		});
@@ -140,20 +140,20 @@ describe('Logs (e2e)', () => {
 			expect(body.haveEqualObjects()).toBe(true);
 
 			expect(body[0]).toEqual({
-				id: expect.any(Number) as number,
-				created_at: expect.any(String) as string,
-				updated_at: expect.any(String) as string,
+				id: expect.any(Number),
+				created_at: expect.any(String),
+				updated_at: expect.any(String),
 				user: userIdUnauthorized,
-				action: expect.any(String) as string,
-				ip: expect.any(String) as string,
-				user_agent: expect.any(String) as string,
-				route: expect.any(String) as string,
-				method: expect.any(String) as string,
-				body: expect.any(String) as string,
-				query: expect.any(String) as string,
-				params: expect.any(String) as string,
+				action: expect.any(String),
+				ip: expect.any(String),
+				user_agent: expect.any(String),
+				route: expect.any(String),
+				method: expect.any(String),
+				body: expect.any(String),
+				query: expect.any(String),
+				params: expect.any(String),
 				response: null,
-				status_code: expect.any(Number) as number,
+				status_code: expect.any(Number),
 				error: null,
 				error_stack: null,
 				error_message: null,
@@ -209,7 +209,7 @@ describe('Logs (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: idInvalid({ i18n, type: User, id: fakeId }),
+				message: Errors.Generic.IdInvalid({ i18n, type: User, id: fakeId }),
 			});
 		});
 
@@ -221,7 +221,7 @@ describe('Logs (e2e)', () => {
 
 			expect(response.body).toEqual({
 				statusCode: 200,
-				message: deleteSuccess({ i18n, type: Log }),
+				message: Success.Generic.Deleted({ i18n, type: Log }),
 			});
 		});
 	});

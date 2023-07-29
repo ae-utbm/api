@@ -1,6 +1,9 @@
 import request from 'supertest';
 
-import { app } from '..';
+import { Errors } from '@i18n';
+import { RolePostDTO } from '@modules/roles/dto/post.dto';
+
+import { app, i18n } from '..';
 
 describe('Roles', () => {
 	let tokenUnauthorized: string;
@@ -61,13 +64,13 @@ describe('Roles', () => {
 			expect(body.haveEqualObjects()).toBe(true);
 
 			expect(body[0]).toEqual({
-				created_at: expect.any(String) as string,
-				expires: expect.any(String) as string,
-				id: 1,
-				name: expect.any(String) as string,
-				permissions: expect.any(Array) as Array<string>,
+				created_at: expect.any(String),
+				expires: expect.any(String),
+				id: expect.any(Number),
+				name: expect.any(String),
+				permissions: expect.any(Array),
 				revoked: false,
-				updated_at: expect.any(String) as string,
+				updated_at: expect.any(String),
 			});
 		});
 	});
@@ -92,6 +95,59 @@ describe('Roles', () => {
 				error: 'Forbidden',
 				statusCode: 403,
 				message: 'Forbidden resource', // TODO translate this
+			});
+		});
+
+		it('should return 400 when the body is invalid', async () => {
+			const response = await request(app.getHttpServer())
+				.post('/api/roles')
+				.set('Authorization', `Bearer ${tokenRolesModerator}`)
+				.send({
+					name: 'test',
+					permissions: ['test'],
+				})
+				.expect(400);
+
+			expect(response.body).toEqual({
+				statusCode: 400,
+				message: Errors.Generic.FieldMissing({ field: 'expires', type: RolePostDTO, i18n }),
+				error: 'Bad Request',
+			});
+		});
+
+		it('should return 400 when one of the permissions is invalid', async () => {
+			const response = await request(app.getHttpServer())
+				.post('/api/roles')
+				.set('Authorization', `Bearer ${tokenRolesModerator}`)
+				.send({
+					name: 'test',
+					permissions: ['test'],
+					expires: '2021-01-01',
+				})
+				.expect(400);
+
+			expect(response.body).toEqual({
+				statusCode: 400,
+				message: Errors.Permission.Invalid({ i18n, permission: 'test' }),
+				error: 'Bad Request',
+			});
+		});
+
+		it('should return 400 when a role with the same name already exists', async () => {
+			const response = await request(app.getHttpServer())
+				.post('/api/roles')
+				.set('Authorization', `Bearer ${tokenRolesModerator}`)
+				.send({
+					name: 'PERMISSIONS_MODERATOR',
+					permissions: ['ROOT'],
+					expires: '2021-01-01',
+				})
+				.expect(400);
+
+			expect(response.body).toEqual({
+				statusCode: 400,
+				message: Errors.Role.NameAlreadyUsed({ i18n, name: 'PERMISSIONS_MODERATOR' }),
+				error: 'Bad Request',
 			});
 		});
 	});

@@ -12,6 +12,7 @@
     "forceConsistentCasingInFileNames": true,
     "incremental": true,
     "lib": [
+      "DOM",
       "ES2022",
       "ESNext.AsyncIterable"
     ],

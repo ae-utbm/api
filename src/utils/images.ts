@@ -4,7 +4,7 @@ import sharp from 'sharp';
 
 /**
  * Check if an image is square
- * @param {string} buffer The path to the image
+ * @param {Buffer} buffer The buffer of the image
  * @returns {boolean} True if the image is square, false otherwise
  */
 export async function isSquare(buffer: Buffer): Promise<boolean> {
@@ -14,7 +14,7 @@ export async function isSquare(buffer: Buffer): Promise<boolean> {
 
 /**
  * Determine if the image is using a 1:3 aspect ratio
- * @param {Buffer} buffer The path to the image
+ * @param {Buffer} buffer The buffer of the image
  * @returns {boolean} True if the image is using a 1:3 aspect ratio, false otherwise
  */
 export async function isBannerAspectRation(buffer: Buffer): Promise<boolean> {
