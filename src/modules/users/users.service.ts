@@ -18,7 +18,7 @@ import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
 import { User } from '@modules/users/entities/user.entity';
 import { checkBirthday } from '@utils/dates';
 import { checkEmail, sendEmail } from '@utils/email';
-import { convertToWebp, isBannerAspectRation, isSquare } from '@utils/images';
+import { convertToWebp, hasAspectRatio } from '@utils/images';
 import { generateRandomPassword } from '@utils/password';
 import { getTemplate } from '@utils/template';
 import { validateObject } from '@utils/validate';
@@ -248,6 +248,7 @@ export class UsersService {
 		return user;
 	}
 
+	// TODO : Refactor using promotion picture as an example
 	@UseRequestContext()
 	async updatePicture({ id, file }: { id: number; file: Express.Multer.File }) {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['*', 'picture'] });
@@ -273,7 +274,7 @@ export class UsersService {
 		fs.writeFileSync(imagePath, buffer);
 
 		// test if the image is square
-		if (!(await isSquare(buffer))) {
+		if (!(await hasAspectRatio(buffer, '1:1'))) {
 			fs.rmSync(imagePath);
 			throw new BadRequestException('The user picture must be square');
 		}
@@ -318,6 +319,7 @@ export class UsersService {
 		await this.orm.em.removeAndFlush(user.picture);
 	}
 
+	// TODO: Refactor using promotion picture as an example
 	@UseRequestContext()
 	async updateBanner({ id, file }: { id: number; file: Express.Multer.File }) {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['*', 'banner'] });
@@ -333,7 +335,7 @@ export class UsersService {
 		fs.writeFileSync(imagePath, buffer);
 
 		// test if the image is square
-		if (!(await isBannerAspectRation(buffer))) {
+		if (!(await hasAspectRatio(buffer, '1:3'))) {
 			fs.rmSync(imagePath);
 			throw new BadRequestException('The image must be of 1:3 aspect ratio');
 		}

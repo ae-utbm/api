@@ -1,25 +1,19 @@
+import type { AspectRatio } from '@types';
+
 import { createReadStream, ReadStream } from 'fs';
 
 import sharp from 'sharp';
 
 /**
- * Check if an image is square
+ * Check if an image has the specified aspect ratio
  * @param {Buffer} buffer The buffer of the image
- * @returns {boolean} True if the image is square, false otherwise
+ * @param {number} aspectRatio The aspect ratio to check (e.g., 1 for square, 1/3 for 1:3 ratio)
+ * @returns {boolean} True if the image has the specified aspect ratio, false otherwise
  */
-export async function isSquare(buffer: Buffer): Promise<boolean> {
+export async function hasAspectRatio(buffer: Buffer, aspectRatio: AspectRatio): Promise<boolean> {
 	const { width, height } = await sharp(buffer).metadata();
-	return width === height;
-}
-
-/**
- * Determine if the image is using a 1:3 aspect ratio
- * @param {Buffer} buffer The buffer of the image
- * @returns {boolean} True if the image is using a 1:3 aspect ratio, false otherwise
- */
-export async function isBannerAspectRation(buffer: Buffer): Promise<boolean> {
-	const { width, height } = await sharp(buffer).metadata();
-	return width / height === 1 / 3;
+	const [aspectWidth, aspectHeight] = aspectRatio.split(':').map((s) => parseInt(s, 10));
+	return Math.abs(width / height - aspectWidth / aspectHeight) < Number.EPSILON;
 }
 
 /**

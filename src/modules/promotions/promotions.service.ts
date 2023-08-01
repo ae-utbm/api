@@ -11,7 +11,7 @@ import { Cron } from '@nestjs/schedule';
 import { I18nService } from 'nestjs-i18n';
 
 import { Errors } from '@i18n';
-import { convertToWebp, getFileExtension, isSquare } from '@utils/images';
+import { convertToWebp, getFileExtension, hasAspectRatio } from '@utils/images';
 
 import { PromotionResponseDTO } from './dto/promotion.dto';
 import { PromotionPicture } from './entities/promotion-picture.entity';
@@ -109,7 +109,7 @@ export class PromotionsService {
 		const imageDir = join(this.configService.get<string>('files.promotions'), 'logo');
 
 		// Check if the file respect the aspect ratio
-		if (!(await isSquare(buffer)))
+		if (!(await hasAspectRatio(buffer, '1:1')))
 			throw new BadRequestException(Errors.Image.InvalidAspectRatio({ i18n: this.i18n, aspect_ratio: '1:1' }));
 
 		// Convert the file to webp (unless it's a GIF or webp already)
