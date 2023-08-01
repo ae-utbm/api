@@ -59,7 +59,7 @@ export class PermissionsController {
 	@ApiOkResponse({ description: 'User permission(s) retrieved', type: [Permission] })
 	@ApiParam({ name: 'id', description: 'The user ID' })
 	getUserPermissions(@Param('id') id: number) {
-		return this.permsService.getPermissionsOfUser(id, true);
+		return this.permsService.getPermissionsOfUser(id);
 	}
 
 	@Post('role')

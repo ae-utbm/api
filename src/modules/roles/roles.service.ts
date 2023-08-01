@@ -39,15 +39,11 @@ export class RolesService {
 
 	/**
 	 * Get all roles from the database and filter them according to the input
-	 * @param input Input to filter the roles
 	 * @returns the array of all roles
 	 */
 	@UseRequestContext()
-	async getAllRoles(input: { show_expired: boolean; show_revoked: boolean }): Promise<Omit<Role, 'users'>[]> {
+	async getAllRoles(): Promise<Omit<Role, 'users'>[]> {
 		const roles = await this.orm.em.find(Role, {});
-
-		if (!input.show_expired) roles.filter((p) => p.expires > new Date());
-		if (!input.show_revoked) roles.filter((p) => p.revoked === false);
 
 		roles.forEach((r) => delete r.users);
 		return roles;

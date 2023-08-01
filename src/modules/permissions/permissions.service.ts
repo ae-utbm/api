@@ -119,18 +119,15 @@ export class PermissionsService {
 
 	/**
 	 * Get all permissions of a user
-	 * @param input Arguments for the query
+	 * @param {number} id User id
 	 * @returns {Promise<Permission[]>} The permissions of the user
 	 */
 	@UseRequestContext()
-	async getPermissionsOfUser(id: number, revoked?: boolean): Promise<Permission[]> {
+	async getPermissionsOfUser(id: number): Promise<Permission[]> {
 		const user = await this.orm.em.findOne(User, { id });
 		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id }));
 
-		const permissions = await user.permissions.loadItems();
-		if (revoked) permissions.filter((p) => p.revoked === false);
-
-		return permissions;
+		return user.permissions.loadItems();
 	}
 
 	/**

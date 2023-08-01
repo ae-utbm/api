@@ -56,7 +56,7 @@ export class RolesController {
 	@ApiOkResponse({ type: [Role] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getAllRoles() {
-		return this.rolesService.getAllRoles({ show_expired: true, show_revoked: true });
+		return this.rolesService.getAllRoles();
 	}
 
 	@Get(':role_id/users')
