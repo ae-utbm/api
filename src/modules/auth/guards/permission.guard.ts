@@ -1,12 +1,14 @@
-import type { JWTPayload, PermissionName } from '@types';
+import type { I18nTranslations, PermissionName } from '@types';
 import type { Request } from 'express';
 
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { I18nService } from 'nestjs-i18n';
 
 import { UsersService } from '@modules/users/users.service';
+import { verifyJWT } from '@utils/jwt';
 
 /**
  * Check if the authenticated user has the required permissions to access the route
@@ -23,6 +25,7 @@ export class PermissionGuard implements CanActivate {
 		protected readonly jwtService: JwtService,
 		protected readonly configService: ConfigService,
 		protected readonly userService: UsersService,
+		protected readonly i18nService: I18nService<I18nTranslations>,
 		protected readonly reflector: Reflector,
 	) {}
 
@@ -39,8 +42,11 @@ export class PermissionGuard implements CanActivate {
 		const bearerToken = request.headers.authorization;
 
 		// Verify and decode the JWT token to extract the user ID
-		const decodedToken = this.jwtService.verify<JWTPayload>(bearerToken.replace('Bearer ', ''), {
-			secret: this.configService.get<string>('auth.jwtKey'),
+		const decodedToken = verifyJWT({
+			token: bearerToken,
+			jwtService: this.jwtService,
+			configService: this.configService,
+			i18nService: this.i18nService,
 		});
 
 		// Get the user from the database

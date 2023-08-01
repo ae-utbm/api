@@ -7,6 +7,7 @@ import '@utils/index';
 
 import { MikroORM } from '@mikro-orm/core';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { TestingModule, Test } from '@nestjs/testing';
 import { I18nService } from 'nestjs-i18n';
@@ -17,6 +18,7 @@ import env from '@env';
 let moduleFixture: TestingModule;
 let config: ConfigService;
 let i18n: I18nService<I18nTranslations>;
+let jwt: JwtService;
 let app: NestExpressApplication;
 let orm: MikroORM;
 
@@ -39,6 +41,7 @@ beforeAll(async () => {
 	orm = moduleFixture.get<MikroORM>(MikroORM);
 	i18n = moduleFixture.get<I18nService<I18nTranslations>>(I18nService);
 	config = moduleFixture.get<ConfigService>(ConfigService);
+	jwt = moduleFixture.get<JwtService>(JwtService);
 
 	orm.config.set('allowGlobalContext', true);
 
@@ -51,4 +54,4 @@ afterAll(async () => {
 	await app.close();
 });
 
-export { moduleFixture, config, app, orm, i18n };
+export { moduleFixture, config, app, orm, i18n, jwt };

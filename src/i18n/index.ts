@@ -88,6 +88,14 @@ export namespace Errors {
 			generic('responses.errors.image.invalid_mime_type', {}, options.i18n);
 	}
 
+	export namespace JWT {
+		export const Invalid = (options: Response): string => generic('responses.errors.jwt.invalid', {}, options.i18n);
+		export const Expired = (options: Response): string => generic('responses.errors.jwt.expired', {}, options.i18n);
+
+		/* istanbul ignore next-line */
+		export const Unknown = (options: Response): string => generic('responses.errors.jwt.unknown', {}, options.i18n);
+	}
+
 	export namespace Permission {
 		export const AlreadyOnUser = (options: Response & { permission: string; user: string }): string =>
 			generic(

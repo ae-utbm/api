@@ -41,6 +41,11 @@
     },
     "role": {
       "name_used": "Role name '{name}' is already taken."
+    },
+    "jwt": {
+      "invalid": "The JWT token is invalid.",
+      "expired": "The JWT token has expired.",
+      "unknown": "An unknown error occurred while verifying the JWT token."
     }
   },
   "success": {

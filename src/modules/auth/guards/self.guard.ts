@@ -1,11 +1,14 @@
-import type { JWTPayload } from '@types';
+import type { I18nTranslations } from '@types';
 import type { Observable } from 'rxjs';
 
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { I18nService } from 'nestjs-i18n';
 import { Request } from 'supertest';
+
+import { verifyJWT } from '@utils/jwt';
 
 /**
  * Check if the authenticated user is the same as the user ID in the request
@@ -22,11 +25,12 @@ export class SelfGuard implements CanActivate {
 	constructor(
 		private readonly jwtService: JwtService,
 		private readonly configService: ConfigService,
+		private readonly i18nService: I18nService<I18nTranslations>,
 		private readonly reflector: Reflector,
 	) {}
 
 	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-		return checkSelf(context, this.jwtService, this.configService, this.reflector);
+		return checkSelf(context, this.jwtService, this.configService, this.i18nService, this.reflector);
 	}
 }
 
@@ -34,6 +38,7 @@ export function checkSelf(
 	context: ExecutionContext,
 	jwtService: JwtService,
 	configService: ConfigService,
+	i18nService: I18nService<I18nTranslations>,
 	reflector: Reflector,
 ): boolean {
 	type Req = Request & {
@@ -56,9 +61,7 @@ export function checkSelf(
 	const bearerToken = request.headers.authorization;
 
 	// Verify and decode the JWT token to extract the user ID
-	const decodedToken = jwtService.verify<JWTPayload>(bearerToken.replace('Bearer', '').trim(), {
-		secret: configService.get<string>('auth.jwtKey'),
-	});
+	const decodedToken = verifyJWT({ token: bearerToken, jwtService, configService, i18nService });
 
 	// Compare the authenticated user's ID with the ID from the request
 	return decodedToken.sub === parseInt(user_id, 10);
