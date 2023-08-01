@@ -150,5 +150,27 @@ describe('Roles', () => {
 				error: 'Bad Request',
 			});
 		});
+
+		it('should return 201 when the role is created', async () => {
+			const response = await request(app.getHttpServer())
+				.post('/api/roles')
+				.set('Authorization', `Bearer ${tokenRolesModerator}`)
+				.send({
+					name: 'test_role',
+					permissions: ['ROOT'],
+					expires: '2999-01-01',
+				})
+				.expect(201);
+
+			expect(response.body).toEqual({
+				id: expect.any(Number),
+				created_at: expect.any(String),
+				updated_at: expect.any(String),
+				name: 'TEST_ROLE',
+				revoked: false,
+				expires: '2999-01-01T00:00:00.000Z',
+				permissions: ['ROOT'],
+			});
+		});
 	});
 });

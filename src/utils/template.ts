@@ -28,7 +28,7 @@ export type AvailableTemplateArgs =
 export function getTemplate(
 	templateName: AvailableTemplates,
 	i18n: I18nService<I18nTranslations>,
-	args: AvailableTemplateArgs = {},
+	args: AvailableTemplateArgs,
 ): string {
 	let inputString = fs.readFileSync(path.join(__dirname, `../templates/${templateName}.html`), 'utf8');
 	const regex = /\{\{([^}]+)\}\}/g;
@@ -42,10 +42,7 @@ export function getTemplate(
 
 	matches.forEach(
 		(match: PathImpl2<I18nTranslations>) =>
-			(inputString = inputString.replace(
-				`{{ ${match} }}`,
-				i18n.t(match, { lang: I18nContext.current()?.lang ?? undefined, args }),
-			)),
+			(inputString = inputString.replace(`{{ ${match} }}`, i18n.t(match, { lang: I18nContext.current()?.lang, args }))),
 	);
 	return inputString;
 }
