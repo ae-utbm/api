@@ -1,4 +1,4 @@
-import { join } from 'path';
+import { join, sep } from 'path';
 
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
@@ -38,7 +38,7 @@ import config from './mikro-orm.config';
 				watch: true,
 			},
 			resolvers: [AcceptLanguageResolver],
-			typesOutputPath: join(__dirname, '../src/types/api/i18n.d.ts').replace('\\dist', ''),
+			typesOutputPath: join(__dirname, '../src/types/api/i18n.d.ts').replace(`${sep}dist`, ''),
 		}),
 		AuthModule,
 		LogsModule,
