@@ -23,8 +23,8 @@ const config: Partial<MikroORMOptions<IDatabaseDriver<Connection>>> = {
 	user: process.env['POSTGRES_USER'] ?? 'postgres',
 	password: process.env['POSTGRES_PASSWORD'] ?? 'postgres',
 	debug: (process.env['DEBUG'] ?? 'true') === 'true',
-	entities: [join(__dirname, '../src/modules/**/entities/*.entity.js')],
-	entitiesTs: [join(__dirname, '../../src/modules/**/entities/*.entity.ts')],
+	entities: [join(__dirname, '../dist/src/modules/**/entities/*.entity.js')],
+	entitiesTs: [join(__dirname, '../src/modules/**/entities/*.entity.ts')],
 	highlighter: new SqlHighlighter(),
 	migrations: {
 		transactional: true,

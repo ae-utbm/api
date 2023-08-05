@@ -15,8 +15,8 @@ async function setup() {
 	const orm = await MikroORM.init({
 		...config,
 		debug: false, // Hide debug logs for the database setup
-		entities: [join(__dirname, '../../dist/src/modules/**/*.entity.js')],
-		entitiesTs: [join(__dirname, '../src/modules/**/*.entity.ts')],
+		entities: [join(__dirname, '../../dist/src/modules/**/entities/*.entity.js')],
+		entitiesTs: [join(__dirname, '../src/modules/**/entities/*.entity.ts')],
 	});
 
 	// Drop and re-create the database schema

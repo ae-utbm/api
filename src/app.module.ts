@@ -28,8 +28,8 @@ import config from './mikro-orm.config';
 		MikroOrmModule.forRoot({
 			...config,
 			// Entities paths are relative to the root of the project so we need to update them
-			entities: [join(__dirname, '../../dist/src/modules/**/*.entity.js')],
-			entitiesTs: [join(__dirname, '/modules/**/*.entity.ts')],
+			entities: [join(__dirname, '../../dist/src/modules/**/entities/*.entity.js')],
+			entitiesTs: [join(__dirname, '/modules/**/entities/*.entity.ts')],
 		}),
 		I18nModule.forRoot({
 			fallbackLanguage: 'en-US',
