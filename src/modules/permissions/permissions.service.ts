@@ -1,4 +1,4 @@
-import type { I18nTranslations, PermissionEntity, PermissionName } from '@types';
+import type { I18nTranslations, PermissionEntity } from '@types';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
@@ -10,9 +10,8 @@ import { validateObject } from '@utils/validate';
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
 import { PermissionPatchDTO } from './dto/patch.dto';
-import { PermissionPostDTO, RolePermissionsDto } from './dto/post.dto';
+import { PermissionPostDTO } from './dto/post.dto';
 import { Permission } from './entities/permission.entity';
-import { Role } from '../roles/entities/role.entity';
 import { User } from '../users/entities/user.entity';
 
 @Injectable()
@@ -87,37 +86,6 @@ export class PermissionsService {
 	}
 
 	/**
-	 * Add a permission to an existing role
-	 * @param {PermissionName[]} permissions The permission name in caps
-	 * @param {number} id the role id to which the permission should be added
-	 * @returns {Promise<Role>}
-	 */
-	@UseRequestContext()
-	async addPermissionsToRole(permissions: PermissionName[], id: number): Promise<Role> {
-		validateObject({
-			object: { permissions: permissions, id: id },
-			type: RolePermissionsDto,
-			requiredKeys: ['permissions', 'id'],
-			i18n: this.i18n,
-		});
-
-		const role = await this.orm.em.findOne(Role, { id: id });
-		if (!role) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: Role, id }));
-
-		permissions.forEach((n) => {
-			if (!PERMISSIONS_NAMES.includes(n))
-				throw new BadRequestException(Errors.Permission.Invalid({ i18n: this.i18n, permission: n }));
-
-			if (!role.permissions.includes(n)) {
-				role.permissions.push(n);
-			}
-		});
-
-		await this.orm.em.persistAndFlush(role);
-		return role;
-	}
-
-	/**
 	 * Get all permissions of a user
 	 * @param {number} id User id
 	 * @returns {Promise<Permission[]>} The permissions of the user
@@ -128,19 +96,6 @@ export class PermissionsService {
 		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id }));
 
 		return user.permissions.loadItems();
-	}
-
-	/**
-	 * Get all permissions attached to a role
-	 * @param {number} role_id The role id
-	 * @returns {Promise<PermissionName[]>} The permissions of the role
-	 */
-	@UseRequestContext()
-	async getPermissionsOfRole(role_id: number): Promise<PermissionName[]> {
-		const role = await this.orm.em.findOne(Role, { id: role_id });
-		if (!role) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: Role, id: role_id }));
-
-		return role.permissions;
 	}
 
 	@UseRequestContext()
