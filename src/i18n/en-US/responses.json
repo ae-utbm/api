@@ -29,7 +29,8 @@
       "invalid_mime_type": "The given file is not an image."
     },
     "password": {
-      "mismatch": "Password mismatch"
+      "mismatch": "Password mismatch",
+      "weak": "Password is too weak. Please use a stronger password with at least 8 characters and a mix of letters, numbers and special characters."
     },
     "permission": {
       "invalid": "Permission '{permission}' does not exist.",

@@ -19,7 +19,7 @@ import { User } from '@modules/users/entities/user.entity';
 import { checkBirthday } from '@utils/dates';
 import { checkEmail, sendEmail } from '@utils/email';
 import { convertToWebp, hasAspectRatio } from '@utils/images';
-import { generateRandomPassword } from '@utils/password';
+import { checkPasswordStrength, generateRandomPassword } from '@utils/password';
 import { getTemplate } from '@utils/template';
 import { validateObject } from '@utils/validate';
 
@@ -130,11 +130,14 @@ export class UsersService {
 		if (!checkEmail(input.email))
 			throw new BadRequestException(Errors.Email.Invalid({ i18n: this.i18n, email: input.email }));
 
+		if (await this.orm.em.findOne(User, { email: input.email }))
+			throw new BadRequestException(Errors.Email.AlreadyUsed({ i18n: this.i18n, email: input.email }));
+
 		if (!checkBirthday(input.birthday))
 			throw new BadRequestException(Errors.Birthday.Invalid({ i18n: this.i18n, date: input.birthday }));
 
-		if (await this.orm.em.findOne(User, { email: input.email }))
-			throw new BadRequestException(Errors.Email.AlreadyUsed({ i18n: this.i18n, email: input.email }));
+		if (!checkPasswordStrength(input.password))
+			throw new BadRequestException(Errors.Password.Weak({ i18n: this.i18n }));
 
 		// Check if the password is already hashed
 		if (input.password.length !== 60) input.password = hashSync(input.password, 10);

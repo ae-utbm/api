@@ -6,6 +6,7 @@ import request from 'supertest';
 import { Errors } from '@i18n';
 import { UserPostDTO } from '@modules/auth/dto/register.dto';
 import { User } from '@modules/users/entities/user.entity';
+import { generateRandomPassword } from '@utils/password';
 
 import { orm, app, i18n } from '..';
 
@@ -47,7 +48,7 @@ describe('Auth (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Unauthorized',
 				statusCode: 401,
-				message: 'Password mismatch',
+				message: Errors.Password.Mismatch({ i18n }),
 			});
 		});
 
@@ -69,7 +70,7 @@ describe('Auth (e2e)', () => {
 			first_name: 'John',
 			last_name: 'Doe',
 			email: 'johndoe@domain.com',
-			password: 'password',
+			password: generateRandomPassword(),
 			birthday: new Date('2000-01-01'),
 		};
 
@@ -101,6 +102,22 @@ describe('Auth (e2e)', () => {
 					error: 'Bad Request',
 					statusCode: 400,
 					message: Errors.Birthday.Invalid({ i18n, date: birthday }),
+				});
+			});
+		});
+
+		describe('checking the password', () => {
+			it('should return 400 when password is too weak', async () => {
+				const password = 'short';
+				const response = await request(app.getHttpServer())
+					.post('/api/auth/register')
+					.send({ ...user, password })
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: Errors.Password.Weak({ i18n }),
 				});
 			});
 		});

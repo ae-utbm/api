@@ -23,7 +23,7 @@ export class AuthService {
 		const user: User = await this.usersService.findOne({ email: email }, false);
 
 		if (user.password !== pass && !compareSync(pass, user.password)) {
-			throw new UnauthorizedException(Errors.Generic.passwordMismatch({ i18n: this.i18n }));
+			throw new UnauthorizedException(Errors.Password.Mismatch({ i18n: this.i18n }));
 		}
 
 		const payload = { sub: user.id, email: user.email };

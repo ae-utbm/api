@@ -46,9 +46,6 @@ export namespace Errors {
 
 		export const IdOrEmailMissing = <T>(options: NamedResponse<T>): string =>
 			generic('responses.errors.id_or_email.missing', { type: options.type }, options.i18n);
-
-		export const passwordMismatch = (options: Response): string =>
-			generic('responses.errors.password.mismatch', {}, options.i18n);
 	}
 
 	export namespace Birthday {
@@ -94,6 +91,13 @@ export namespace Errors {
 
 		/* istanbul ignore next-line */
 		export const Unknown = (options: Response): string => generic('responses.errors.jwt.unknown', {}, options.i18n);
+	}
+
+	export namespace Password {
+		export const Weak = (options: Response): string => generic('responses.errors.password.weak', {}, options.i18n);
+
+		export const Mismatch = (options: Response): string =>
+			generic('responses.errors.password.mismatch', {}, options.i18n);
 	}
 
 	export namespace Permission {
