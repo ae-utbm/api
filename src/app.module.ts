@@ -16,7 +16,6 @@ import { RolesModule } from '@modules/roles/roles.module';
 import { UsersModule } from '@modules/users/users.module';
 
 import env from './env';
-import config from './mikro-orm.config';
 
 @Module({
 	imports: [
@@ -25,12 +24,7 @@ import config from './mikro-orm.config';
 			load: [env],
 		}),
 		ScheduleModule.forRoot(),
-		MikroOrmModule.forRoot({
-			...config,
-			// Entities paths are relative to the root of the project so we need to update them
-			entities: [join(__dirname, '../../dist/src/modules/**/entities/*.entity.js')],
-			entitiesTs: [join(__dirname, '/modules/**/entities/*.entity.ts')],
-		}),
+		MikroOrmModule.forRoot(),
 		I18nModule.forRoot({
 			fallbackLanguage: 'en-US',
 			loaderOptions: {
