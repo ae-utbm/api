@@ -26,7 +26,7 @@ import {
 
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
-import { getStreamableFile } from '@utils/images';
+import { toReadable } from '@utils/images';
 
 import { PromotionResponseDTO } from './dto/promotion.dto';
 import { Promotion } from './entities/promotion.entity';
@@ -86,7 +86,7 @@ export class PromotionsController {
 	@ApiNotFoundResponse({ description: 'Promotion not found or promotion has no logo' })
 	async getLogo(@Param('number') number: number) {
 		const logo = await this.promotionsService.getLogo(number);
-		return new StreamableFile(await getStreamableFile(logo.path));
+		return new StreamableFile(await toReadable(logo.path));
 	}
 
 	@Delete(':number/logo')

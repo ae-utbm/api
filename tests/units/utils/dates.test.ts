@@ -12,4 +12,8 @@ describe('checkBirthday()', () => {
 		expect(checkBirthday(d)).toBe(false);
 		expect(checkBirthday(new Date(d))).toBe(false);
 	});
+
+	it('should return false if the date is in the future', () => {
+		expect(checkBirthday('3000-01-01')).toBe(false);
+	});
 });
