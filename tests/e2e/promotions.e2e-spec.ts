@@ -233,7 +233,6 @@ describe('Promotions (e2e)', () => {
 				path: join(process.cwd(), './tests/files/promo_21.png'),
 				promotion: 21,
 				size: 0,
-				visibility: 'public',
 			});
 
 			await orm.em.persistAndFlush(logo);
@@ -334,7 +333,7 @@ describe('Promotions (e2e)', () => {
 					description: 'Promotion logo',
 					mimetype: 'image/webp',
 					size: 117280,
-					visibility: 'public',
+					visibility: null,
 				},
 			});
 
@@ -369,7 +368,7 @@ describe('Promotions (e2e)', () => {
 					description: 'Promotion logo',
 					mimetype: 'image/webp',
 					size: 117280,
-					visibility: 'public',
+					visibility: null,
 				},
 			});
 

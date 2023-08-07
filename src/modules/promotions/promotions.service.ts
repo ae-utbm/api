@@ -149,8 +149,8 @@ export class PromotionsService {
 				path: filepath,
 				promotion,
 				size: buffer.byteLength,
-				visibility: 'public',
 				description: 'Promotion logo',
+				visibility: null,
 			});
 
 		await this.orm.em.persistAndFlush(promotion);

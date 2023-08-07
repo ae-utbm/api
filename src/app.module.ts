@@ -8,6 +8,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AcceptLanguageResolver, I18nModule } from 'nestjs-i18n';
 
 import { AuthModule } from '@modules/auth/auth.module';
+import { FilesModule } from '@modules/files/files.module';
 import { LoggingInterceptor } from '@modules/logs/interceptor/logging.interceptor';
 import { LogsModule } from '@modules/logs/logs.module';
 import { PermissionsModule } from '@modules/permissions/permissions.module';
@@ -40,6 +41,7 @@ import env from './env';
 		PromotionsModule,
 		RolesModule,
 		UsersModule,
+		FilesModule,
 	],
 	providers: [
 		{

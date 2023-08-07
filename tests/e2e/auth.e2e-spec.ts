@@ -191,6 +191,7 @@ describe('Auth (e2e)', () => {
 				created_at: expect.any(String),
 				email: 'johndoe@domain.com',
 				email_verified: false,
+				files_visibility_groups: [],
 				first_name: 'John',
 				full_name: 'John Doe',
 				id: expect.any(Number),
