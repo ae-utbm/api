@@ -86,7 +86,7 @@ export class PromotionsController {
 	@ApiNotFoundResponse({ description: 'Promotion not found or promotion has no logo' })
 	async getLogo(@Param('number') number: number) {
 		const logo = await this.promotionsService.getLogo(number);
-		return new StreamableFile(await toReadable(logo.path));
+		return new StreamableFile(toReadable(logo.path));
 	}
 
 	@Delete(':number/logo')

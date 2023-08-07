@@ -1,9 +1,9 @@
 import type { AspectRatio } from '@types';
 
+import { readFileSync } from 'fs';
 import { Readable } from 'stream';
 
 import sharp from 'sharp';
-import { readFileSync } from 'fs';
 
 /**
  * Check if an image has the specified aspect ratio
