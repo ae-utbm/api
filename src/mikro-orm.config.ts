@@ -1,7 +1,5 @@
 /* istanbul ignore file */
 
-import { join } from 'path';
-
 import { MikroORMOptions, IDatabaseDriver, Connection } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
@@ -9,8 +7,6 @@ import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { Logger } from '@nestjs/common';
 
 import 'dotenv/config';
-import { Migrator } from '@mikro-orm/migrations';
-import { SeedManager } from '@mikro-orm/seeder';
 
 const logger = new Logger('MikroORM');
 
