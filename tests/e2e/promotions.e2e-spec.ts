@@ -15,16 +15,16 @@ describe('Promotions (e2e)', () => {
 	let tokenPromotionModerator: string;
 
 	beforeAll(async () => {
-		type Res = Omit<request.Response, 'body'> & { body: TokenDTO };
+		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
 
-		const resA: Res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const resA: res = await request(app.getHttpServer()).post('/api/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
 		});
 
 		tokenUnauthorized = resA.body.token;
 
-		const resB: Res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const resB: res = await request(app.getHttpServer()).post('/api/auth/login').send({
 			email: 'promos@email.com',
 			password: 'root',
 		});

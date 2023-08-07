@@ -10,16 +10,16 @@ describe('Roles', () => {
 	let tokenRolesModerator: string;
 
 	beforeAll(async () => {
-		type Res = Omit<request.Response, 'body'> & { body: { token: string } };
+		type res = Omit<request.Response, 'body'> & { body: { token: string } };
 
-		const resA: Res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const resA: res = await request(app.getHttpServer()).post('/api/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
 		});
 
 		tokenUnauthorized = resA.body.token;
 
-		const resB: Res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const resB: res = await request(app.getHttpServer()).post('/api/auth/login').send({
 			email: 'roles@email.com',
 			password: 'root',
 		});

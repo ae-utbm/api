@@ -1,4 +1,4 @@
-import type { JWTPayload, Email, I18nTranslations } from '@types';
+import type { JWTPayload, email, I18nTranslations } from '@types';
 
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -19,7 +19,7 @@ export class AuthService {
 		private readonly jwtService: JwtService,
 	) {}
 
-	async signIn(email: Email, pass: string): Promise<TokenDTO> {
+	async signIn(email: email, pass: string): Promise<TokenDTO> {
 		const user: User = await this.usersService.findOne({ email: email }, false);
 
 		if (user.password !== pass && !compareSync(pass, user.password)) {

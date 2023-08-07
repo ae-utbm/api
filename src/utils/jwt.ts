@@ -10,7 +10,7 @@ import { Errors } from '@i18n';
 /**
  * Options for the verifyJWT function
  */
-interface options {
+interface Options {
 	/** The JWT token to verify */
 	token: string;
 	/** The JWT service used to verify the token validity */
@@ -28,7 +28,7 @@ interface options {
  * @throws {UnauthorizedException} If the token is invalid
  * @throws {UnauthorizedException} If the token is expired
  */
-export function verifyJWT({ token, jwtService, configService, i18nService }: options): JWTPayload | never {
+export function verifyJWT({ token, jwtService, configService, i18nService }: Options): JWTPayload | never {
 	const bearer = token.replace('Bearer', '').trim();
 
 	try {

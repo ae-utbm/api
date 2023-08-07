@@ -1,4 +1,4 @@
-import type { Email } from '@types';
+import type { email } from '@types';
 
 import { hashSync } from 'bcrypt';
 import request from 'supertest';
@@ -25,7 +25,7 @@ describe('Auth (e2e)', () => {
 		});
 
 		it('should return 404 when user is not found', async () => {
-			const email: Email = 'doesnotexist@utbm.fr';
+			const email: email = 'doesnotexist@utbm.fr';
 			const response = await request(app.getHttpServer())
 				.post('/api/auth/login')
 				.send({ email, password: '' })
@@ -116,7 +116,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Email.Invalid({ i18n, email: email as unknown as Email }),
+					message: Errors.Email.Invalid({ i18n, email: email as unknown as email }),
 				});
 			});
 
@@ -130,12 +130,12 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Email.Invalid({ i18n, email: email as unknown as Email }),
+					message: Errors.Email.Invalid({ i18n, email: email as unknown as email }),
 				});
 			});
 
 			it('should return 400 when email is already used', async () => {
-				const email: Email = 'ae.info@utbm.fr';
+				const email: email = 'ae.info@utbm.fr';
 				const response = await request(app.getHttpServer())
 					.post('/api/auth/register')
 					.send({ ...user, email })

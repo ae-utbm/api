@@ -6,8 +6,8 @@ import { I18nContext, I18nService } from 'nestjs-i18n';
 
 import { I18nTranslations } from '@types';
 
-export type AvailableTemplates = 'emails/register_user_by_admin' | 'emails/register_user';
-export type AvailableTemplateArgs =
+export type templates = 'emails/register_user_by_admin' | 'emails/register_user';
+export type template_args =
 	| (
 			| {
 					[k: string]: unknown;
@@ -20,16 +20,12 @@ export type AvailableTemplateArgs =
 
 /**
  * Load the given template and translate all strings in it
- * @param {AvailableTemplates} templateName The name of the template to load
+ * @param {templates} templateName The name of the template to load
  * @param {I18nService} i18n The i18n service to use to translate the template
- * @param {AvailableTemplateArgs?} args Arguments to pass to the translation function (if any)
+ * @param {template_args?} args Arguments to pass to the translation function (if any)
  * @returns {string} The translated template
  */
-export function getTemplate(
-	templateName: AvailableTemplates,
-	i18n: I18nService<I18nTranslations>,
-	args: AvailableTemplateArgs,
-): string {
+export function getTemplate(templateName: templates, i18n: I18nService<I18nTranslations>, args: template_args): string {
 	let inputString = fs.readFileSync(path.join(__dirname, `../templates/${templateName}.html`), 'utf8');
 	const regex = /\{\{([^}]+)\}\}/g;
 	const matches: PathImpl2<I18nTranslations>[] = [];

@@ -1,4 +1,4 @@
-import type { I18nTranslations, PermissionName } from '@types';
+import type { I18nTranslations, PERMISSION_NAMES } from '@types';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
@@ -52,7 +52,7 @@ export class RolesService {
 	@UseRequestContext()
 	async createRole(
 		name: Uppercase<string>,
-		permissions: PermissionName[],
+		permissions: PERMISSION_NAMES[],
 		expires: Date,
 	): Promise<Omit<Role, 'users'>> {
 		name = name.toUpperCase();

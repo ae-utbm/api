@@ -1,4 +1,4 @@
-import type { AspectRatio, Class, Email as TEmail, I18nTranslations } from '@types';
+import type { aspect_ratio, Class, email as TEmail, I18nTranslations } from '@types';
 
 import { PathImpl2 } from '@nestjs/config';
 import { I18nContext, I18nService } from 'nestjs-i18n';
@@ -81,7 +81,7 @@ export namespace Errors {
 	}
 
 	export namespace Image {
-		export const InvalidAspectRatio = (options: Response & { aspect_ratio: AspectRatio }): string =>
+		export const InvalidAspectRatio = (options: Response & { aspect_ratio: aspect_ratio }): string =>
 			generic('responses.errors.image.invalid_aspect_ratio', { aspect_ration: options.aspect_ratio }, options.i18n);
 
 		export const InvalidMimeType = (options: Response): string =>

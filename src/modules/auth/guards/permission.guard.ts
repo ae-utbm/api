@@ -1,4 +1,4 @@
-import type { I18nTranslations, PermissionName } from '@types';
+import type { I18nTranslations, PERMISSION_NAMES } from '@types';
 import type { Request } from 'express';
 
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
@@ -30,13 +30,13 @@ export class PermissionGuard implements CanActivate {
 	) {}
 
 	async canActivate(context: ExecutionContext) {
-		type Req = Request & { headers: { authorization: string } };
+		type req = Request & { headers: { authorization: string } };
 
 		// Access the request object from the execution context
-		const request = context.switchToHttp().getRequest<Req>();
+		const request = context.switchToHttp().getRequest<req>();
 
 		// Access the permissions required to access the route
-		const permsToValidate = this.reflector.get<Array<PermissionName>>('guard_permissions', context.getHandler());
+		const permsToValidate = this.reflector.get<Array<PERMISSION_NAMES>>('guard_permissions', context.getHandler());
 
 		// Retrieve the authenticated user from the request's user object or session
 		const bearerToken = request.headers.authorization;

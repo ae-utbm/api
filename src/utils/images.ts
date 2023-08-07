@@ -1,4 +1,4 @@
-import type { AspectRatio } from '@types';
+import type { aspect_ratio } from '@types';
 
 import { readFileSync } from 'fs';
 import { Readable } from 'stream';
@@ -11,7 +11,7 @@ import sharp from 'sharp';
  * @param {number} aspectRatio The aspect ratio to check (e.g., 1 for square, 1/3 for 1:3 ratio)
  * @returns {boolean} True if the image has the specified aspect ratio, false otherwise
  */
-export async function hasAspectRatio(buffer: Buffer, aspectRatio: AspectRatio): Promise<boolean> {
+export async function hasAspectRatio(buffer: Buffer, aspectRatio: aspect_ratio): Promise<boolean> {
 	const { width, height } = await sharp(buffer).metadata();
 	const [aspectWidth, aspectHeight] = aspectRatio.split(':').map((s) => parseInt(s, 10));
 	return Math.abs(width / height - aspectWidth / aspectHeight) < Number.EPSILON;

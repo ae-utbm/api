@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 
-import type { Email } from '@types';
+import type { email } from '@types';
 
 import { createTransport } from 'nodemailer';
 
@@ -8,10 +8,10 @@ import env from '@env';
 
 /**
  * Check if an email is allowed to be used (to register for example) and if it is valid
- * @param {Email} email the email to check
+ * @param {email} email the email to check
  * @returns {boolean} true if the email is allowed, false otherwise
  */
-export function checkEmail(email: Email): boolean {
+export function checkEmail(email: email): boolean {
 	const blacklist = env().email.blacklist.host;
 	const whitelisted = env().email.whitelist.email;
 

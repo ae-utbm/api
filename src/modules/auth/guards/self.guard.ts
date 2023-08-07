@@ -41,21 +41,21 @@ export function checkSelf(
 	i18nService: I18nService<I18nTranslations>,
 	reflector: Reflector,
 ): boolean {
-	type Req = Request & {
+	type req = Request & {
 		params: { [key: string]: string };
 		body: { [key: string]: string };
 		headers: { authorization: string };
 	};
 
 	// Access the request object from the execution context
-	const request = context.switchToHttp().getRequest<Req>();
+	const request = context.switchToHttp().getRequest<req>();
 
 	// Access the name of the parameter that contains the user ID
 	const userIdKey = reflector.get<string>('guard_self_param_key', context.getHandler());
 
 	// Extract the user ID from the request parameters or body
 	const user_id = request.params[userIdKey] ?? request.body[userIdKey];
-	if (user_id === undefined) throw new Error(`The parameter ${userIdKey} is missing from the request.`);
+	if (!user_id) throw new Error(`The parameter ${userIdKey} is missing from the request.`);
 
 	// Retrieve the authenticated user from the request's user object or session
 	const bearerToken = request.headers.authorization;

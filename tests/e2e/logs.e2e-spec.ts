@@ -18,9 +18,9 @@ describe('Logs (e2e)', () => {
 	let userIdLogModerator: number;
 
 	beforeAll(async () => {
-		type Res = Omit<request.Response, 'body'> & { body: TokenDTO };
+		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
 
-		const responseA: Res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const responseA: res = await request(app.getHttpServer()).post('/api/auth/login').send({
 			email: 'unverified@email.com',
 			password: 'root',
 		});
@@ -28,7 +28,7 @@ describe('Logs (e2e)', () => {
 		tokenUnverified = responseA.body.token;
 		userIdUnverified = responseA.body.user_id;
 
-		const responseB: Res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const responseB: res = await request(app.getHttpServer()).post('/api/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
 		});
@@ -36,7 +36,7 @@ describe('Logs (e2e)', () => {
 		tokenUnauthorized = responseB.body.token;
 		userIdUnauthorized = responseB.body.user_id;
 
-		const responseC: Res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const responseC: res = await request(app.getHttpServer()).post('/api/auth/login').send({
 			email: 'logs@email.com',
 			password: 'root',
 		});

@@ -1,4 +1,4 @@
-import type { PermissionName, RoleEntity } from '@types';
+import type { PERMISSION_NAMES, RoleEntity } from '@types';
 
 import { Collection, Entity, ManyToMany, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';
@@ -31,7 +31,7 @@ export class Role extends BaseEntity implements RoleEntity<Permission, User> {
 	/** Specify what permissions the role has */
 	@Property({ name: 'permissions' })
 	@ApiProperty({ enum: PERMISSIONS_NAMES, isArray: true })
-	permissions: PermissionName[];
+	permissions: PERMISSION_NAMES[];
 
 	/** Specify to which user the role is attached */
 	@ManyToMany(() => User, (user) => user.roles, { owner: true })

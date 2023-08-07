@@ -1,4 +1,4 @@
-import type { PermissionEntity, PermissionName } from '@types';
+import type { PermissionEntity, PERMISSION_NAMES } from '@types';
 
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';
@@ -11,7 +11,7 @@ import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 export class Permission extends BaseEntity implements PermissionEntity<User> {
 	@Property()
 	@ApiProperty({ enum: PERMISSIONS_NAMES })
-	name: PermissionName;
+	name: PERMISSION_NAMES;
 
 	@Property({ name: 'is_revoked', default: false })
 	@ApiProperty({ type: Boolean })

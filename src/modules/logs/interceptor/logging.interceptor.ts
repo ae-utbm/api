@@ -14,7 +14,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
 	@UseRequestContext()
 	async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
-		type Req = IncomingMessage & {
+		type req = IncomingMessage & {
 			route: { path: string };
 			user: User;
 			params: Record<string, string>;
@@ -23,7 +23,7 @@ export class LoggingInterceptor implements NestInterceptor {
 			ip: string;
 		};
 
-		const request = context.switchToHttp().getRequest<Req>();
+		const request = context.switchToHttp().getRequest<req>();
 		const user_id = request.user ? request.user.id : 'Guest';
 
 		// No need to log guest users
@@ -52,13 +52,13 @@ export class LoggingInterceptor implements NestInterceptor {
 			tap({
 				// eslint-disable-next-line @typescript-eslint/no-misused-promises
 				finalize: async () => {
-					type Res = ServerResponse & {
+					type res = ServerResponse & {
 						body: Record<string, string>;
 						error: string;
 						error_stack: string;
 						error_message: string;
 					};
-					const response = context.switchToHttp().getResponse<Res>();
+					const response = context.switchToHttp().getResponse<res>();
 
 					// Update the log entity after the observable is ended
 					log.response = response.body as unknown as string; // TODO: Get the actual response body (actually null)
