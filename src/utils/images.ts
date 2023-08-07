@@ -1,8 +1,9 @@
 import type { AspectRatio } from '@types';
 
-import { createReadStream, ReadStream } from 'fs';
+import { Readable } from 'stream';
 
 import sharp from 'sharp';
+import { readFileSync } from 'fs';
 
 /**
  * Check if an image has the specified aspect ratio
@@ -42,29 +43,18 @@ export async function getFileExtension(buffer: Buffer): Promise<string> {
 }
 
 /**
- * Create a read stream from a file, with a retry mechanism
- * @param {string} path The path to the file
- * @param {number} attempts Number of attempts to try to create the stream @default 10
- * @returns {ReadStream} The read stream
- * @throws {Error} If the file can't be read after all attempts
+ * @param {string} filepath The path of the file to get the stream
+ * @returns {Readable} The stream of the file
  */
-export function getStreamableFile(path: string, attempts: number = 10): Promise<ReadStream> {
-	return new Promise((resolve, reject) => {
-		const tryCreateStream = (remainingAttempts: number) => {
-			try {
-				const stream = createReadStream(path);
-				resolve(stream);
-			} catch (error) {
-				if (remainingAttempts === 0) {
-					reject(error);
-				} else {
-					setTimeout(() => {
-						tryCreateStream(remainingAttempts - 1);
-					}, 1000);
-				}
-			}
-		};
-
-		tryCreateStream(attempts);
+export function toReadable(filepath: string): Readable {
+	const readable = new Readable({
+		read() {
+			// Implement your logic to read data from the file and push it into the stream
+			const data = readFileSync(filepath, 'utf-8');
+			this.push(data);
+			this.push(null); // Signal the end of the stream
+		},
 	});
+
+	return readable;
 }

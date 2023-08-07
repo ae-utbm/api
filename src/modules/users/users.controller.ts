@@ -32,7 +32,7 @@ import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { Role } from '@modules/roles/entities/role.entity';
-import { getStreamableFile } from '@utils/images';
+import { toReadable } from '@utils/images';
 
 import { UserPatchDTO } from './dto/patch.dto';
 import { UserVisibility } from './entities/user-visibility.entity';
@@ -143,7 +143,7 @@ export class UsersController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getPicture(@Param('id') id: number) {
 		const picture = await this.usersService.getPicture(id);
-		return new StreamableFile(await getStreamableFile(picture.path));
+		return new StreamableFile(toReadable(picture.path));
 	}
 
 	@Post(':id/banner')
@@ -184,7 +184,7 @@ export class UsersController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getBanner(@Param('id') id: number) {
 		const banner = await this.usersService.getBanner(id);
-		return new StreamableFile(await getStreamableFile(banner.path));
+		return new StreamableFile(toReadable(banner.path));
 	}
 
 	@Get(':id/roles')
