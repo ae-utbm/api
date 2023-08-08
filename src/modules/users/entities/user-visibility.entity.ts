@@ -24,7 +24,7 @@ export class UserVisibility extends BaseEntity implements UserVisibilityEntity<U
 	@ApiProperty({ type: Boolean, default: false })
 	secondary_email: boolean;
 
-	/** Wether the user birthday should be visible or not */
+	/** Wether the user birth_date should be visible or not */
 	@Property({ onCreate: () => true })
 	@ApiProperty({ type: Boolean, default: true })
 	birth_date: boolean;

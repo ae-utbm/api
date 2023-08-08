@@ -1,6 +1,6 @@
 {
   "errors": {
-    "birthday": {
+    "birth_date": {
       "invalid": "The date '{date}' is invalid, either too young or in the future."
     },
     "email": {

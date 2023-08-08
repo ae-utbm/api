@@ -68,37 +68,37 @@ describe('Auth (e2e)', () => {
 			last_name: 'Doe',
 			email: 'johndoe@domain.com',
 			password: generateRandomPassword(),
-			birthday: new Date('2000-01-01'),
+			birth_date: new Date('2000-01-01'),
 		};
 
-		describe('checking the birthday', () => {
-			it('should return 400 when birthday is in the future', async () => {
+		describe('checking the birth date', () => {
+			it('should return 400 when birth date is in the future', async () => {
 				const tomorrow = new Date(Date.now() + 1000 * 60 * 60 * 24);
 
 				const response = await request(app.getHttpServer())
 					.post('/auth/register')
-					.send({ ...user, birthday: tomorrow })
+					.send({ ...user, birth_date: tomorrow })
 					.expect(400);
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Birthday.Invalid({ i18n, date: tomorrow }),
+					message: Errors.BirthDate.Invalid({ i18n, date: tomorrow }),
 				});
 			});
 
-			it('should return 400 when birthday is less than 13 years old', async () => {
-				const birthday = new Date(Date.now() - 1000 * 60 * 60 * 24 * 365 * 12);
+			it('should return 400 when birth date is less than 13 years old', async () => {
+				const birth_date = new Date(Date.now() - 1000 * 60 * 60 * 24 * 365 * 12);
 
 				const response = await request(app.getHttpServer())
 					.post('/auth/register')
-					.send({ ...user, birthday })
+					.send({ ...user, birth_date })
 					.expect(400);
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Birthday.Invalid({ i18n, date: birthday }),
+					message: Errors.BirthDate.Invalid({ i18n, date: birth_date }),
 				});
 			});
 		});
@@ -197,11 +197,11 @@ describe('Auth (e2e)', () => {
 
 			expect(response.body).toEqual({
 				age: (() => {
-					const diff = Date.now() - user.birthday.getTime();
+					const diff = Date.now() - user.birth_date.getTime();
 					const age = new Date(diff);
 					return Math.abs(age.getUTCFullYear() - 1970);
 				})(),
-				birthday: '2000-01-01T00:00:00.000Z',
+				birth_date: '2000-01-01T00:00:00.000Z',
 				created_at: expect.any(String),
 				email: 'johndoe@domain.com',
 				email_verified: false,
@@ -263,7 +263,7 @@ describe('Auth (e2e)', () => {
 			expect(response.body).toEqual({
 				age: expect.any(Number),
 				banner: null,
-				birthday: '2000-01-01T00:00:00.000Z',
+				birth_date: '2000-01-01T00:00:00.000Z',
 				created_at: expect.any(String),
 				cursus: null,
 				email: 'unverified@email.com',

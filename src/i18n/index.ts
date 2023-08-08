@@ -48,10 +48,10 @@ export namespace Errors {
 			generic('responses.errors.id_or_email.missing', { type: options.type }, options.i18n);
 	}
 
-	export namespace Birthday {
+	export namespace BirthDate {
 		export const Invalid = (options: Response & { date: Date | string }): string =>
 			generic(
-				'responses.errors.birthday.invalid',
+				'responses.errors.birth_date.invalid',
 				{ date: typeof options.date === 'string' ? options.date : options.date.toISOString() },
 				options.i18n,
 			);

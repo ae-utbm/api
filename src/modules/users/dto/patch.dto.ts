@@ -18,7 +18,7 @@ export class UserPatchDTO implements UserPatchDto {
 
 	@ApiProperty()
 	@IsDate()
-	birthday: Date;
+	birth_date: Date;
 
 	@ApiProperty()
 	@IsString()

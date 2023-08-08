@@ -16,7 +16,7 @@ import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
 import { User } from '@modules/users/entities/user.entity';
-import { checkBirthday } from '@utils/dates';
+import { checkBirthDate } from '@utils/dates';
 import { checkEmail, sendEmail } from '@utils/email';
 import { convertToWebp, hasAspectRatio } from '@utils/images';
 import { checkPasswordStrength, generateRandomPassword } from '@utils/password';
@@ -116,7 +116,7 @@ export class UsersService {
 		validateObject({
 			object: input,
 			type: UserPostDTO,
-			requiredKeys: ['password', 'first_name', 'last_name', 'email', 'birthday'],
+			requiredKeys: ['password', 'first_name', 'last_name', 'email', 'birth_date'],
 			i18n: this.i18n,
 		});
 
@@ -133,8 +133,8 @@ export class UsersService {
 		if (await this.orm.em.findOne(User, { email: input.email }))
 			throw new BadRequestException(Errors.Email.AlreadyUsed({ i18n: this.i18n, email: input.email }));
 
-		if (!checkBirthday(input.birthday))
-			throw new BadRequestException(Errors.Birthday.Invalid({ i18n: this.i18n, date: input.birthday }));
+		if (!checkBirthDate(input.birth_date))
+			throw new BadRequestException(Errors.BirthDate.Invalid({ i18n: this.i18n, date: input.birth_date }));
 
 		if (!checkPasswordStrength(input.password))
 			throw new BadRequestException(Errors.Password.Weak({ i18n: this.i18n }));
@@ -206,8 +206,8 @@ export class UsersService {
 		if (!checkEmail(input.email))
 			throw new BadRequestException(Errors.Email.Invalid({ i18n: this.i18n, email: input.email }));
 
-		if (!checkBirthday(input.birthday))
-			throw new BadRequestException(Errors.Birthday.Invalid({ i18n: this.i18n, date: input.birthday }));
+		if (!checkBirthDate(input.birth_date))
+			throw new BadRequestException(Errors.BirthDate.Invalid({ i18n: this.i18n, date: input.birth_date }));
 
 		// Generate a random password & hash it
 		const password = generateRandomPassword(12);
@@ -236,12 +236,13 @@ export class UsersService {
 		if (input.email && !checkEmail(input.email))
 			throw new BadRequestException(Errors.Email.Invalid({ i18n: this.i18n, email: input.email }));
 
-		if (input.hasOwnProperty('birthday') || input.hasOwnProperty('first_name') || input.hasOwnProperty('last_name')) {
+		if (input.hasOwnProperty('birth_date') || input.hasOwnProperty('first_name') || input.hasOwnProperty('last_name')) {
 			const currentUser = await this.findOne({ id: requestUserId }, false);
 
 			if (currentUser.id === user.id)
+				//FIXME - No I18n here ?
 				throw new UnauthorizedException(
-					'You cannot update your own birthday / first (or last) name, ask another user with the appropriate permission',
+					'You cannot update your own birth date / first (or last) name, ask another user with the appropriate permission',
 				);
 		}
 

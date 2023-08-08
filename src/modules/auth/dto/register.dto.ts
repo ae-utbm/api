@@ -10,7 +10,7 @@ export class UserPostByAdminDTO implements Omit<UserPostDto, 'password'> {
 
 	@ApiProperty()
 	@IsDate()
-	birthday: Date;
+	birth_date: Date;
 
 	@ApiProperty()
 	@IsString()

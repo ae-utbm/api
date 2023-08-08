@@ -1,11 +1,11 @@
 /**
- * Determines if a date is valid for a user's birthday
+ * Determines if a date is valid for a user's birth date
  * (must be at least 13 years old and not in the future)
- * @param {string|Date} birthday The date to check
+ * @param {string|Date} birth_date The date to check
  * @returns {boolean} True if the date is valid, false otherwise
  */
-export function checkBirthday(birthday: string | Date): boolean {
-	const date = typeof birthday === 'string' ? new Date(birthday) : birthday;
+export function checkBirthDate(birth_date: string | Date): boolean {
+	const date = typeof birth_date === 'string' ? new Date(birth_date) : birth_date;
 	const now = new Date();
 
 	// Check if the date is in the future
