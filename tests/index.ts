@@ -34,7 +34,6 @@ beforeAll(async () => {
 	}).compile();
 
 	app = moduleFixture.createNestApplication();
-	app.setGlobalPrefix('api');
 	app.enableCors({ origin: env().cors });
 	app.useStaticAssets(env().files.baseDir, { index: false, prefix: '/public' });
 

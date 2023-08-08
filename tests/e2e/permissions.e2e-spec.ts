@@ -15,14 +15,14 @@ describe('Permissions (e2e)', () => {
 	beforeAll(async () => {
 		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
 
-		const resA: res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const resA: res = await request(app.getHttpServer()).post('/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
 		});
 
 		tokenUnauthorized = resA.body.token;
 
-		const resB: res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const resB: res = await request(app.getHttpServer()).post('/auth/login').send({
 			email: 'perms@email.com',
 			password: 'root',
 		});
@@ -30,9 +30,9 @@ describe('Permissions (e2e)', () => {
 		tokenPermissionModerator = resB.body.token;
 	});
 
-	describe('/api/permissions (POST)', () => {
+	describe('/permissions (POST)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).post('/api/permissions').expect(401);
+			const response = await request(app.getHttpServer()).post('/permissions').expect(401);
 
 			expect(response.body).toEqual({
 				statusCode: 401,
@@ -42,7 +42,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 403 when the user is not authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/permissions')
+				.post('/permissions')
 				.set('Authorization', `Bearer ${tokenUnauthorized}`)
 				.expect(403);
 
@@ -55,7 +55,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 404 when the user does not exist', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/permissions')
+				.post('/permissions')
 				.set('Authorization', `Bearer ${tokenPermissionModerator}`)
 				.send({ id: 999999, permission: 'ROOT', expires: new Date() })
 				.expect(404);
@@ -69,7 +69,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 400 when the permission is not valid', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/permissions')
+				.post('/permissions')
 				.set('Authorization', `Bearer ${tokenPermissionModerator}`)
 				.send({ id: 1, permission: 'INVALID', expires: new Date() })
 				.expect(400);
@@ -83,7 +83,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 400 when a field is missing', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/permissions')
+				.post('/permissions')
 				.set('Authorization', `Bearer ${tokenPermissionModerator}`)
 				.send({ id: 1, permission: 'ROOT' })
 				.expect(400);
@@ -97,7 +97,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 400 when the permission already exist on the user', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/permissions')
+				.post('/permissions')
 				.set('Authorization', `Bearer ${tokenPermissionModerator}`)
 				.send({ id: 1, permission: 'ROOT', expires: new Date() })
 				.expect(400);
@@ -111,7 +111,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 201 when the permission is added to the user', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/permissions')
+				.post('/permissions')
 				.set('Authorization', `Bearer ${tokenPermissionModerator}`)
 				.send({ id: 1, permission: 'CAN_EDIT_PROMOTION', expires: new Date() })
 				.expect(201);
@@ -134,9 +134,9 @@ describe('Permissions (e2e)', () => {
 		});
 	});
 
-	describe('/api/permissions (PATCH)', () => {
+	describe('/permissions (PATCH)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).patch('/api/permissions').expect(401);
+			const response = await request(app.getHttpServer()).patch('/permissions').expect(401);
 
 			expect(response.body).toEqual({
 				statusCode: 401,
@@ -146,7 +146,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 403 when the user is not authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.patch('/api/permissions')
+				.patch('/permissions')
 				.set('Authorization', `Bearer ${tokenUnauthorized}`)
 				.expect(403);
 
@@ -159,7 +159,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 404 when the user does not exist', async () => {
 			const response = await request(app.getHttpServer())
-				.patch('/api/permissions')
+				.patch('/permissions')
 				.set('Authorization', `Bearer ${tokenPermissionModerator}`)
 				.send({ user_id: 999999, id: 1, name: 'ROOT', expires: new Date(), revoked: false })
 				.expect(404);
@@ -173,7 +173,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 404 when permission ID does not exist', async () => {
 			const response = await request(app.getHttpServer())
-				.patch('/api/permissions')
+				.patch('/permissions')
 				.set('Authorization', `Bearer ${tokenPermissionModerator}`)
 				.send({ user_id: 1, id: 999999, name: 'ROOT', expires: new Date(), revoked: false })
 				.expect(404);
@@ -187,7 +187,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 200 when the permission is updated', async () => {
 			const response = await request(app.getHttpServer())
-				.patch('/api/permissions')
+				.patch('/permissions')
 				.set('Authorization', `Bearer ${tokenPermissionModerator}`)
 				.send({ user_id: 1, id: 1, name: 'ROOT', expires: new Date('9999-12-31'), revoked: false })
 				.expect(200);
@@ -204,9 +204,9 @@ describe('Permissions (e2e)', () => {
 		});
 	});
 
-	describe('/api/permissions/:user_id (GET)', () => {
+	describe('/permissions/:user_id (GET)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).get('/api/permissions/1').expect(401);
+			const response = await request(app.getHttpServer()).get('/permissions/1').expect(401);
 
 			expect(response.body).toEqual({
 				statusCode: 401,
@@ -216,7 +216,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 403 when the user is not authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/permissions/1')
+				.get('/permissions/1')
 				.set('Authorization', `Bearer ${tokenUnauthorized}`)
 				.expect(403);
 
@@ -229,7 +229,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 404 when the user does not exist', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/permissions/999999')
+				.get('/permissions/999999')
 				.set('Authorization', `Bearer ${tokenPermissionModerator}`)
 				.expect(404);
 
@@ -242,7 +242,7 @@ describe('Permissions (e2e)', () => {
 
 		it('should return 200 when the user exists', async () => {
 			const response = await request(app.getHttpServer())
-				.get(`/api/permissions/1`)
+				.get(`/permissions/1`)
 				.set('Authorization', `Bearer ${tokenPermissionModerator}`)
 				.expect(200);
 

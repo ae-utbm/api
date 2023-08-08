@@ -11,10 +11,10 @@ import { generateRandomPassword } from '@utils/password';
 import { orm, app, i18n } from '..';
 
 describe('Auth (e2e)', () => {
-	describe('/api/auth/login (POST)', () => {
+	describe('/auth/login (POST)', () => {
 		it('should return 400 when email/password is not provided', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/auth/login')
+				.post('/auth/login')
 				.send({ password: 'password' })
 				.expect(400);
 
@@ -27,10 +27,7 @@ describe('Auth (e2e)', () => {
 
 		it('should return 404 when user is not found', async () => {
 			const email: email = 'doesnotexist@utbm.fr';
-			const response = await request(app.getHttpServer())
-				.post('/api/auth/login')
-				.send({ email, password: '' })
-				.expect(404);
+			const response = await request(app.getHttpServer()).post('/auth/login').send({ email, password: '' }).expect(404);
 
 			expect(response.body).toEqual({
 				error: 'Not Found',
@@ -41,7 +38,7 @@ describe('Auth (e2e)', () => {
 
 		it('should return 401 when password is incorrect', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/auth/login')
+				.post('/auth/login')
 				.send({ email: 'ae.info@utbm.fr', password: '' })
 				.expect(401);
 
@@ -54,7 +51,7 @@ describe('Auth (e2e)', () => {
 
 		it('should return 201 when user is found and password is correct', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/auth/login')
+				.post('/auth/login')
 				.send({ email: 'ae.info@utbm.fr', password: 'root' })
 				.expect(201);
 
@@ -65,7 +62,7 @@ describe('Auth (e2e)', () => {
 		});
 	});
 
-	describe('/api/auth/register (POST)', () => {
+	describe('/auth/register (POST)', () => {
 		const user: UserPostDTO = {
 			first_name: 'John',
 			last_name: 'Doe',
@@ -79,7 +76,7 @@ describe('Auth (e2e)', () => {
 				const tomorrow = new Date(Date.now() + 1000 * 60 * 60 * 24);
 
 				const response = await request(app.getHttpServer())
-					.post('/api/auth/register')
+					.post('/auth/register')
 					.send({ ...user, birthday: tomorrow })
 					.expect(400);
 
@@ -94,7 +91,7 @@ describe('Auth (e2e)', () => {
 				const birthday = new Date(Date.now() - 1000 * 60 * 60 * 24 * 365 * 12);
 
 				const response = await request(app.getHttpServer())
-					.post('/api/auth/register')
+					.post('/auth/register')
 					.send({ ...user, birthday })
 					.expect(400);
 
@@ -110,7 +107,7 @@ describe('Auth (e2e)', () => {
 			it('should return 400 when password is too weak', async () => {
 				const password = 'short';
 				const response = await request(app.getHttpServer())
-					.post('/api/auth/register')
+					.post('/auth/register')
 					.send({ ...user, password })
 					.expect(400);
 
@@ -126,7 +123,7 @@ describe('Auth (e2e)', () => {
 			it('should return 400 when email is not valid', async () => {
 				const email = 'invalid';
 				const response = await request(app.getHttpServer())
-					.post('/api/auth/register')
+					.post('/auth/register')
 					.send({ ...user, email })
 					.expect(400);
 
@@ -140,7 +137,7 @@ describe('Auth (e2e)', () => {
 			it('should return 400 when email is blacklisted', async () => {
 				const email = 'user@utbm.fr';
 				const response = await request(app.getHttpServer())
-					.post('/api/auth/register')
+					.post('/auth/register')
 					.send({ ...user, email })
 					.expect(400);
 
@@ -154,7 +151,7 @@ describe('Auth (e2e)', () => {
 			it('should return 400 when email is already used', async () => {
 				const email: email = 'ae.info@utbm.fr';
 				const response = await request(app.getHttpServer())
-					.post('/api/auth/register')
+					.post('/auth/register')
 					.send({ ...user, email })
 					.expect(400);
 
@@ -168,7 +165,7 @@ describe('Auth (e2e)', () => {
 
 		it('should return 400 when one of required fields is not provided', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/auth/register')
+				.post('/auth/register')
 				.send({ ...user, first_name: undefined })
 				.expect(400);
 
@@ -181,7 +178,7 @@ describe('Auth (e2e)', () => {
 
 		it('should return 400 when one unexpected field is given', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/auth/register')
+				.post('/auth/register')
 				.send({ ...user, never_gonna: 'give_you_up' })
 				.expect(400);
 
@@ -194,7 +191,7 @@ describe('Auth (e2e)', () => {
 
 		it('should return 201 when user is created', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/auth/register')
+				.post('/auth/register')
 				.send({ ...user })
 				.expect(201);
 
@@ -224,14 +221,14 @@ describe('Auth (e2e)', () => {
 		});
 	});
 
-	describe('/api/auth/confirm/:user_id/:token/:redirect_url? (GET)', () => {
+	describe('/auth/confirm/:user_id/:token/:redirect_url? (GET)', () => {
 		// Defined in the seeder class (unverified user)
 		const user_id = 2;
 		const token = 'token';
 
 		it('should return 400 when "user_id" is not a number', async () => {
 			const fakeId = 'invalid';
-			const response = await request(app.getHttpServer()).get(`/api/auth/confirm/${fakeId}/${token}`).expect(400);
+			const response = await request(app.getHttpServer()).get(`/auth/confirm/${fakeId}/${token}`).expect(400);
 
 			expect(response.body).toEqual({
 				error: 'Bad Request',
@@ -241,7 +238,7 @@ describe('Auth (e2e)', () => {
 		});
 
 		it('should return 401 when the token is invalid', async () => {
-			const response = await request(app.getHttpServer()).get(`/api/auth/confirm/${user_id}/invalid_token`).expect(401);
+			const response = await request(app.getHttpServer()).get(`/auth/confirm/${user_id}/invalid_token`).expect(401);
 
 			expect(response.body).toEqual({
 				error: 'Unauthorized',
@@ -251,7 +248,7 @@ describe('Auth (e2e)', () => {
 		});
 
 		it('should return 400 when email is already verified', async () => {
-			const response = await request(app.getHttpServer()).get(`/api/auth/confirm/1/anything`).expect(400);
+			const response = await request(app.getHttpServer()).get(`/auth/confirm/1/anything`).expect(400);
 
 			expect(response.body).toEqual({
 				error: 'Bad Request',
@@ -261,7 +258,7 @@ describe('Auth (e2e)', () => {
 		});
 
 		it('should return 200 when email is verified', async () => {
-			const response = await request(app.getHttpServer()).get(`/api/auth/confirm/${user_id}/${token}`).expect(200);
+			const response = await request(app.getHttpServer()).get(`/auth/confirm/${user_id}/${token}`).expect(200);
 
 			expect(response.body).toEqual({
 				age: expect.any(Number),
@@ -304,7 +301,7 @@ describe('Auth (e2e)', () => {
 
 		it('should return 308 when redirect_url is provided', async () => {
 			const response = await request(app.getHttpServer())
-				.get(`/api/auth/confirm/${user_id}/${token}/${encodeURIComponent('https://example.com')}`)
+				.get(`/auth/confirm/${user_id}/${token}/${encodeURIComponent('https://example.com')}`)
 				.expect(308);
 
 			expect((response.header as { location: string }).location).toEqual('https://example.com');

@@ -17,14 +17,14 @@ describe('Promotions (e2e)', () => {
 	beforeAll(async () => {
 		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
 
-		const resA: res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const resA: res = await request(app.getHttpServer()).post('/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
 		});
 
 		tokenUnauthorized = resA.body.token;
 
-		const resB: res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const resB: res = await request(app.getHttpServer()).post('/auth/login').send({
 			email: 'promos@email.com',
 			password: 'root',
 		});
@@ -32,9 +32,9 @@ describe('Promotions (e2e)', () => {
 		tokenPromotionModerator = resB.body.token;
 	});
 
-	describe('/api/promotions (GET)', () => {
+	describe('/promotions (GET)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).get('/api/promotions');
+			const response = await request(app.getHttpServer()).get('/promotions');
 
 			expect(response.body).toEqual({
 				statusCode: 401,
@@ -44,7 +44,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 403 when the user is not authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/promotions')
+				.get('/promotions')
 				.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
 			expect(response.body).toEqual({
@@ -56,7 +56,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 200 when the user is authorized and return all existing promotions', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/promotions')
+				.get('/promotions')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 			// Expect that all elements in the array have the same type
@@ -77,9 +77,9 @@ describe('Promotions (e2e)', () => {
 		});
 	});
 
-	describe('/api/promotions/:id (GET)', () => {
+	describe('/promotions/:id (GET)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).get('/api/promotions/21');
+			const response = await request(app.getHttpServer()).get('/promotions/21');
 
 			expect(response.body).toEqual({
 				statusCode: 401,
@@ -89,7 +89,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 403 when the user is not authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/promotions/21')
+				.get('/promotions/21')
 				.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
 			expect(response.body).toEqual({
@@ -101,7 +101,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 404 when the promotion does not exist', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/promotions/999999')
+				.get('/promotions/999999')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 			expect(response.body).toEqual({
@@ -113,7 +113,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 200 when the promotion exists and return it', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/promotions/21')
+				.get('/promotions/21')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 			expect(response.body).toEqual({
@@ -127,9 +127,9 @@ describe('Promotions (e2e)', () => {
 		});
 	});
 
-	describe('/api/promotions/:id/users (GET)', () => {
+	describe('/promotions/:id/users (GET)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).get('/api/promotions/21/users');
+			const response = await request(app.getHttpServer()).get('/promotions/21/users');
 
 			expect(response.body).toEqual({
 				statusCode: 401,
@@ -139,7 +139,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 403 when the user is not authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/promotions/21/users')
+				.get('/promotions/21/users')
 				.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
 			expect(response.body).toEqual({
@@ -151,7 +151,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 404 when the promotion does not exist', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/promotions/999999/users')
+				.get('/promotions/999999/users')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 			expect(response.body).toEqual({
@@ -163,7 +163,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 200 when the promotion exists and return users', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/promotions/21/users')
+				.get('/promotions/21/users')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 			expect(response.body).toEqual([
@@ -179,9 +179,9 @@ describe('Promotions (e2e)', () => {
 		});
 	});
 
-	describe('/api/promotions/:id/logo (GET)', () => {
+	describe('/promotions/:id/logo (GET)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).get('/api/promotions/21/logo');
+			const response = await request(app.getHttpServer()).get('/promotions/21/logo');
 
 			expect(response.body).toEqual({
 				statusCode: 401,
@@ -191,7 +191,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 403 when the user is not authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/promotions/21/logo')
+				.get('/promotions/21/logo')
 				.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
 			expect(response.body).toEqual({
@@ -203,7 +203,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 404 when the promotion does not exist', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/promotions/999999/logo')
+				.get('/promotions/999999/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 			expect(response.body).toEqual({
@@ -215,7 +215,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 404 when the promotion does not have a logo', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/promotions/21/logo')
+				.get('/promotions/21/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 			expect(response.body).toEqual({
@@ -239,7 +239,7 @@ describe('Promotions (e2e)', () => {
 			// ------------------------------
 
 			const response = await request(app.getHttpServer())
-				.get('/api/promotions/21/logo')
+				.get('/promotions/21/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 			expect(response.body).toBeDefined();
@@ -251,9 +251,9 @@ describe('Promotions (e2e)', () => {
 		});
 	});
 
-	describe('/api/promotions/:id/logo (POST)', () => {
+	describe('/promotions/:id/logo (POST)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).post('/api/promotions/21/logo');
+			const response = await request(app.getHttpServer()).post('/promotions/21/logo');
 
 			expect(response.body).toEqual({
 				statusCode: 401,
@@ -263,7 +263,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 403 when the user is not authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/promotions/21/logo')
+				.post('/promotions/21/logo')
 				.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
 			expect(response.body).toEqual({
@@ -275,7 +275,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 404 when the promotion does not exist', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/promotions/999999/logo')
+				.post('/promotions/999999/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 			expect(response.body).toEqual({
@@ -287,7 +287,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 400 when the file is not an image', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/promotions/21/logo')
+				.post('/promotions/21/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`)
 				.attach('file', './tests/files/text_file.txt');
 
@@ -300,7 +300,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 400 when the file is not 1:1 ratio', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/promotions/21/logo')
+				.post('/promotions/21/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`)
 				.attach('file', './tests/files/promo_21_not_square.png');
 
@@ -315,7 +315,7 @@ describe('Promotions (e2e)', () => {
 			// * Note: The logo is deleted in 'should return 200 when the promotion exists and delete the logo' * //
 
 			const response = await request(app.getHttpServer())
-				.post('/api/promotions/21/logo')
+				.post('/promotions/21/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`)
 				.attach('file', `./tests/files/promo_21.png`);
 
@@ -350,7 +350,7 @@ describe('Promotions (e2e)', () => {
 			const oldLogo = await orm.em.findOne(PromotionPicture, { promotion: 21 });
 
 			const response = await request(app.getHttpServer())
-				.post('/api/promotions/21/logo')
+				.post('/promotions/21/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`)
 				.attach('file', `./tests/files/promo_21.png`);
 
@@ -382,9 +382,9 @@ describe('Promotions (e2e)', () => {
 		});
 	});
 
-	describe('/api/promotions/:id/logo (DELETE)', () => {
+	describe('/promotions/:id/logo (DELETE)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).delete('/api/promotions/21/logo');
+			const response = await request(app.getHttpServer()).delete('/promotions/21/logo');
 
 			expect(response.body).toEqual({
 				statusCode: 401,
@@ -394,7 +394,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 403 when the user is not authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.delete('/api/promotions/21/logo')
+				.delete('/promotions/21/logo')
 				.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
 			expect(response.body).toEqual({
@@ -406,7 +406,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 404 when the promotion does not exist', async () => {
 			const response = await request(app.getHttpServer())
-				.delete('/api/promotions/999999/logo')
+				.delete('/promotions/999999/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 			expect(response.body).toEqual({
@@ -418,7 +418,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 404 when the promotion does not have a logo', async () => {
 			const response = await request(app.getHttpServer())
-				.delete('/api/promotions/20/logo')
+				.delete('/promotions/20/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 			expect(response.body).toEqual({
@@ -433,7 +433,7 @@ describe('Promotions (e2e)', () => {
 			const logo = await orm.em.findOne(PromotionPicture, { promotion: 21 });
 
 			const response = await request(app.getHttpServer())
-				.delete('/api/promotions/21/logo')
+				.delete('/promotions/21/logo')
 				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 			expect(response.body).toEqual({

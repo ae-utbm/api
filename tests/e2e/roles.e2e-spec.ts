@@ -12,14 +12,14 @@ describe('Roles', () => {
 	beforeAll(async () => {
 		type res = Omit<request.Response, 'body'> & { body: { token: string } };
 
-		const resA: res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const resA: res = await request(app.getHttpServer()).post('/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
 		});
 
 		tokenUnauthorized = resA.body.token;
 
-		const resB: res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const resB: res = await request(app.getHttpServer()).post('/auth/login').send({
 			email: 'roles@email.com',
 			password: 'root',
 		});
@@ -27,9 +27,9 @@ describe('Roles', () => {
 		tokenRolesModerator = resB.body.token;
 	});
 
-	describe('/api/roles (GET)', () => {
+	describe('/roles (GET)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).get('/api/roles').expect(401);
+			const response = await request(app.getHttpServer()).get('/roles').expect(401);
 
 			expect(response.body).toEqual({
 				statusCode: 401,
@@ -39,7 +39,7 @@ describe('Roles', () => {
 
 		it('should return 403 when the user is not authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/roles')
+				.get('/roles')
 				.set('Authorization', `Bearer ${tokenUnauthorized}`)
 				.expect(403);
 
@@ -52,7 +52,7 @@ describe('Roles', () => {
 
 		it('should return 200 when the user is authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.get('/api/roles')
+				.get('/roles')
 				.set('Authorization', `Bearer ${tokenRolesModerator}`)
 				.expect(200);
 
@@ -75,9 +75,9 @@ describe('Roles', () => {
 		});
 	});
 
-	describe('/api/roles (POST)', () => {
+	describe('/roles (POST)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).post('/api/roles').expect(401);
+			const response = await request(app.getHttpServer()).post('/roles').expect(401);
 
 			expect(response.body).toEqual({
 				statusCode: 401,
@@ -87,7 +87,7 @@ describe('Roles', () => {
 
 		it('should return 403 when the user is not authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/roles')
+				.post('/roles')
 				.set('Authorization', `Bearer ${tokenUnauthorized}`)
 				.expect(403);
 
@@ -100,7 +100,7 @@ describe('Roles', () => {
 
 		it('should return 400 when the body is invalid', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/roles')
+				.post('/roles')
 				.set('Authorization', `Bearer ${tokenRolesModerator}`)
 				.send({
 					name: 'test',
@@ -117,7 +117,7 @@ describe('Roles', () => {
 
 		it('should return 400 when one of the permissions is invalid', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/roles')
+				.post('/roles')
 				.set('Authorization', `Bearer ${tokenRolesModerator}`)
 				.send({
 					name: 'test',
@@ -135,7 +135,7 @@ describe('Roles', () => {
 
 		it('should return 400 when a role with the same name already exists', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/roles')
+				.post('/roles')
 				.set('Authorization', `Bearer ${tokenRolesModerator}`)
 				.send({
 					name: 'PERMISSIONS_MODERATOR',
@@ -153,7 +153,7 @@ describe('Roles', () => {
 
 		it('should return 201 when the role is created', async () => {
 			const response = await request(app.getHttpServer())
-				.post('/api/roles')
+				.post('/roles')
 				.set('Authorization', `Bearer ${tokenRolesModerator}`)
 				.send({
 					name: 'test_role',

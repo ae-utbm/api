@@ -20,7 +20,7 @@ describe('Logs (e2e)', () => {
 	beforeAll(async () => {
 		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
 
-		const responseA: res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const responseA: res = await request(app.getHttpServer()).post('/auth/login').send({
 			email: 'unverified@email.com',
 			password: 'root',
 		});
@@ -28,7 +28,7 @@ describe('Logs (e2e)', () => {
 		tokenUnverified = responseA.body.token;
 		userIdUnverified = responseA.body.user_id;
 
-		const responseB: res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const responseB: res = await request(app.getHttpServer()).post('/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
 		});
@@ -36,7 +36,7 @@ describe('Logs (e2e)', () => {
 		tokenUnauthorized = responseB.body.token;
 		userIdUnauthorized = responseB.body.user_id;
 
-		const responseC: res = await request(app.getHttpServer()).post('/api/auth/login').send({
+		const responseC: res = await request(app.getHttpServer()).post('/auth/login').send({
 			email: 'logs@email.com',
 			password: 'root',
 		});
@@ -45,9 +45,9 @@ describe('Logs (e2e)', () => {
 		userIdLogModerator = responseC.body.user_id;
 	});
 
-	describe('/api/logs/user/{user_id} (GET)', () => {
+	describe('/logs/user/{user_id} (GET)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).get('/api/logs/user/1').expect(401);
+			const response = await request(app.getHttpServer()).get('/logs/user/1').expect(401);
 
 			expect(response.body).toEqual({
 				// TODO: add an error message ('Unauthorized') and translate the message field (add more context too)
@@ -58,7 +58,7 @@ describe('Logs (e2e)', () => {
 
 		it('should return 403 when the user is not the same as the user ID in the request', async () => {
 			const response = await request(app.getHttpServer())
-				.get(`/api/logs/user/${userIdUnverified}`)
+				.get(`/logs/user/${userIdUnverified}`)
 				.set('Authorization', `Bearer ${tokenUnauthorized}`)
 				.expect(403);
 
@@ -73,7 +73,7 @@ describe('Logs (e2e)', () => {
 			const fakeId = 9999;
 
 			const response = await request(app.getHttpServer())
-				.get(`/api/logs/user/${fakeId}`)
+				.get(`/logs/user/${fakeId}`)
 				.set('Authorization', `Bearer ${tokenLogModerator}`)
 				.expect(404);
 
@@ -88,7 +88,7 @@ describe('Logs (e2e)', () => {
 			const fakeId = 'invalid';
 
 			const response = await request(app.getHttpServer())
-				.get(`/api/logs/user/${fakeId}`)
+				.get(`/logs/user/${fakeId}`)
 				.set('Authorization', `Bearer ${tokenLogModerator}`)
 				.expect(400);
 
@@ -101,7 +101,7 @@ describe('Logs (e2e)', () => {
 
 		it('should return 401 when user is not verified', async () => {
 			const response = await request(app.getHttpServer())
-				.get(`/api/logs/user/${userIdUnverified}`)
+				.get(`/logs/user/${userIdUnverified}`)
 				.set('Authorization', `Bearer ${tokenUnverified}`)
 				.expect(401);
 
@@ -114,7 +114,7 @@ describe('Logs (e2e)', () => {
 
 		it('should return 200 when user is asking for himself', async () => {
 			const response = await request(app.getHttpServer())
-				.get(`/api/logs/user/${userIdUnauthorized}`)
+				.get(`/logs/user/${userIdUnauthorized}`)
 				.set('Authorization', `Bearer ${tokenUnauthorized}`)
 				.expect(200);
 
@@ -128,7 +128,7 @@ describe('Logs (e2e)', () => {
 
 		it('should return 200 when user is asking for another user with the right permission', async () => {
 			const response = await request(app.getHttpServer())
-				.get(`/api/logs/user/${userIdUnauthorized}`)
+				.get(`/logs/user/${userIdUnauthorized}`)
 				.set('Authorization', `Bearer ${tokenLogModerator}`)
 				.expect(200);
 
@@ -162,7 +162,7 @@ describe('Logs (e2e)', () => {
 
 		it('should return 403 when user is asking for another user without the permission', async () => {
 			const response = await request(app.getHttpServer())
-				.get(`/api/logs/user/${userIdLogModerator}`)
+				.get(`/logs/user/${userIdLogModerator}`)
 				.set('Authorization', `Bearer ${tokenUnauthorized}`)
 				.expect(403);
 
@@ -174,9 +174,9 @@ describe('Logs (e2e)', () => {
 		});
 	});
 
-	describe('/api/logs/{user} (DELETE)', () => {
+	describe('/logs/{user} (DELETE)', () => {
 		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).get('/api/logs/user/1').expect(401);
+			const response = await request(app.getHttpServer()).get('/logs/user/1').expect(401);
 
 			expect(response.body).toEqual({
 				// TODO: add an error message ('Unauthorized') and translate the message field (add more context too)
@@ -187,7 +187,7 @@ describe('Logs (e2e)', () => {
 
 		it('should return 403 when the user is not authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.get(`/api/logs/user/${userIdUnverified}`)
+				.get(`/logs/user/${userIdUnverified}`)
 				.set('Authorization', `Bearer ${tokenUnauthorized}`)
 				.expect(403);
 
@@ -202,7 +202,7 @@ describe('Logs (e2e)', () => {
 			const fakeId = 'invalid';
 
 			const response = await request(app.getHttpServer())
-				.delete(`/api/logs/user/${fakeId}`)
+				.delete(`/logs/user/${fakeId}`)
 				.set('Authorization', `Bearer ${tokenLogModerator}`)
 				.expect(400);
 
@@ -215,7 +215,7 @@ describe('Logs (e2e)', () => {
 
 		it('should return 200 when the user is authorized', async () => {
 			const response = await request(app.getHttpServer())
-				.delete(`/api/logs/user/${userIdLogModerator}`)
+				.delete(`/logs/user/${userIdLogModerator}`)
 				.set('Authorization', `Bearer ${tokenLogModerator}`)
 				.expect(200);
 
