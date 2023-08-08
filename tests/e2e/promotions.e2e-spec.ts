@@ -334,6 +334,8 @@ describe('Promotions (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 117280,
 					visibility: null,
+					is_public: true,
+					is_hidden: false,
 				},
 			});
 
@@ -369,6 +371,8 @@ describe('Promotions (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 117280,
 					visibility: null,
+					is_public: true,
+					is_hidden: false,
 				},
 			});
 
