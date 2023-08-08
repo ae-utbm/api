@@ -69,13 +69,13 @@ export class User
 
 	@Property({ type: 'date' })
 	@ApiProperty()
-	birthday: Date;
+	birth_date: Date;
 
 	/** The age of the user */
 	@Property({ persist: false })
 	@ApiProperty()
 	get age(): number {
-		const diff = Date.now() - this.birthday.getTime();
+		const diff = Date.now() - this.birth_date.getTime();
 		const age = new Date(diff);
 		return Math.abs(age.getUTCFullYear() - 1970);
 	}

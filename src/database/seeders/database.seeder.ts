@@ -114,7 +114,7 @@ export class DatabaseSeeder extends Seeder {
 				first_name: 'root',
 				last_name: 'root',
 				nickname: 'noot noot',
-				birthday: new Date('2000-01-01'),
+				birth_date: new Date('2000-01-01'),
 			},
 			// Unverified user
 			// > Email not verified
@@ -125,7 +125,7 @@ export class DatabaseSeeder extends Seeder {
 				password: hashSync('root', 10),
 				first_name: 'unverified',
 				last_name: 'user',
-				birthday: new Date('2000-01-01'),
+				birth_date: new Date('2000-01-01'),
 			},
 			// Unauthorized user
 			// > No permissions (but email verified)
@@ -135,7 +135,7 @@ export class DatabaseSeeder extends Seeder {
 				password: hashSync('root', 10),
 				first_name: 'unauthorized',
 				last_name: 'user',
-				birthday: new Date('2000-01-01'),
+				birth_date: new Date('2000-01-01'),
 			},
 			// Logs user
 			// > CAN_READ_LOGS_OF_USER & CAN_EDIT_LOGS_OF_USER permissions
@@ -145,7 +145,7 @@ export class DatabaseSeeder extends Seeder {
 				password: hashSync('root', 10),
 				first_name: 'logs',
 				last_name: 'moderator',
-				birthday: new Date('2000-01-01'),
+				birth_date: new Date('2000-01-01'),
 			},
 			// Permission moderator user
 			// > CAN_READ_PERMISSIONS_OF_USER & CAN_EDIT_PERMISSIONS_OF_USER permissions
@@ -155,7 +155,7 @@ export class DatabaseSeeder extends Seeder {
 				password: hashSync('root', 10),
 				first_name: 'perms',
 				last_name: 'moderator',
-				birthday: new Date('2000-01-01'),
+				birth_date: new Date('2000-01-01'),
 			},
 			// Promotion moderator user
 			// > CAN_READ_PROMOTION & CAN_EDIT_PROMOTION permissions
@@ -165,7 +165,7 @@ export class DatabaseSeeder extends Seeder {
 				password: hashSync('root', 10),
 				first_name: 'promos',
 				last_name: 'moderator',
-				birthday: new Date('2000-01-01'),
+				birth_date: new Date('2000-01-01'),
 			},
 			// Role moderator user
 			// > CAN_READ_ROLE & CAN_EDIT_ROLE permissions
@@ -175,7 +175,7 @@ export class DatabaseSeeder extends Seeder {
 				password: hashSync('root', 10),
 				first_name: 'promos',
 				last_name: 'moderator',
-				birthday: new Date('2000-01-01'),
+				birth_date: new Date('2000-01-01'),
 			},
 		];
 
