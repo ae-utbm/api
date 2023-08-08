@@ -49,7 +49,7 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
 	if (!transporter || env().email.disabled) return;
 
 	await transporter.sendMail({
-		from: options.from ?? `ae.noreply@utbm.fr`,
+		from: options.from ?? `noreply@ae.utbm.fr`,
 		to: options.to.join(', '),
 		subject: options.subject,
 		html: options.html,

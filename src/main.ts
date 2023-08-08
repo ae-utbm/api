@@ -15,7 +15,6 @@ import './utils';
  */
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule);
-	app.setGlobalPrefix('api');
 	app.enableCors({ origin: env().cors });
 	app.useStaticAssets(env().files.baseDir, { index: false, prefix: '/public' });
 	app.useStaticAssets('./src/swagger', { index: false, prefix: '/public' });
@@ -28,7 +27,7 @@ async function bootstrap() {
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config);
-	SwaggerModule.setup('api', app, document, {
+	SwaggerModule.setup('', app, document, {
 		customCssUrl: '/public/swagger.css',
 		customJs: '/public/swagger.js',
 		customfavIcon: '/public/ae_base.png',
@@ -41,7 +40,7 @@ async function bootstrap() {
 
 	await app.listen(env().port);
 
-	Logger.log(`Server running on http://localhost:${env().port}/api`, 'Swagger');
+	Logger.log(`Server running on http://localhost:${env().port}`, 'Swagger');
 }
 
 bootstrap()
