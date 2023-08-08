@@ -13,7 +13,6 @@
     "chrisbibby.hide-node-modules",
     "esbenp.prettier-vscode",
     "yoavbls.pretty-ts-errors",
-    "pkief.material-icon-theme",
-		"orsenkucher.vscode-graphql"
+    "pkief.material-icon-theme"
   ]
 }
