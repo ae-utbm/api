@@ -54,7 +54,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           DEBUG: true
-          EMAIL_ENABLED: true
+          EMAIL_ENABLED: false
           JWT_KEY: secret_jwt_key
 
       - name: Export coverage results
