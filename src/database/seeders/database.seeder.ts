@@ -3,6 +3,7 @@ import type { EntityManager } from '@mikro-orm/core';
 import { Seeder } from '@mikro-orm/seeder';
 import { hashSync } from 'bcrypt';
 
+import { FileVisibilityGroup } from '@modules/files/entities/file-visibility.entity';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
 import { Role } from '@modules/roles/entities/role.entity';
@@ -18,12 +19,14 @@ export class DatabaseSeeder extends Seeder {
 		const promotions = this.create_promotions(em);
 		const users = this.create_users(em);
 		const roles = this.create_roles(em);
+		const visibility_groups = this.create_visibility_groups(em);
 
 		const rootUser = users.find((u) => u.email === 'ae.info@utbm.fr');
 		const logsUser = users.find((u) => u.email === 'logs@email.com');
 		const permUser = users.find((u) => u.email === 'perms@email.com');
 		const promosUser = users.find((u) => u.email === 'promos@email.com');
 		const rolesUser = users.find((u) => u.email === 'roles@email.com');
+		const subscribedUser = users.find((u) => u.email === 'subscriber@email.com');
 
 		// Assign permission to users
 		const perms = [
@@ -54,7 +57,10 @@ export class DatabaseSeeder extends Seeder {
 		// Assign promotion to users
 		rootUser.promotion = promotions.find((p) => p.number === 21);
 
-		await em.persistAndFlush([...users, ...perms, ...promotions, ...roles]);
+		// Assign visibility groups to users
+		subscribedUser.files_visibility_groups.add(visibility_groups.find((v) => v.name === 'SUBSCRIBER'));
+
+		await em.persistAndFlush([...users, ...perms, ...promotions, ...roles, ...visibility_groups]);
 	}
 
 	create_promotions(em: EntityManager): Promotion[] {
@@ -177,12 +183,38 @@ export class DatabaseSeeder extends Seeder {
 				last_name: 'moderator',
 				birth_date: new Date('2000-01-01'),
 			},
+			// Subscriber
+			{
+				email: 'subscriber@email.com',
+				email_verified: true,
+				password: hashSync('root', 10),
+				first_name: 'subscribed',
+				last_name: 'user',
+				birth_date: new Date('2000-01-01'),
+			},
 		];
 
 		for (const user of users) {
 			const u = em.create(User, user);
 			em.create(UserVisibility, { user: u });
 			res.push(u);
+		}
+
+		return res;
+	}
+
+	create_visibility_groups(em: EntityManager): FileVisibilityGroup[] {
+		const res: FileVisibilityGroup[] = [];
+
+		const visibilities: Partial<FileVisibilityGroup>[] = [
+			{
+				name: 'SUBSCRIBER',
+				description: 'Files visible to subscribers',
+			},
+		];
+
+		for (const visibility of visibilities) {
+			res.push(em.create(FileVisibilityGroup, visibility));
 		}
 
 		return res;
