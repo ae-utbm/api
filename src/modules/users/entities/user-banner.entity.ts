@@ -7,9 +7,9 @@ import { File } from '@modules/files/entities/file.entity';
 
 import { User } from './user.entity';
 
-@Entity({ tableName: 'users_banners' })
+@Entity()
 export class UserBanner extends File implements UserBannerEntity<User> {
 	@ApiProperty({ type: Number, minimum: 1 })
-	@OneToOne(() => User, (user) => user.banner, { owner: true, unique: true })
-	user: User;
+	@OneToOne(() => User, (user) => user.banner, { nullable: true, owner: true })
+	banner_user: User;
 }

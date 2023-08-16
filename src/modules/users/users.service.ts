@@ -1,7 +1,6 @@
 import type { I18nTranslations } from '@types';
 
-import fs from 'fs';
-import path from 'path';
+import { join } from 'path';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
@@ -12,13 +11,13 @@ import { I18nContext, I18nService } from 'nestjs-i18n';
 
 import { Errors } from '@i18n';
 import { UserPostByAdminDTO, UserPostDTO } from '@modules/auth/dto/register.dto';
+import { FilesService } from '@modules/files/files.service';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
 import { User } from '@modules/users/entities/user.entity';
 import { checkBirthDate } from '@utils/dates';
 import { checkEmail, sendEmail } from '@utils/email';
-import { convertToWebp, hasAspectRatio } from '@utils/images';
 import { checkPasswordStrength, generateRandomPassword } from '@utils/password';
 import { getTemplate } from '@utils/template';
 import { validateObject } from '@utils/validate';
@@ -31,6 +30,7 @@ export class UsersService {
 		private readonly i18n: I18nService<I18nTranslations>,
 		private readonly configService: ConfigService,
 		private readonly orm: MikroORM,
+		private readonly filesService: FilesService,
 	) {}
 
 	/**
@@ -252,59 +252,47 @@ export class UsersService {
 		return user;
 	}
 
-	// TODO : Refactor using promotion picture as an example
 	@UseRequestContext()
-	async updatePicture({ id, file }: { id: number; file: Express.Multer.File }) {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['*', 'picture'] });
+	async updatePicture(id: number, file: Express.Multer.File): Promise<User> {
+		const user = await this.orm.em.findOne(User, { id });
+		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id, i18n: this.i18n }));
 
-		// TODO: add a check to autorise the user to change his picture if he has the associated permission
-		// -> the user needs to be the one sending the request, not the one targeted by the request
-		if (
-			user.picture &&
-			0 <
-				this.configService.get<number>('files.usersPicturesDelay') * 1000 -
-					(new Date().getTime() - new Date(user.picture.updated_at).getTime())
-		)
-			throw new UnauthorizedException('You can only change your picture once a week');
+		const fileInfos = await this.filesService.writeWebpFile(file, {
+			directory: join(this.configService.get<string>('files.users'), 'pictures'),
+			filename: user.full_name.replaceAll(' ', '_'),
+			aspectRatio: '1:1',
+		});
 
-		const { buffer, mimetype } = file;
-		const imageDir = path.join(this.configService.get<string>('files.users'), 'pictures');
-		const extension = mimetype.replace('image/', '.');
-		const filename = `${user.id}${extension}`;
-		const imagePath = path.join(imageDir, filename);
+		// Remove old file if present
+		if (user.picture) {
+			await user.picture.init();
+			this.filesService.deleteFileOnDisk(user.picture);
 
-		// write the file
-		fs.mkdirSync(imageDir, { recursive: true });
-		fs.writeFileSync(imagePath, buffer);
+			user.picture.filename = fileInfos.filename;
+			user.picture.mimetype = `image/${fileInfos.extension}`;
+			user.picture.description = `Picture of ${user.full_name}`;
+			user.picture.path = fileInfos.filepath;
+			user.picture.size = fileInfos.size;
 
-		// test if the image is square
-		if (!(await hasAspectRatio(buffer, '1:1'))) {
-			fs.rmSync(imagePath);
-			throw new BadRequestException('The user picture must be square');
-		}
-
-		// remove the old picture (if any)
-		if (user.picture && user.picture.path && user.picture.path !== imagePath) fs.rmSync(user.picture.path);
-
-		// convert to webp
-		fs.createWriteStream(await convertToWebp(buffer));
-
-		// update database
-		if (!user.picture)
+			await this.orm.em.persistAndFlush(user.picture);
+		} else
 			user.picture = this.orm.em.create(UserPicture, {
-				filename,
-				mimetype,
-				path: imagePath.replace(extension, '.webp'),
-				user,
+				filename: fileInfos.filename,
+				mimetype: `image/${fileInfos.extension}`,
+				description: `Picture of ${user.full_name}`,
+				path: fileInfos.filepath,
+				picture_user: user,
+				size: fileInfos.size,
+				visibility: await this.filesService.getVisibilityGroup(),
 			});
-		else {
-			user.picture.filename = filename;
-			user.picture.mimetype = 'image/webp';
-			user.picture.updated_at = new Date();
-			user.picture.path = imagePath.replace(extension, '.webp');
-		}
 
 		await this.orm.em.persistAndFlush(user);
+
+		// Fix issue with the picture not being populated
+		// -> happens when the picture is updated
+		const out = await this.orm.em.findOne(User, { id }, { fields: ['*'], populate: ['picture'] });
+		delete out.picture.picture_user; // avoid circular reference
+		return out;
 	}
 
 	@UseRequestContext()
@@ -319,59 +307,58 @@ export class UsersService {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['picture'] });
 		if (!user.picture) throw new NotFoundException('User has no picture to be deleted');
 
-		fs.rmSync(user.picture.path);
+		await user.picture.init();
+		this.filesService.deleteFileOnDisk(user.picture);
 		await this.orm.em.removeAndFlush(user.picture);
 	}
 
-	// TODO: Refactor using promotion picture as an example
 	@UseRequestContext()
-	async updateBanner({ id, file }: { id: number; file: Express.Multer.File }) {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['*', 'banner'] });
+	async updateBanner(id: number, file: Express.Multer.File): Promise<User> {
+		const user = await this.orm.em.findOne(User, { id });
+		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id, i18n: this.i18n }));
 
-		const { buffer, mimetype } = file;
-		const imageDir = path.join(this.configService.get<string>('files.users'), 'banners');
-		const extension = mimetype.replace('image/', '.');
-		const filename = `${user.id}${extension}`;
-		const imagePath = path.join(imageDir, filename);
+		const fileInfos = await this.filesService.writeWebpFile(file, {
+			directory: join(this.configService.get<string>('files.users'), 'banners'),
+			filename: user.full_name.replaceAll(' ', '_'),
+			aspectRatio: '1:1',
+		});
 
-		// write the file
-		fs.mkdirSync(imageDir, { recursive: true });
-		fs.writeFileSync(imagePath, buffer);
+		// Remove old file if present
+		if (user.banner) {
+			await user.banner.init();
+			this.filesService.deleteFileOnDisk(user.banner);
 
-		// test if the image is square
-		if (!(await hasAspectRatio(buffer, '1:3'))) {
-			fs.rmSync(imagePath);
-			throw new BadRequestException('The image must be of 1:3 aspect ratio');
-		}
+			user.banner.filename = fileInfos.filename;
+			user.banner.mimetype = `image/${fileInfos.extension}`;
+			user.banner.description = `Banner of ${user.full_name}`;
+			user.banner.path = fileInfos.filepath;
+			user.banner.size = fileInfos.size;
 
-		// remove old banner if path differs
-		if (user.banner && user.banner.path && user.banner.path !== imagePath) fs.rmSync(user.banner.path);
-
-		// convert to webp
-		fs.createWriteStream(await convertToWebp(buffer));
-
-		// update database
-		if (!user.banner)
+			await this.orm.em.persistAndFlush(user.banner);
+		} else
 			user.banner = this.orm.em.create(UserBanner, {
-				filename,
-				mimetype,
-				path: imagePath.replace(extension, '.webp'),
-				user,
+				filename: fileInfos.filename,
+				mimetype: `image/${fileInfos.extension}`,
+				description: `Banner of ${user.full_name}`,
+				path: fileInfos.filepath,
+				banner_user: user,
+				size: fileInfos.size,
+				visibility: await this.filesService.getVisibilityGroup(),
 			});
-		else {
-			user.banner.filename = filename;
-			user.banner.mimetype = 'image/webp';
-			user.banner.path = imagePath.replace(extension, '.webp');
-		}
 
 		await this.orm.em.persistAndFlush(user);
+
+		// Fix issue with the banner not being populated
+		// -> happens when the banner is updated
+		const out = await this.orm.em.findOne(User, { id }, { fields: ['*'], populate: ['banner'] });
+		delete out.banner.banner_user; // avoid circular reference
+		return out;
 	}
 
 	@UseRequestContext()
 	async getBanner(id: number): Promise<UserBanner> {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['banner'] });
 		if (!user.banner) throw new NotFoundException('User has no banner');
-
 		return user.banner;
 	}
 
@@ -380,7 +367,8 @@ export class UsersService {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['banner'] });
 		if (!user.banner) throw new NotFoundException('User has no banner to be deleted');
 
-		fs.rmSync(user.banner.path);
+		await user.banner.init();
+		this.filesService.deleteFileOnDisk(user.banner);
 		await this.orm.em.removeAndFlush(user.banner);
 	}
 

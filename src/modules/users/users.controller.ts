@@ -1,3 +1,4 @@
+import type { RequestWithUser } from '@types';
 import type { Request } from 'express';
 
 import {
@@ -10,6 +11,7 @@ import {
 	Post,
 	Req,
 	StreamableFile,
+	UnauthorizedException,
 	UploadedFile,
 	UseGuards,
 	UseInterceptors,
@@ -31,8 +33,8 @@ import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.d
 import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
+import { FilesService } from '@modules/files/files.service';
 import { Role } from '@modules/roles/entities/role.entity';
-import { toReadable } from '@utils/images';
 
 import { UserPatchDTO } from './dto/patch.dto';
 import { UserVisibility } from './entities/user-visibility.entity';
@@ -44,7 +46,7 @@ import { UsersService } from './users.service';
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
 export class UsersController {
-	constructor(private readonly usersService: UsersService) {}
+	constructor(private readonly usersService: UsersService, private readonly filesService: FilesService) {}
 
 	@Post()
 	@UseGuards(PermissionGuard)
@@ -124,7 +126,7 @@ export class UsersController {
 	})
 	@UseInterceptors(FileInterceptor('file'))
 	async editPicture(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
-		return this.usersService.updatePicture({ id, file });
+		return this.usersService.updatePicture(id, file);
 	}
 
 	@Delete(':id/picture')
@@ -141,9 +143,13 @@ export class UsersController {
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER'])
 	@ApiOperation({ summary: 'Get user profile picture' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getPicture(@Param('id') id: number) {
+	async getPicture(@Req() req: RequestWithUser, @Param('id') id: number) {
 		const picture = await this.usersService.getPicture(id);
-		return new StreamableFile(toReadable(picture.path));
+
+		if (await this.filesService.canReadFile(picture, req.user as User))
+			return new StreamableFile(this.filesService.toReadable(picture));
+
+		throw new UnauthorizedException();
 	}
 
 	@Post(':id/banner')
@@ -165,7 +171,7 @@ export class UsersController {
 	})
 	@UseInterceptors(FileInterceptor('file'))
 	async editBanner(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
-		return this.usersService.updateBanner({ id, file });
+		return this.usersService.updateBanner(id, file);
 	}
 
 	@Delete(':id/banner')
@@ -182,9 +188,13 @@ export class UsersController {
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Get user profile banner' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getBanner(@Param('id') id: number) {
+	async getBanner(@Req() req: RequestWithUser, @Param('id') id: number) {
 		const banner = await this.usersService.getBanner(id);
-		return new StreamableFile(toReadable(banner.path));
+
+		if (await this.filesService.canReadFile(banner, req.user as User))
+			return new StreamableFile(this.filesService.toReadable(banner));
+
+		throw new UnauthorizedException();
 	}
 
 	@Get(':id/roles')

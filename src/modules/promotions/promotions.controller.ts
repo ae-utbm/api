@@ -26,7 +26,7 @@ import {
 
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
-import { toReadable } from '@utils/images';
+import { FilesService } from '@modules/files/files.service';
 
 import { PromotionResponseDTO } from './dto/promotion.dto';
 import { Promotion } from './entities/promotion.entity';
@@ -38,7 +38,7 @@ import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
 export class PromotionsController {
-	constructor(private readonly promotionsService: PromotionsService) {}
+	constructor(private readonly promotionsService: PromotionsService, private readonly filesService: FilesService) {}
 
 	@Get()
 	@UseGuards(PermissionGuard)
@@ -86,7 +86,7 @@ export class PromotionsController {
 	@ApiNotFoundResponse({ description: 'Promotion not found or promotion has no logo' })
 	async getLogo(@Param('number') number: number) {
 		const logo = await this.promotionsService.getLogo(number);
-		return new StreamableFile(toReadable(logo.path));
+		return new StreamableFile(this.filesService.toReadable(logo));
 	}
 
 	@Delete(':number/logo')

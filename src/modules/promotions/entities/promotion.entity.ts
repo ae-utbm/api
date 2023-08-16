@@ -18,7 +18,7 @@ export class Promotion extends BaseEntity implements PromotionEntity<PromotionPi
 	@ApiProperty({ type: Number })
 	users: Collection<User>;
 
-	@OneToOne(() => PromotionPicture, (picture) => picture.promotion, { cascade: [Cascade.ALL], nullable: true })
+	@OneToOne(() => PromotionPicture, (picture) => picture.picture_promotion, { cascade: [Cascade.ALL], nullable: true })
 	@ApiProperty({ type: PromotionPicture })
 	picture?: PromotionPicture;
 }

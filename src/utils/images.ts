@@ -1,8 +1,5 @@
 import type { aspect_ratio } from '@types';
 
-import { readFileSync } from 'fs';
-import { Readable } from 'stream';
-
 import sharp from 'sharp';
 
 /**
@@ -40,21 +37,4 @@ export async function convertToWebp(buffer: Buffer): Promise<Buffer> {
 export async function getFileExtension(buffer: Buffer): Promise<string> {
 	const { format } = await sharp(buffer).metadata();
 	return format;
-}
-
-/**
- * @param {string} filepath The path of the file to get the stream
- * @returns {Readable} The stream of the file
- */
-export function toReadable(filepath: string): Readable {
-	const readable = new Readable({
-		read() {
-			// Implement your logic to read data from the file and push it into the stream
-			const data = readFileSync(filepath, 'utf-8');
-			this.push(data);
-			this.push(null); // Signal the end of the stream
-		},
-	});
-
-	return readable;
 }

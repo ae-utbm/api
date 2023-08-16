@@ -1,17 +1,15 @@
 import type { I18nTranslations } from '@types';
 
-import { randomUUID } from 'crypto';
-import { mkdirSync, writeFileSync, rmSync } from 'fs';
 import { join } from 'path';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { I18nService } from 'nestjs-i18n';
 
 import { Errors } from '@i18n';
-import { convertToWebp, getFileExtension, hasAspectRatio } from '@utils/images';
+import { FilesService } from '@modules/files/files.service';
 
 import { PromotionResponseDTO } from './dto/promotion.dto';
 import { PromotionPicture } from './entities/promotion-picture.entity';
@@ -24,6 +22,7 @@ export class PromotionsService {
 		private readonly orm: MikroORM,
 		private readonly i18n: I18nService<I18nTranslations>,
 		private readonly configService: ConfigService,
+		private readonly filesService: FilesService,
 	) {}
 
 	/**
@@ -99,58 +98,31 @@ export class PromotionsService {
 	@UseRequestContext()
 	async updateLogo(number: number, file: Express.Multer.File): Promise<Promotion> {
 		const promotion = await this.orm.em.findOne(Promotion, { number });
-		if (!promotion)
-			throw new NotFoundException(Errors.Generic.IdNotFound({ type: Promotion, id: number, i18n: this.i18n }));
 
-		let { buffer, mimetype } = file;
-		if (!mimetype.startsWith('image/'))
-			throw new BadRequestException(Errors.Image.InvalidMimeType({ i18n: this.i18n }));
+		const fileInfos = await this.filesService.writeWebpFile(file, {
+			directory: join(this.configService.get<string>('files.promotions'), 'logo'),
+			filename: `promotion_${promotion.number}`,
+			aspectRatio: '1:1',
+		});
 
-		const imageDir = join(this.configService.get<string>('files.promotions'), 'logo');
-
-		// Check if the file respect the aspect ratio
-		if (!(await hasAspectRatio(buffer, '1:1')))
-			throw new BadRequestException(Errors.Image.InvalidAspectRatio({ i18n: this.i18n, aspect_ratio: '1:1' }));
-
-		// Convert the file to webp (unless it's a GIF or webp already)
-		buffer = await convertToWebp(buffer);
-
-		// Get the extension and update the mimetype
-		const extension = await getFileExtension(buffer);
-		mimetype = `image/${extension}`;
-
-		// Generate the filename and the path
-		const filename = `promotion_${promotion.number}_${randomUUID()}.${extension}`;
-		const filepath = join(imageDir, filename);
-
-		// Write the file on disk
-		mkdirSync(imageDir, { recursive: true });
-		writeFileSync(filepath, buffer);
-
-		// Update the database
 		if (promotion.picture) {
 			await promotion.picture.init();
+			this.filesService.deleteFileOnDisk(promotion.picture);
 
-			// Remove the old file
-			rmSync(promotion.picture.path);
-
-			// Set the new values
-			promotion.picture.filename = filename;
-			promotion.picture.mimetype = 'image/webp';
-			promotion.picture.updated_at = new Date();
-			promotion.picture.size = buffer.byteLength;
-			promotion.picture.path = filepath;
+			promotion.picture.filename = fileInfos.filename;
+			promotion.picture.mimetype = `image/${fileInfos.extension}`;
+			promotion.picture.path = fileInfos.filepath;
+			promotion.picture.size = fileInfos.size;
 
 			await this.orm.em.persistAndFlush(promotion.picture);
 		} else
 			promotion.picture = this.orm.em.create(PromotionPicture, {
-				filename,
-				mimetype,
-				path: filepath,
-				promotion,
-				size: buffer.byteLength,
-				description: 'Promotion logo',
-				visibility: null,
+				filename: fileInfos.filename,
+				mimetype: `image/${fileInfos.extension}`,
+				description: `Promotion logo of the promotion ${promotion.number}`,
+				path: fileInfos.filepath,
+				picture_promotion: promotion,
+				size: fileInfos.size,
 			});
 
 		await this.orm.em.persistAndFlush(promotion);
@@ -158,7 +130,7 @@ export class PromotionsService {
 		// Fix issue with the picture not being populated
 		// -> happens when the picture is updated
 		const out = await this.orm.em.findOne(Promotion, { number }, { fields: ['*'], populate: ['picture'] });
-		delete out.picture.promotion; // avoid circular reference
+		delete out.picture.picture_promotion; // avoid circular reference
 		return out;
 	}
 
@@ -183,8 +155,8 @@ export class PromotionsService {
 		if (!promotion.picture) throw new NotFoundException(Errors.Promotion.LogoNotFound({ i18n: this.i18n, number }));
 
 		await promotion.picture.init();
-		rmSync(promotion.picture.path);
-		await this.orm.em.remove(promotion.picture).flush();
+		this.filesService.deleteFileOnDisk(promotion.picture);
+		await this.orm.em.removeAndFlush(promotion.picture);
 
 		return promotion;
 	}

@@ -52,11 +52,11 @@ export class User
 		return `${this.first_name} ${this.last_name}`;
 	}
 
-	@OneToOne(() => UserPicture, (picture) => picture.user, { cascade: [Cascade.ALL], nullable: true })
+	@OneToOne(() => UserPicture, (picture) => picture.picture_user, { cascade: [Cascade.ALL], nullable: true })
 	@ApiProperty()
 	picture?: UserPicture;
 
-	@OneToOne(() => UserBanner, (banner) => banner.user, { cascade: [Cascade.ALL], nullable: true })
+	@OneToOne(() => UserBanner, (banner) => banner.banner_user, { cascade: [Cascade.ALL], nullable: true })
 	@ApiProperty()
 	banner?: UserBanner;
 
