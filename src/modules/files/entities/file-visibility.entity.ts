@@ -13,16 +13,14 @@ export class FileVisibilityGroup extends BaseEntity implements FileVisibilityGro
 	@ApiProperty()
 	name: Uppercase<string>;
 
-	@Property({ nullable: true })
-	@ApiProperty({ required: false })
-	description?: string;
+	@Property()
+	@ApiProperty()
+	description: string;
 
-	/**
-	 * Note: Used the 'string' version of the entity name to avoid circular dependency issues.
-	 */
-	@ManyToMany(() => 'User', (user: User) => user.files_visibility_groups, { owner: true })
+	//* Note: Use the 'string' version of the entity name to avoid circular dependency issues.
+	@ManyToMany(() => 'User', (user: User) => user.files_visibility_groups, { owner: true, nullable: true })
 	users = new Collection<User>(this);
 
-	@OneToMany(() => File, (file) => file.visibility)
+	@OneToMany(() => File, (file) => file.visibility, { nullable: true })
 	files = new Collection<File>(this);
 }
