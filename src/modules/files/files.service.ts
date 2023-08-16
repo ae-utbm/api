@@ -11,7 +11,7 @@ import { I18nService } from 'nestjs-i18n';
 
 import { Errors } from '@i18n';
 import { User } from '@modules/users/entities/user.entity';
-import { convertToWebp, getFileExtension, hasAspectRatio } from '@utils/images';
+import { convertToWebp, getImageFileExtension, hasAspectRatio } from '@utils/images';
 
 import { FileVisibilityGroup } from './entities/file-visibility.entity';
 import { File } from './entities/file.entity';
@@ -21,7 +21,7 @@ type WriteFileOptions = {
 	filename: string;
 };
 
-type WriteWebpOptions = WriteFileOptions & {
+type WriteImageOptions = WriteFileOptions & {
 	aspectRatio: aspect_ratio;
 };
 
@@ -57,10 +57,11 @@ export class FilesService {
 	/**
 	 * Upload file on disk
 	 */
-	async writeFile(buffer: Buffer, options: WriteFileOptions) {
+	async writeOnDisk(buffer: Buffer, options: WriteFileOptions) {
 		if (!buffer) throw new BadRequestException(Errors.File.NotProvided({ i18n: this.i18n }));
 
-		const extension = await getFileExtension(buffer);
+		// TODO: find another way to get the file extension (might break for non-image files)
+		const extension = await getImageFileExtension(buffer);
 		const filename = `${options.filename}_${randomUUID()}.${extension}`;
 		const filepath = join(options.directory, filename);
 		const size = buffer.byteLength;
@@ -81,7 +82,7 @@ export class FilesService {
 	 * Upload file on disk, but convert it to webp first
 	 * (unless it's a GIF or webp already)
 	 */
-	async writeWebpFile(file: Express.Multer.File, options: WriteWebpOptions) {
+	async writeOnDiskAsImage(file: Express.Multer.File, options: WriteImageOptions) {
 		if (!file) throw new BadRequestException(Errors.File.NotProvided({ i18n: this.i18n }));
 
 		let buffer = file.buffer;
@@ -95,10 +96,10 @@ export class FilesService {
 				Errors.Image.InvalidAspectRatio({ i18n: this.i18n, aspect_ratio: options.aspectRatio }),
 			);
 
-		// Convert the file to webp (unless it's a GIF or webp already)
+		// Convert the file to webp (unless it's a GIF or already a webp)
 		buffer = await convertToWebp(buffer);
 
-		return this.writeFile(buffer, options);
+		return this.writeOnDisk(buffer, options);
 	}
 
 	/**
@@ -125,7 +126,7 @@ export class FilesService {
 	 * @param {File} file The file to delete
 	 * @param {boolean} silent If true, the function will not throw an error if the file doesn't exist
 	 */
-	deleteFileOnDisk(file: File, silent: boolean = true) {
+	deleteOnDisk(file: File, silent: boolean = true) {
 		try {
 			accessSync(file.path);
 		} catch {
@@ -137,6 +138,7 @@ export class FilesService {
 	}
 
 	/**
+	 * Get the stream of a file
 	 * @param {File} file The path of the file to get the stream
 	 * @returns {Readable} The stream of the file
 	 */

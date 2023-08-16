@@ -257,7 +257,7 @@ export class UsersService {
 		const user = await this.orm.em.findOne(User, { id });
 		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id, i18n: this.i18n }));
 
-		const fileInfos = await this.filesService.writeWebpFile(file, {
+		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
 			directory: join(this.configService.get<string>('files.users'), 'pictures'),
 			filename: user.full_name.replaceAll(' ', '_'),
 			aspectRatio: '1:1',
@@ -266,7 +266,7 @@ export class UsersService {
 		// Remove old file if present
 		if (user.picture) {
 			await user.picture.init();
-			this.filesService.deleteFileOnDisk(user.picture);
+			this.filesService.deleteOnDisk(user.picture);
 
 			user.picture.filename = fileInfos.filename;
 			user.picture.mimetype = `image/${fileInfos.extension}`;
@@ -308,7 +308,7 @@ export class UsersService {
 		if (!user.picture) throw new NotFoundException('User has no picture to be deleted');
 
 		await user.picture.init();
-		this.filesService.deleteFileOnDisk(user.picture);
+		this.filesService.deleteOnDisk(user.picture);
 		await this.orm.em.removeAndFlush(user.picture);
 	}
 
@@ -317,7 +317,7 @@ export class UsersService {
 		const user = await this.orm.em.findOne(User, { id });
 		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id, i18n: this.i18n }));
 
-		const fileInfos = await this.filesService.writeWebpFile(file, {
+		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
 			directory: join(this.configService.get<string>('files.users'), 'banners'),
 			filename: user.full_name.replaceAll(' ', '_'),
 			aspectRatio: '1:1',
@@ -326,7 +326,7 @@ export class UsersService {
 		// Remove old file if present
 		if (user.banner) {
 			await user.banner.init();
-			this.filesService.deleteFileOnDisk(user.banner);
+			this.filesService.deleteOnDisk(user.banner);
 
 			user.banner.filename = fileInfos.filename;
 			user.banner.mimetype = `image/${fileInfos.extension}`;
@@ -368,7 +368,7 @@ export class UsersService {
 		if (!user.banner) throw new NotFoundException('User has no banner to be deleted');
 
 		await user.banner.init();
-		this.filesService.deleteFileOnDisk(user.banner);
+		this.filesService.deleteOnDisk(user.banner);
 		await this.orm.em.removeAndFlush(user.banner);
 	}
 

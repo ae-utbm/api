@@ -102,7 +102,7 @@ export class PromotionsService {
 		if (!promotion)
 			throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, id: number, type: Promotion }));
 
-		const fileInfos = await this.filesService.writeWebpFile(file, {
+		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
 			directory: join(this.configService.get<string>('files.promotions'), 'logo'),
 			filename: `promotion_${number}`,
 			aspectRatio: '1:1',
@@ -110,7 +110,7 @@ export class PromotionsService {
 
 		if (promotion.picture) {
 			await promotion.picture.init();
-			this.filesService.deleteFileOnDisk(promotion.picture);
+			this.filesService.deleteOnDisk(promotion.picture);
 
 			promotion.picture.filename = fileInfos.filename;
 			promotion.picture.mimetype = `image/${fileInfos.extension}`;
@@ -158,7 +158,7 @@ export class PromotionsService {
 		if (!promotion.picture) throw new NotFoundException(Errors.Promotion.LogoNotFound({ i18n: this.i18n, number }));
 
 		await promotion.picture.init();
-		this.filesService.deleteFileOnDisk(promotion.picture);
+		this.filesService.deleteOnDisk(promotion.picture);
 		await this.orm.em.removeAndFlush(promotion.picture);
 
 		return promotion;
