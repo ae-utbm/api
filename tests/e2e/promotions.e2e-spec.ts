@@ -231,7 +231,8 @@ describe('Promotions (e2e)', () => {
 				filename: '21.webp',
 				mimetype: 'image/webp',
 				path: join(process.cwd(), './tests/files/promo_21.png'),
-				promotion: 21,
+				picture_promotion: 21,
+				description: 'Promotion logo of the promotion 21',
 				size: 0,
 			});
 
@@ -273,10 +274,23 @@ describe('Promotions (e2e)', () => {
 			});
 		});
 
+		it('should return 400 when no file is attached', async () => {
+			const response = await request(app.getHttpServer())
+				.post('/promotions/21/logo')
+				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
+
+			expect(response.body).toEqual({
+				error: 'Bad Request',
+				message: Errors.File.NotProvided({ i18n }),
+				statusCode: 400,
+			});
+		});
+
 		it('should return 404 when the promotion does not exist', async () => {
 			const response = await request(app.getHttpServer())
 				.post('/promotions/999999/logo')
-				.set('Authorization', `Bearer ${tokenPromotionModerator}`);
+				.set('Authorization', `Bearer ${tokenPromotionModerator}`)
+				.attach('file', `./tests/files/promo_21.png`);
 
 			expect(response.body).toEqual({
 				error: 'Not Found',
@@ -330,10 +344,9 @@ describe('Promotions (e2e)', () => {
 					created_at: expect.any(String),
 					updated_at: expect.any(String),
 					filename: expect.any(String),
-					description: 'Promotion logo',
+					description: 'Promotion logo of the promotion 21',
 					mimetype: 'image/webp',
 					size: 117280,
-					visibility: null,
 					is_public: true,
 					is_hidden: false,
 				},
@@ -349,7 +362,7 @@ describe('Promotions (e2e)', () => {
 			// * Note: The logo is deleted in 'should return 200 when the promotion exists and delete the logo' * //
 
 			// Get the old logo
-			const oldLogo = await orm.em.findOne(PromotionPicture, { promotion: 21 });
+			const oldLogo = await orm.em.findOne(PromotionPicture, { picture_promotion: 21 });
 
 			const response = await request(app.getHttpServer())
 				.post('/promotions/21/logo')
@@ -367,7 +380,7 @@ describe('Promotions (e2e)', () => {
 					created_at: expect.any(String),
 					updated_at: expect.any(String),
 					filename: expect.any(String),
-					description: 'Promotion logo',
+					description: 'Promotion logo of the promotion 21',
 					mimetype: 'image/webp',
 					size: 117280,
 					visibility: null,
@@ -434,7 +447,7 @@ describe('Promotions (e2e)', () => {
 
 		it('should return 200 when the promotion exists and delete the logo', async () => {
 			// Get the logo filename
-			const logo = await orm.em.findOne(PromotionPicture, { promotion: 21 });
+			const logo = await orm.em.findOne(PromotionPicture, { picture_promotion: 21 });
 
 			const response = await request(app.getHttpServer())
 				.delete('/promotions/21/logo')

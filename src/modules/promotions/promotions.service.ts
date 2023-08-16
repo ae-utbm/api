@@ -99,9 +99,12 @@ export class PromotionsService {
 	async updateLogo(number: number, file: Express.Multer.File): Promise<Promotion> {
 		const promotion = await this.orm.em.findOne(Promotion, { number });
 
+		if (!promotion)
+			throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, id: number, type: Promotion }));
+
 		const fileInfos = await this.filesService.writeWebpFile(file, {
 			directory: join(this.configService.get<string>('files.promotions'), 'logo'),
-			filename: `promotion_${promotion.number}`,
+			filename: `promotion_${number}`,
 			aspectRatio: '1:1',
 		});
 
