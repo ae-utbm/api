@@ -6,7 +6,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { BaseEntity } from '@modules/_mixin/entities/base.entity';
 import { User } from '@modules/users/entities/user.entity';
 
-@Entity({ tableName: 'logs' })
+@Entity({ tableName: 'users_logs' })
 export class Log extends BaseEntity implements LogEntity<User> {
 	@ManyToOne()
 	@ApiProperty({ type: Number })
