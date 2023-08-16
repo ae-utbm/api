@@ -2,15 +2,15 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { UsersService } from '@modules/users/users.service';
+import { UsersModule } from '@modules/users/users.module';
 
 import { Permission } from './entities/permission.entity';
 import { PermissionsController } from './permissions.controller';
 import { PermissionsService } from './permissions.service';
 
 @Module({
-	imports: [MikroOrmModule.forFeature([Permission])],
-	providers: [PermissionsService, JwtService, UsersService],
+	imports: [MikroOrmModule.forFeature([Permission]), UsersModule],
+	providers: [PermissionsService, JwtService],
 	controllers: [PermissionsController],
 	exports: [PermissionsService],
 })
