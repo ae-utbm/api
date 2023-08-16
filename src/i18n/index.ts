@@ -46,6 +46,13 @@ export namespace Errors {
 
 		export const IdOrEmailMissing = <T>(options: NamedResponse<T>): string =>
 			generic('responses.errors.id_or_email.missing', { type: options.type }, options.i18n);
+
+		export const NotFound = <T>(options: NamedResponse<T> & { field: string; value: string }): string =>
+			generic(
+				'responses.errors.field.not_found',
+				{ type: options.type, field: options.field, value: options.value },
+				options.i18n,
+			);
 	}
 
 	export namespace BirthDate {
@@ -75,6 +82,14 @@ export namespace Errors {
 
 		export const NotFound = <T>(options: NamedResponse<T> & { email: string }): string =>
 			generic('responses.errors.email.not_found', { type: options.type, email: options.email }, options.i18n);
+	}
+
+	export namespace File {
+		export const NotProvided = (options: Response): string =>
+			generic('responses.errors.file.no_file', {}, options.i18n);
+
+		export const NotFoundOnDisk = (options: Response & { file: string }): string =>
+			generic('responses.errors.file.not_found_on_disk', { file: options.file }, options.i18n);
 	}
 
 	export namespace Image {
