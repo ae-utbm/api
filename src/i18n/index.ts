@@ -35,6 +35,9 @@ export namespace Errors {
 		export const FieldMissing = <T>(options: NamedResponse<T> & { field: unknown }): string =>
 			generic('responses.errors.field.missing', { type: options.type, field: options.field }, options.i18n);
 
+		export const FieldInvalid = <T>(options: NamedResponse<T> & { field: unknown }): string =>
+			generic('responses.errors.field.invalid', { type: options.type, field: options.field }, options.i18n);
+
 		export const FieldUnexpected = <T>(options: NamedResponse<T> & { field: unknown }): string =>
 			generic('responses.errors.field.unexpected', { type: options.type, field: options.field }, options.i18n);
 
@@ -49,7 +52,7 @@ export namespace Errors {
 
 		export const NotFound = <T>(options: NamedResponse<T> & { field: string; value: string }): string =>
 			generic(
-				'responses.errors.field.not_found',
+				'responses.errors.entity.not_found',
 				{ type: options.type, field: options.field, value: options.value },
 				options.i18n,
 			);

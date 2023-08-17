@@ -1,6 +1,6 @@
 import type { I18nTranslations } from '@types';
 
-import { Controller, Post, Body, Param, Get, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get, Res, HttpStatus, BadRequestException } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
 	ApiNotFoundResponse,
@@ -14,6 +14,7 @@ import {
 import express from 'express';
 import { I18nService } from 'nestjs-i18n';
 
+import { Errors } from '@i18n';
 import { User } from '@modules/users/entities/user.entity';
 import { UsersService } from '@modules/users/users.service';
 import { validateObject } from '@utils/validate';
@@ -38,6 +39,13 @@ export class AuthController {
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiOkResponse({ description: 'OK', type: TokenDTO })
 	async login(@Body() signInDto: UserSignInDTO): Promise<TokenDTO> {
+		validateObject({
+			objectToValidate: signInDto,
+			objectType: UserPostDTO,
+			requiredKeys: ['password', 'email'],
+			i18n: this.i18n,
+		});
+
 		return this.authService.signIn(signInDto.email, signInDto.password);
 	}
 
@@ -47,8 +55,8 @@ export class AuthController {
 	@ApiBadRequestResponse({ description: 'Bad request, invalid fields' })
 	async register(@Body() registerDto: UserPostDTO): Promise<User> {
 		validateObject({
-			object: registerDto,
-			type: UserPostDTO,
+			objectToValidate: registerDto,
+			objectType: UserPostDTO,
 			requiredKeys: ['password', 'first_name', 'last_name', 'email', 'birth_date'],
 			i18n: this.i18n,
 		});
@@ -73,6 +81,12 @@ export class AuthController {
 		@Param('token') token: string,
 		@Param('redirect_url') redirect_url?: string,
 	) {
+		if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
+
+		if (!token || token === '')
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: String, field: 'token' }));
+
 		if (redirect_url && redirect_url !== '') {
 			await this.userService.verifyEmail(user_id, token);
 			res.redirect(HttpStatus.PERMANENT_REDIRECT, redirect_url.trim());

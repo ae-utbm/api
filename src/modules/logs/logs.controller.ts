@@ -1,4 +1,6 @@
-import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
+import type { I18nTranslations } from '@types';
+
+import { BadRequestException, Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
 	ApiTags,
@@ -9,7 +11,9 @@ import {
 	ApiParam,
 	ApiOperation,
 } from '@nestjs/swagger';
+import { I18nService } from 'nestjs-i18n';
 
+import { Errors } from '@i18n';
 import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
@@ -24,7 +28,7 @@ import { LogsService } from './logs.service';
 @ApiTags('Logs')
 @ApiBearerAuth()
 export class LogsController {
-	constructor(private readonly logsService: LogsService) {}
+	constructor(private readonly logsService: LogsService, private readonly i18n: I18nService<I18nTranslations>) {}
 
 	@Get('user/:id')
 	@UseGuards(SelfOrPermissionGuard)
@@ -35,6 +39,9 @@ export class LogsController {
 	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOperation({ summary: 'Get all logs of a user' })
 	getUserLogs(@Param('id') id: number) {
+		if (typeof id !== 'number' && parseInt(id, 10) != id)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+
 		return this.logsService.getUserLogs(id);
 	}
 
@@ -47,6 +54,9 @@ export class LogsController {
 	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOperation({ summary: 'Delete all logs of a user' })
 	deleteUserLogs(@Param('id') id: number) {
+		if (typeof id !== 'number' && parseInt(id, 10) != id)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+
 		return this.logsService.deleteUserLogs(id);
 	}
 }

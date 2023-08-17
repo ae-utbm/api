@@ -34,8 +34,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	 */
 	async validate(payload: JWTPayload) {
 		validateObject({
-			object: payload,
-			type: 'JWTPayload',
+			objectToValidate: payload,
+			objectType: 'JWTPayload',
 			requiredKeys: ['sub', 'email', 'iat', 'exp'],
 			i18n: this.i18n,
 		});

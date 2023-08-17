@@ -13,10 +13,13 @@
         "invalid": "Invalid email verification token."
       }
     },
+    "entity": {
+      "not_found": "Entity '{type}' not found using '{field}' with value '{value}'."
+    },
     "field": {
       "missing": "Missing required field '{field}' in type '{type}'.",
       "unexpected": "Field '{field}' in type '{type}' is not expected.",
-      "not_found": "Entity '{type}' not found using '{field}' with value '{value}'."
+      "invalid": "Field '{field}' in type '{type}' is invalid."
     },
     "file": {
       "no_file": "No file was provided.",

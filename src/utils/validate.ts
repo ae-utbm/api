@@ -5,34 +5,46 @@ import { I18nService } from 'nestjs-i18n';
 
 import { Errors } from '@i18n';
 
-/**
- * Validate fields of an object
- * @param {T} options.object - The object to validate
- * @param {KeysOf<T>} options.requiredKeys - The required fields of the object
- * @param {C | string} options.type - The class / class name of the object to validate
- * @param {I18nService<I18nTranslations>} options.i18n - The i18n service (used to translate the error messages)
- */
 export function validateObject<T extends object, C extends Class<unknown>>(options: {
-	object: T;
-	type: C | string;
-	requiredKeys: KeysOf<T>;
+	/** Object to be checked */
+	objectToValidate: T;
+	/** Class to which the object belongs to */
+	objectType: C | string;
+
+	/** Required fields/keys in the given object */
+	requiredKeys?: KeysOf<T>;
+	/** Optional fields/keys in the given object */
+	optionalKeys?: KeysOf<T>;
+
+	/** Translation service */
 	i18n: I18nService<I18nTranslations>;
 }): void | never {
-	// Get the fields of the object to validate
-	const fields = Object.keys(options.object) as KeysOf<T>;
+	if (
+		(!options.requiredKeys && !options.optionalKeys) ||
+		[...options.requiredKeys, ...options.optionalKeys].length === 0
+	)
+		return; // No keys to validate -> anything is valid
 
-	fields.forEach((field) => {
-		// If the field is not required, throw an error (Unexpected field)
-		if (!options.requiredKeys.includes(field))
-			throw new BadRequestException(Errors.Generic.FieldUnexpected({ i18n: options.i18n, type: options.type, field }));
+	const keysToValidate = Object.keys(options.objectToValidate);
+
+	keysToValidate.forEach((key) => {
+		// Check for unexpected fields in the given object
+		if (!options.requiredKeys.includes(key) && !options.optionalKeys.includes(key))
+			throw new BadRequestException(
+				Errors.Generic.FieldUnexpected({ i18n: options.i18n, type: options.objectType, field: key }),
+			);
 	});
 
 	options.requiredKeys.forEach((field) => {
-		// If the field is required and it is not present, throw an error (Missing field)
-		if (!fields.includes(field))
-			throw new BadRequestException(Errors.Generic.FieldMissing({ i18n: options.i18n, type: options.type, field }));
+		// If the field is required but not present, throw an error (Missing field)
+		if (!keysToValidate.includes(field))
+			throw new BadRequestException(
+				Errors.Generic.FieldMissing({ i18n: options.i18n, type: options.objectType, field }),
+			);
 
-		if (options.object[field] === undefined || options.object[field] === null)
-			throw new BadRequestException(Errors.Generic.FieldMissing({ i18n: options.i18n, type: options.type, field }));
+		if (options.objectToValidate[field] === undefined || options.objectToValidate[field] === null)
+			throw new BadRequestException(
+				Errors.Generic.FieldMissing({ i18n: options.i18n, type: options.objectType, field }),
+			);
 	});
 }

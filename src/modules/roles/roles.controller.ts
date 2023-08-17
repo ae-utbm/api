@@ -1,6 +1,6 @@
 import type { I18nTranslations } from '@types';
 
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
 	ApiTags,
@@ -13,6 +13,7 @@ import {
 } from '@nestjs/swagger';
 import { I18nService } from 'nestjs-i18n';
 
+import { Errors } from '@i18n';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
@@ -39,9 +40,9 @@ export class RolesController {
 	@ApiBadRequestResponse({ description: 'Role name is not uppercase or already exists' })
 	async createRole(@Body() body: RolePostDTO) {
 		validateObject({
-			object: body,
+			objectToValidate: body,
+			objectType: RolePostDTO,
 			requiredKeys: ['name', 'permissions', 'expires'],
-			type: RolePostDTO,
 			i18n: this.i18n,
 		});
 
@@ -57,6 +58,14 @@ export class RolesController {
 	@ApiBadRequestResponse({ description: 'Role name is not uppercase' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async editRole(@Body() body: RolePatchDTO) {
+		validateObject({
+			objectToValidate: body,
+			objectType: RolePostDTO,
+			requiredKeys: ['id'],
+			optionalKeys: ['name', 'permissions', 'expires'],
+			i18n: this.i18n,
+		});
+
 		return this.rolesService.editRole(body);
 	}
 
@@ -78,6 +87,9 @@ export class RolesController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async getRoleUsers(@Param('role_id') id: number) {
+		if (typeof id !== 'number' && parseInt(id, 10) != id)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+
 		return this.rolesService.getUsers(id);
 	}
 
@@ -89,6 +101,12 @@ export class RolesController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role or user not found' })
 	async addUserToRole(@Param('role_id') role_id: number, @Param('user_id') user_id: number) {
+		if (typeof role_id !== 'number' && parseInt(role_id, 10) != role_id)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'role_id' }));
+
+		if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
+
 		return this.rolesService.addUser(role_id, user_id);
 	}
 
@@ -100,6 +118,12 @@ export class RolesController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role or user not found' })
 	async removeUserToRole(@Param('role_id') role_id: number, @Param('user_id') user_id: number) {
+		if (typeof role_id !== 'number' && parseInt(role_id, 10) != role_id)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'role_id' }));
+
+		if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
+
 		return this.rolesService.removeUser(role_id, user_id);
 	}
 }

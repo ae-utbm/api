@@ -171,9 +171,6 @@ export class UsersService {
 	async verifyEmail(user_id: number, token: string): Promise<User> {
 		if (!user_id || !token) throw new BadRequestException('Missing user id or token');
 
-		if (typeof user_id === 'string' && parseInt(user_id, 10) != user_id)
-			throw new BadRequestException(Errors.Generic.IdInvalid({ i18n: this.i18n, type: User, id: user_id }));
-
 		const user = await this.orm.em.findOne(User, { id: user_id });
 		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id: user_id }));
 
