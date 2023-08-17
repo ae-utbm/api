@@ -20,7 +20,6 @@ import { checkBirthDate } from '@utils/dates';
 import { checkEmail, sendEmail } from '@utils/email';
 import { checkPasswordStrength, generateRandomPassword } from '@utils/password';
 import { getTemplate } from '@utils/template';
-import { validateObject } from '@utils/validate';
 
 import { UserPatchDTO } from './dto/patch.dto';
 
@@ -113,13 +112,6 @@ export class UsersService {
 
 	@UseRequestContext()
 	async register(input: UserPostDTO): Promise<User> {
-		validateObject({
-			object: input,
-			type: UserPostDTO,
-			requiredKeys: ['password', 'first_name', 'last_name', 'email', 'birth_date'],
-			i18n: this.i18n,
-		});
-
 		Object.entries(input).forEach(([key, value]) => {
 			if (typeof value === 'string') {
 				// @ts-ignore

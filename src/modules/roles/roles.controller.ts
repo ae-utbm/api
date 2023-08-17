@@ -1,3 +1,5 @@
+import type { I18nTranslations } from '@types';
+
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -9,10 +11,12 @@ import {
 	ApiBadRequestResponse,
 	ApiNotFoundResponse,
 } from '@nestjs/swagger';
+import { I18nService } from 'nestjs-i18n';
 
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
+import { validateObject } from '@utils/validate';
 
 import { RolePatchDTO } from './dto/patch.dto';
 import { RolePostDTO } from './dto/post.dto';
@@ -24,7 +28,7 @@ import { RolesService } from './roles.service';
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
 export class RolesController {
-	constructor(private readonly rolesService: RolesService) {}
+	constructor(private readonly rolesService: RolesService, private readonly i18n: I18nService<I18nTranslations>) {}
 
 	@Post()
 	@UseGuards(PermissionGuard)
@@ -34,6 +38,13 @@ export class RolesController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiBadRequestResponse({ description: 'Role name is not uppercase or already exists' })
 	async createRole(@Body() body: RolePostDTO) {
+		validateObject({
+			object: body,
+			requiredKeys: ['name', 'permissions', 'expires'],
+			type: RolePostDTO,
+			i18n: this.i18n,
+		});
+
 		return this.rolesService.createRole(body.name, body.permissions, body.expires);
 	}
 

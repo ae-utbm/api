@@ -6,7 +6,6 @@ import { Cron } from '@nestjs/schedule';
 import { I18nService } from 'nestjs-i18n';
 
 import { Errors } from '@i18n';
-import { validateObject } from '@utils/validate';
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
 import { PermissionPatchDTO } from './dto/patch.dto';
@@ -44,14 +43,6 @@ export class PermissionsService {
 	 */
 	@UseRequestContext()
 	async addPermissionToUser(data: PermissionPostDTO): Promise<PermissionEntity<number>> {
-		// Validate the data object
-		validateObject({
-			object: data,
-			type: PermissionPostDTO,
-			requiredKeys: ['expires', 'id', 'permission'],
-			i18n: this.i18n,
-		});
-
 		// Check if the permission is valid
 		if (!PERMISSIONS_NAMES.includes(data.permission))
 			throw new BadRequestException(Errors.Permission.Invalid({ i18n: this.i18n, permission: data.permission }));

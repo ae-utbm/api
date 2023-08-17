@@ -1,3 +1,5 @@
+import type { I18nTranslations } from '@types';
+
 import { Controller, Post, Body, Param, Get, Res, HttpStatus } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
@@ -10,9 +12,11 @@ import {
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import express from 'express';
+import { I18nService } from 'nestjs-i18n';
 
 import { User } from '@modules/users/entities/user.entity';
 import { UsersService } from '@modules/users/users.service';
+import { validateObject } from '@utils/validate';
 
 import { AuthService } from './auth.service';
 import { UserPostDTO } from './dto/register.dto';
@@ -22,7 +26,11 @@ import { TokenDTO } from './dto/token.dto';
 @ApiTags('Authentification')
 @Controller('auth')
 export class AuthController {
-	constructor(private readonly authService: AuthService, private readonly userService: UsersService) {}
+	constructor(
+		private readonly authService: AuthService,
+		private readonly userService: UsersService,
+		private readonly i18n: I18nService<I18nTranslations>,
+	) {}
 
 	@Post('login')
 	@ApiOperation({ summary: 'Sign in a user with email and password' })
@@ -38,6 +46,13 @@ export class AuthController {
 	@ApiOkResponse({ description: 'User created', type: User })
 	@ApiBadRequestResponse({ description: 'Bad request, invalid fields' })
 	async register(@Body() registerDto: UserPostDTO): Promise<User> {
+		validateObject({
+			object: registerDto,
+			type: UserPostDTO,
+			requiredKeys: ['password', 'first_name', 'last_name', 'email', 'birth_date'],
+			i18n: this.i18n,
+		});
+
 		return this.userService.register(registerDto);
 	}
 

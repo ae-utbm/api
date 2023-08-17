@@ -1,4 +1,4 @@
-import type { PermissionEntity } from '@types';
+import type { I18nTranslations, PermissionEntity } from '@types';
 
 import { Body, Controller, Get, Param, Post, UseGuards, Patch } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -11,9 +11,11 @@ import {
 	ApiTags,
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { I18nService } from 'nestjs-i18n';
 
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
+import { validateObject } from '@utils/validate';
 
 import { PermissionPatchDTO } from './dto/patch.dto';
 import { PermissionPostDTO } from './dto/post.dto';
@@ -25,7 +27,10 @@ import { PermissionsService } from './permissions.service';
 @ApiTags('Permissions')
 @ApiBearerAuth()
 export class PermissionsController {
-	constructor(private readonly permsService: PermissionsService) {}
+	constructor(
+		private readonly permsService: PermissionsService,
+		private readonly i18n: I18nService<I18nTranslations>,
+	) {}
 
 	@Post()
 	@UseGuards(PermissionGuard)
@@ -35,6 +40,13 @@ export class PermissionsController {
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	addToUser(@Body() body: PermissionPostDTO): Promise<PermissionEntity<number>> {
+		validateObject({
+			object: body,
+			type: PermissionPostDTO,
+			requiredKeys: ['expires', 'id', 'permission'],
+			i18n: this.i18n,
+		});
+
 		return this.permsService.addPermissionToUser(body);
 	}
 

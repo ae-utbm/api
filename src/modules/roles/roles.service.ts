@@ -8,11 +8,9 @@ import { I18nService } from 'nestjs-i18n';
 import { Errors } from '@i18n';
 import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
 import { User } from '@modules/users/entities/user.entity';
-import { validateObject } from '@utils/validate';
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
 import { RolePatchDTO } from './dto/patch.dto';
-import { RolePostDTO } from './dto/post.dto';
 import { Role } from './entities/role.entity';
 
 @Injectable()
@@ -56,13 +54,6 @@ export class RolesService {
 		expires: Date,
 	): Promise<Omit<Role, 'users'>> {
 		name = name.toUpperCase();
-
-		validateObject({
-			object: { name, permissions, expires },
-			requiredKeys: ['name', 'permissions', 'expires'],
-			type: RolePostDTO,
-			i18n: this.i18n,
-		});
 
 		if (await this.orm.em.findOne(Role, { name }))
 			throw new BadRequestException(Errors.Role.NameAlreadyUsed({ name, i18n: this.i18n }));
