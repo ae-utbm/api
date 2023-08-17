@@ -19,7 +19,7 @@
     "field": {
       "missing": "Missing required field '{field}' in type '{type}'.",
       "unexpected": "Field '{field}' in type '{type}' is not expected.",
-      "invalid": "Field '{field}' in type '{type}' is invalid."
+      "invalid": "Field '{field}' is invalid, '{type}' expected."
     },
     "file": {
       "no_file": "No file was provided.",
