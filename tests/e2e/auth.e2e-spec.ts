@@ -21,7 +21,7 @@ describe('Auth (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: Errors.Generic.IdOrEmailMissing({ i18n, type: User }),
+				message: Errors.Generic.FieldMissing({ i18n, type: UserPostDTO, field: 'email' }),
 			});
 		});
 
@@ -233,7 +233,7 @@ describe('Auth (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: Errors.Generic.IdInvalid({ i18n, type: User, id: fakeId }),
+				message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'user_id' }),
 			});
 		});
 

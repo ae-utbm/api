@@ -21,7 +21,7 @@ export function validateObject<T extends object, C extends Class<unknown>>(optio
 }): void | never {
 	if (
 		(!options.requiredKeys && !options.optionalKeys) ||
-		[...options.requiredKeys, ...options.optionalKeys].length === 0
+		[...(options.requiredKeys ?? []), ...(options.optionalKeys ?? [])].length === 0
 	)
 		return; // No keys to validate -> anything is valid
 
@@ -29,7 +29,7 @@ export function validateObject<T extends object, C extends Class<unknown>>(optio
 
 	keysToValidate.forEach((key) => {
 		// Check for unexpected fields in the given object
-		if (!options.requiredKeys.includes(key) && !options.optionalKeys.includes(key))
+		if (!options.requiredKeys?.includes(key) && !options.optionalKeys?.includes(key))
 			throw new BadRequestException(
 				Errors.Generic.FieldUnexpected({ i18n: options.i18n, type: options.objectType, field: key }),
 			);

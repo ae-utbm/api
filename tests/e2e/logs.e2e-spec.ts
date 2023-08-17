@@ -95,7 +95,7 @@ describe('Logs (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: Errors.Generic.IdInvalid({ i18n, type: User, id: fakeId }),
+				message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'id' }),
 			});
 		});
 
@@ -209,7 +209,7 @@ describe('Logs (e2e)', () => {
 			expect(response.body).toEqual({
 				error: 'Bad Request',
 				statusCode: 400,
-				message: Errors.Generic.IdInvalid({ i18n, type: User, id: fakeId }),
+				message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'id' }),
 			});
 		});
 
