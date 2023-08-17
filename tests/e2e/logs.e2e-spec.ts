@@ -45,183 +45,199 @@ describe('Logs (e2e)', () => {
 		userIdLogModerator = responseC.body.user_id;
 	});
 
-	describe('/logs/user/{user_id} (GET)', () => {
-		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).get('/logs/user/1').expect(401);
+	describe('(GET) /logs/user/:user_id', () => {
+		describe('400 : Bad Request', () => {
+			it('when the user ID is invalid', async () => {
+				const fakeId = 'invalid';
 
-			expect(response.body).toEqual({
-				// TODO: add an error message ('Unauthorized') and translate the message field (add more context too)
-				statusCode: 401,
-				message: 'Unauthorized',
+				const response = await request(app.getHttpServer())
+					.get(`/logs/user/${fakeId}`)
+					.set('Authorization', `Bearer ${tokenLogModerator}`)
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'id' }),
+				});
 			});
 		});
 
-		it('should return 403 when the user is not the same as the user ID in the request', async () => {
-			const response = await request(app.getHttpServer())
-				.get(`/logs/user/${userIdUnverified}`)
-				.set('Authorization', `Bearer ${tokenUnauthorized}`)
-				.expect(403);
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).get('/logs/user/1').expect(401);
 
-			expect(response.body).toEqual({
-				error: 'Forbidden',
-				statusCode: 403,
-				message: 'Forbidden resource', // TODO translate this
+				expect(response.body).toEqual({
+					statusCode: 401,
+					message: 'Unauthorized',
+				});
+			});
+
+			it('when user is not verified', async () => {
+				const response = await request(app.getHttpServer())
+					.get(`/logs/user/${userIdUnverified}`)
+					.set('Authorization', `Bearer ${tokenUnverified}`)
+					.expect(401);
+
+				expect(response.body).toEqual({
+					statusCode: 401,
+					message: Errors.Email.NotVerified({ i18n, type: User }),
+					error: 'Unauthorized',
+				});
 			});
 		});
 
-		it('should return 404 when the user does not exist', async () => {
-			const fakeId = 9999;
+		describe('403 : Forbidden', () => {
+			it('when the user is not the same as the user ID in the request', async () => {
+				const response = await request(app.getHttpServer())
+					.get(`/logs/user/${userIdUnverified}`)
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
 
-			const response = await request(app.getHttpServer())
-				.get(`/logs/user/${fakeId}`)
-				.set('Authorization', `Bearer ${tokenLogModerator}`)
-				.expect(404);
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					statusCode: 403,
+					message: 'Forbidden resource',
+				});
+			});
 
-			expect(response.body).toEqual({
-				error: 'Not Found',
-				statusCode: 404,
-				message: Errors.Generic.IdNotFound({ i18n, type: User, id: fakeId }),
+			it('when user is asking for another user without the permission', async () => {
+				const response = await request(app.getHttpServer())
+					.get(`/logs/user/${userIdLogModerator}`)
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					statusCode: 403,
+					message: 'Forbidden resource',
+				});
 			});
 		});
 
-		it('should return 400 when the user ID is invalid', async () => {
-			const fakeId = 'invalid';
+		describe('404 : Not Found', () => {
+			it('when the user does not exist', async () => {
+				const fakeId = 9999;
 
-			const response = await request(app.getHttpServer())
-				.get(`/logs/user/${fakeId}`)
-				.set('Authorization', `Bearer ${tokenLogModerator}`)
-				.expect(400);
+				const response = await request(app.getHttpServer())
+					.get(`/logs/user/${fakeId}`)
+					.set('Authorization', `Bearer ${tokenLogModerator}`)
+					.expect(404);
 
-			expect(response.body).toEqual({
-				error: 'Bad Request',
-				statusCode: 400,
-				message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'id' }),
+				expect(response.body).toEqual({
+					error: 'Not Found',
+					statusCode: 404,
+					message: Errors.Generic.IdNotFound({ i18n, type: User, id: fakeId }),
+				});
 			});
 		});
 
-		it('should return 401 when user is not verified', async () => {
-			const response = await request(app.getHttpServer())
-				.get(`/logs/user/${userIdUnverified}`)
-				.set('Authorization', `Bearer ${tokenUnverified}`)
-				.expect(401);
+		describe('200 : Ok', () => {
+			it('when user is asking for himself', async () => {
+				const response = await request(app.getHttpServer())
+					.get(`/logs/user/${userIdUnauthorized}`)
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(200);
 
-			expect(response.body).toEqual({
-				statusCode: 401,
-				message: Errors.Email.NotVerified({ i18n, type: User }),
-				error: 'Unauthorized',
+				// Expect that all elements in the array have the same type
+				const body = response.body as Array<unknown>;
+
+				expect(body).toBeInstanceOf(Array);
+				expect(body.length).toBeGreaterThanOrEqual(0);
+				expect(body.haveEqualObjects()).toBe(true);
 			});
-		});
 
-		it('should return 200 when user is asking for himself', async () => {
-			const response = await request(app.getHttpServer())
-				.get(`/logs/user/${userIdUnauthorized}`)
-				.set('Authorization', `Bearer ${tokenUnauthorized}`)
-				.expect(200);
+			it('when user is asking for another user with the right permission', async () => {
+				const response = await request(app.getHttpServer())
+					.get(`/logs/user/${userIdUnauthorized}`)
+					.set('Authorization', `Bearer ${tokenLogModerator}`)
+					.expect(200);
 
-			// Expect that all elements in the array have the same type
-			const body = response.body as Array<unknown>;
+				// Expect that all elements in the array have the same type
+				const body = response.body as Array<unknown>;
 
-			expect(body).toBeInstanceOf(Array);
-			expect(body.length).toBeGreaterThanOrEqual(0);
-			expect(body.haveEqualObjects()).toBe(true);
-		});
+				expect(body).toBeInstanceOf(Array);
+				expect(body.length).toBeGreaterThan(0);
+				expect(body.haveEqualObjects()).toBe(true);
 
-		it('should return 200 when user is asking for another user with the right permission', async () => {
-			const response = await request(app.getHttpServer())
-				.get(`/logs/user/${userIdUnauthorized}`)
-				.set('Authorization', `Bearer ${tokenLogModerator}`)
-				.expect(200);
-
-			// Expect that all elements in the array have the same type
-			const body = response.body as Array<unknown>;
-
-			expect(body).toBeInstanceOf(Array);
-			expect(body.length).toBeGreaterThan(0);
-			expect(body.haveEqualObjects()).toBe(true);
-
-			expect(body[0]).toEqual({
-				id: expect.any(Number),
-				created_at: expect.any(String),
-				updated_at: expect.any(String),
-				user: userIdUnauthorized,
-				action: expect.any(String),
-				ip: expect.any(String),
-				user_agent: expect.any(String),
-				route: expect.any(String),
-				method: expect.any(String),
-				body: expect.any(String),
-				query: expect.any(String),
-				params: expect.any(String),
-				response: null,
-				status_code: expect.any(Number),
-				error: null,
-				error_stack: null,
-				error_message: null,
-			});
-		});
-
-		it('should return 403 when user is asking for another user without the permission', async () => {
-			const response = await request(app.getHttpServer())
-				.get(`/logs/user/${userIdLogModerator}`)
-				.set('Authorization', `Bearer ${tokenUnauthorized}`)
-				.expect(403);
-
-			expect(response.body).toEqual({
-				error: 'Forbidden',
-				statusCode: 403,
-				message: 'Forbidden resource', // TODO translate this
+				expect(body[0]).toEqual({
+					id: expect.any(Number),
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
+					user: userIdUnauthorized,
+					action: expect.any(String),
+					ip: expect.any(String),
+					user_agent: expect.any(String),
+					route: expect.any(String),
+					method: expect.any(String),
+					body: expect.any(String),
+					query: expect.any(String),
+					params: expect.any(String),
+					response: null,
+					status_code: expect.any(Number),
+					error: null,
+					error_stack: null,
+					error_message: null,
+				});
 			});
 		});
 	});
 
-	describe('/logs/{user} (DELETE)', () => {
-		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).get('/logs/user/1').expect(401);
+	describe('(DELETE) /logs/:user_id', () => {
+		describe('400 : Bad Request', () => {
+			it('when the user ID is invalid', async () => {
+				const fakeId = 'invalid';
 
-			expect(response.body).toEqual({
-				// TODO: add an error message ('Unauthorized') and translate the message field (add more context too)
-				statusCode: 401,
-				message: 'Unauthorized',
+				const response = await request(app.getHttpServer())
+					.delete(`/logs/user/${fakeId}`)
+					.set('Authorization', `Bearer ${tokenLogModerator}`)
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'id' }),
+				});
 			});
 		});
 
-		it('should return 403 when the user is not authorized', async () => {
-			const response = await request(app.getHttpServer())
-				.get(`/logs/user/${userIdUnverified}`)
-				.set('Authorization', `Bearer ${tokenUnauthorized}`)
-				.expect(403);
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).get('/logs/user/1').expect(401);
 
-			expect(response.body).toEqual({
-				error: 'Forbidden',
-				statusCode: 403,
-				message: 'Forbidden resource', // TODO translate this
+				expect(response.body).toEqual({
+					statusCode: 401,
+					message: 'Unauthorized',
+				});
 			});
 		});
 
-		it('should return 400 when the user ID is invalid', async () => {
-			const fakeId = 'invalid';
+		describe('403 : Forbidden', () => {
+			it('the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.get(`/logs/user/${userIdUnverified}`)
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
 
-			const response = await request(app.getHttpServer())
-				.delete(`/logs/user/${fakeId}`)
-				.set('Authorization', `Bearer ${tokenLogModerator}`)
-				.expect(400);
-
-			expect(response.body).toEqual({
-				error: 'Bad Request',
-				statusCode: 400,
-				message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'id' }),
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					statusCode: 403,
+					message: 'Forbidden resource',
+				});
 			});
 		});
 
-		it('should return 200 when the user is authorized', async () => {
-			const response = await request(app.getHttpServer())
-				.delete(`/logs/user/${userIdLogModerator}`)
-				.set('Authorization', `Bearer ${tokenLogModerator}`)
-				.expect(200);
+		describe('200 : Ok', () => {
+			it('when the user is authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.delete(`/logs/user/${userIdLogModerator}`)
+					.set('Authorization', `Bearer ${tokenLogModerator}`)
+					.expect(200);
 
-			expect(response.body).toEqual({
-				statusCode: 200,
-				message: Success.Generic.Deleted({ i18n, type: Log }),
+				expect(response.body).toEqual({
+					statusCode: 200,
+					message: Success.Generic.Deleted({ i18n, type: Log }),
+				});
 			});
 		});
 	});

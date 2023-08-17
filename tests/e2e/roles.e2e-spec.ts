@@ -5,7 +5,7 @@ import { RolePostDTO } from '@modules/roles/dto/post.dto';
 
 import { app, i18n } from '..';
 
-describe('Roles', () => {
+describe('Roles (e2e)', () => {
 	let tokenUnauthorized: string;
 	let tokenRolesModerator: string;
 
@@ -27,149 +27,209 @@ describe('Roles', () => {
 		tokenRolesModerator = resB.body.token;
 	});
 
-	describe('/roles (GET)', () => {
-		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).get('/roles').expect(401);
+	describe('(GET) /roles', () => {
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).get('/roles').expect(401);
 
-			expect(response.body).toEqual({
-				statusCode: 401,
-				message: 'Unauthorized',
+				expect(response.body).toEqual({
+					statusCode: 401,
+					message: 'Unauthorized',
+				});
 			});
 		});
 
-		it('should return 403 when the user is not authorized', async () => {
-			const response = await request(app.getHttpServer())
-				.get('/roles')
-				.set('Authorization', `Bearer ${tokenUnauthorized}`)
-				.expect(403);
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/roles')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
 
-			expect(response.body).toEqual({
-				error: 'Forbidden',
-				statusCode: 403,
-				message: 'Forbidden resource', // TODO translate this
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					statusCode: 403,
+					message: 'Forbidden resource',
+				});
 			});
 		});
 
-		it('should return 200 when the user is authorized', async () => {
-			const response = await request(app.getHttpServer())
-				.get('/roles')
-				.set('Authorization', `Bearer ${tokenRolesModerator}`)
-				.expect(200);
+		describe('200 : Ok', () => {
+			it('when the user is authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/roles')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.expect(200);
 
-			// Expect that all elements in the array have the same type
-			const body = response.body as Array<unknown>;
+				// Expect that all elements in the array have the same type
+				const body = response.body as Array<unknown>;
 
-			expect(body).toBeInstanceOf(Array);
-			expect(body.length).toBeGreaterThan(0);
-			expect(body.haveEqualObjects()).toBe(true);
+				expect(body).toBeInstanceOf(Array);
+				expect(body.length).toBeGreaterThan(0);
+				expect(body.haveEqualObjects()).toBe(true);
 
-			expect(body[0]).toEqual({
-				created_at: expect.any(String),
-				expires: expect.any(String),
-				id: expect.any(Number),
-				name: expect.any(String),
-				permissions: expect.any(Array),
-				revoked: false,
-				updated_at: expect.any(String),
+				expect(body[0]).toEqual({
+					created_at: expect.any(String),
+					expires: expect.any(String),
+					id: expect.any(Number),
+					name: expect.any(String),
+					permissions: expect.any(Array),
+					revoked: false,
+					updated_at: expect.any(String),
+				});
 			});
 		});
 	});
 
-	describe('/roles (POST)', () => {
-		it('should return 401 when the user is not authenticated', async () => {
-			const response = await request(app.getHttpServer()).post('/roles').expect(401);
+	describe('(POST) /roles', () => {
+		describe('400 : Bad Request', () => {
+			it('when the body is invalid', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/roles')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.send({
+						name: 'test',
+						permissions: ['test'],
+					})
+					.expect(400);
 
-			expect(response.body).toEqual({
-				statusCode: 401,
-				message: 'Unauthorized',
+				expect(response.body).toEqual({
+					statusCode: 400,
+					message: Errors.Generic.FieldMissing({ field: 'expires', type: RolePostDTO, i18n }),
+					error: 'Bad Request',
+				});
+			});
+
+			it('when one of the permissions is invalid', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/roles')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.send({
+						name: 'test',
+						permissions: ['test'],
+						expires: '2021-01-01',
+					})
+					.expect(400);
+
+				expect(response.body).toEqual({
+					statusCode: 400,
+					message: Errors.Permission.Invalid({ i18n, permission: 'test' }),
+					error: 'Bad Request',
+				});
+			});
+
+			it('when a role with the same name already exists', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/roles')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.send({
+						name: 'PERMISSIONS_MODERATOR',
+						permissions: ['ROOT'],
+						expires: '2021-01-01',
+					})
+					.expect(400);
+
+				expect(response.body).toEqual({
+					statusCode: 400,
+					message: Errors.Role.NameAlreadyUsed({ i18n, name: 'PERMISSIONS_MODERATOR' }),
+					error: 'Bad Request',
+				});
 			});
 		});
 
-		it('should return 403 when the user is not authorized', async () => {
-			const response = await request(app.getHttpServer())
-				.post('/roles')
-				.set('Authorization', `Bearer ${tokenUnauthorized}`)
-				.expect(403);
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).post('/roles').expect(401);
 
-			expect(response.body).toEqual({
-				error: 'Forbidden',
-				statusCode: 403,
-				message: 'Forbidden resource', // TODO translate this
+				expect(response.body).toEqual({
+					statusCode: 401,
+					message: 'Unauthorized',
+				});
+			});
+		});
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/roles')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					statusCode: 403,
+					message: 'Forbidden resource',
+				});
 			});
 		});
 
-		it('should return 400 when the body is invalid', async () => {
-			const response = await request(app.getHttpServer())
-				.post('/roles')
-				.set('Authorization', `Bearer ${tokenRolesModerator}`)
-				.send({
-					name: 'test',
-					permissions: ['test'],
-				})
-				.expect(400);
+		describe('201 : Created', () => {
+			it('when the role is created', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/roles')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.send({
+						name: 'test_role',
+						permissions: ['ROOT'],
+						expires: '2999-01-01',
+					})
+					.expect(201);
 
-			expect(response.body).toEqual({
-				statusCode: 400,
-				message: Errors.Generic.FieldMissing({ field: 'expires', type: RolePostDTO, i18n }),
-				error: 'Bad Request',
-			});
-		});
-
-		it('should return 400 when one of the permissions is invalid', async () => {
-			const response = await request(app.getHttpServer())
-				.post('/roles')
-				.set('Authorization', `Bearer ${tokenRolesModerator}`)
-				.send({
-					name: 'test',
-					permissions: ['test'],
-					expires: '2021-01-01',
-				})
-				.expect(400);
-
-			expect(response.body).toEqual({
-				statusCode: 400,
-				message: Errors.Permission.Invalid({ i18n, permission: 'test' }),
-				error: 'Bad Request',
-			});
-		});
-
-		it('should return 400 when a role with the same name already exists', async () => {
-			const response = await request(app.getHttpServer())
-				.post('/roles')
-				.set('Authorization', `Bearer ${tokenRolesModerator}`)
-				.send({
-					name: 'PERMISSIONS_MODERATOR',
+				expect(response.body).toEqual({
+					id: expect.any(Number),
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
+					name: 'TEST_ROLE',
+					revoked: false,
+					expires: '2999-01-01T00:00:00.000Z',
 					permissions: ['ROOT'],
-					expires: '2021-01-01',
-				})
-				.expect(400);
+				});
+			});
+		});
+	});
 
-			expect(response.body).toEqual({
-				statusCode: 400,
-				message: Errors.Role.NameAlreadyUsed({ i18n, name: 'PERMISSIONS_MODERATOR' }),
-				error: 'Bad Request',
+	describe('(PATCH) /roles', () => {
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).patch('/roles').expect(401);
+
+				expect(response.body).toEqual({
+					statusCode: 401,
+					message: 'Unauthorized',
+				});
 			});
 		});
 
-		it('should return 201 when the role is created', async () => {
-			const response = await request(app.getHttpServer())
-				.post('/roles')
-				.set('Authorization', `Bearer ${tokenRolesModerator}`)
-				.send({
-					name: 'test_role',
-					permissions: ['ROOT'],
-					expires: '2999-01-01',
-				})
-				.expect(201);
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/roles')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
 
-			expect(response.body).toEqual({
-				id: expect.any(Number),
-				created_at: expect.any(String),
-				updated_at: expect.any(String),
-				name: 'TEST_ROLE',
-				revoked: false,
-				expires: '2999-01-01T00:00:00.000Z',
-				permissions: ['ROOT'],
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					statusCode: 403,
+					message: 'Forbidden resource',
+				});
+			});
+		});
+
+		describe('400 : Bad Request', () => {
+			it('when the body is invalid', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/roles')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.send({
+						name: 'test',
+						permissions: ['test'],
+					})
+					.expect(400);
+
+				expect(response.body).toEqual({
+					statusCode: 400,
+					message: Errors.Generic.FieldMissing({ field: 'id', type: RolePostDTO, i18n }),
+					error: 'Bad Request',
+				});
 			});
 		});
 	});

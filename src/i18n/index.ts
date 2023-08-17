@@ -1,4 +1,5 @@
-import type { aspect_ratio, Class, email as TEmail, I18nTranslations } from '@types';
+import type { aspect_ratio, email as TEmail, I18nTranslations } from '@types';
+import type { Class } from 'type-fest';
 
 import { PathImpl2 } from '@nestjs/config';
 import { I18nContext, I18nService } from 'nestjs-i18n';

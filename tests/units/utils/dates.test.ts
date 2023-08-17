@@ -1,6 +1,6 @@
 import { checkBirthDate } from '@utils/dates';
 
-describe('checkBirthDate()', () => {
+describe('.checkBirthDate()', () => {
 	it('should return true if the date is more than 13 years old', () => {
 		expect(checkBirthDate('2000-01-01')).toBe(true);
 		expect(checkBirthDate(new Date('2000-01-01'))).toBe(true);

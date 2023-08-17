@@ -5,7 +5,7 @@ import { verifyJWT } from '@utils/jwt';
 
 import { jwt, config, i18n } from '../..';
 
-describe('verifyJWT()', () => {
+describe('.verifyJWT()', () => {
 	it('should return an error if the token is invalid', () => {
 		expect(() =>
 			verifyJWT({

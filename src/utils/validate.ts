@@ -1,4 +1,5 @@
-import type { Class, I18nTranslations, KeysOf } from '@types';
+import type { I18nTranslations, KeysOf } from '@types';
+import type { Class } from 'type-fest';
 
 import { BadRequestException } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';

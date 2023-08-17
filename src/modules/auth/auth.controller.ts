@@ -84,7 +84,7 @@ export class AuthController {
 		if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
 			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
 
-		if (!token || token === '')
+		if (token.trim() === '')
 			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: String, field: 'token' }));
 
 		if (redirect_url && redirect_url !== '') {

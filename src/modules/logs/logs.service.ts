@@ -1,12 +1,11 @@
 import type { I18nTranslations } from '@types';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { I18nService } from 'nestjs-i18n';
 
-import { Errors, Success } from '@i18n';
-import { User } from '@modules/users/entities/user.entity';
+import { Success } from '@i18n';
 import { UsersService } from '@modules/users/users.service';
 
 import { Log } from './entities/log.entity';
@@ -29,9 +28,6 @@ export class LogsService {
 	}
 
 	async getUserLogs(id: number) {
-		if (typeof id === 'string' && parseInt(id, 10) != id)
-			throw new BadRequestException(Errors.Generic.IdInvalid({ i18n: this.i18n, type: User, id }));
-
 		const user = await this.usersService.findOne({ id });
 
 		await user.logs.init();
@@ -39,9 +35,6 @@ export class LogsService {
 	}
 
 	async deleteUserLogs(id: number) {
-		if (typeof id === 'string' && parseInt(id, 10) != id)
-			throw new BadRequestException(Errors.Generic.IdInvalid({ i18n: this.i18n, type: User, id }));
-
 		const user = await this.usersService.findOne({ id });
 		await user.logs.init();
 		user.logs.removeAll();
