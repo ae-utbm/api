@@ -27,15 +27,16 @@ export class LogsService {
 		await this.orm.em.nativeDelete(Log, { created_at: { $lt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60) } });
 	}
 
-	async getUserLogs(id: number) {
+	async getUserLogs(id: number): Promise<(Omit<Log, 'user'> & { user: number })[]> {
 		const user = await this.usersService.findOne({ id });
-		const logs = user.logs.getItems().map((log) => ({ ...log, user: log.user.id }));
+		const logs = (await user.logs.loadItems()).map((log) => ({ ...log, user: log.user.id }));
 
 		return logs;
 	}
 
 	async deleteUserLogs(id: number) {
 		const user = await this.usersService.findOne({ id });
+		await user.logs.init();
 		user.logs.removeAll();
 
 		return { message: Success.Generic.Deleted({ i18n: this.i18n, type: Log }), statusCode: 200 };

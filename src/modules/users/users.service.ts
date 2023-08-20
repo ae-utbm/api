@@ -101,8 +101,8 @@ export class UsersService {
 	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter = true): Promise<User | Partial<User>> {
 		let user: User = null;
 
-		if (id) user = await this.orm.em.findOne(User, { id }, { populate: true });
-		if (email) user = await this.orm.em.findOne(User, { email }, { populate: true });
+		if (id) user = await this.orm.em.findOne(User, { id });
+		if (email) user = await this.orm.em.findOne(User, { email });
 
 		if (!id && !email) throw new BadRequestException(Errors.Generic.IdOrEmailMissing({ i18n: this.i18n, type: User }));
 		if (!user && id) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id }));
@@ -260,7 +260,7 @@ export class UsersService {
 
 	@UseRequestContext()
 	async updatePicture(id: number, file: Express.Multer.File): Promise<User> {
-		const user = await this.orm.em.findOne(User, { id }, { fields: ['picture'], populate: true });
+		const user = await this.orm.em.findOne(User, { id }, { populate: ['picture'] });
 		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id, i18n: this.i18n }));
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
@@ -299,14 +299,14 @@ export class UsersService {
 
 	@UseRequestContext()
 	async getPicture(id: number): Promise<UserPicture> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['picture'], populate: true });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['picture'] });
 		if (!user.picture) throw new NotFoundException('User has no picture');
 		return user.picture;
 	}
 
 	@UseRequestContext()
 	async deletePicture(id: number): Promise<void> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['picture'], populate: true });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['picture'] });
 		if (!user.picture) throw new NotFoundException('User has no picture to be deleted');
 
 		this.filesService.deleteOnDisk(user.picture);
@@ -315,13 +315,13 @@ export class UsersService {
 
 	@UseRequestContext()
 	async updateBanner(id: number, file: Express.Multer.File): Promise<User> {
-		const user = await this.orm.em.findOne(User, { id }, { fields: ['banner'], populate: true });
+		const user = await this.orm.em.findOne(User, { id }, { populate: ['banner'] });
 		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id, i18n: this.i18n }));
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
 			directory: join(this.configService.get<string>('files.users'), 'banners'),
 			filename: user.full_name.replaceAll(' ', '_'),
-			aspectRatio: '1:1',
+			aspectRatio: '16:9',
 		});
 
 		// Remove old file if present
@@ -348,23 +348,20 @@ export class UsersService {
 
 		await this.orm.em.persistAndFlush(user);
 
-		// Fix issue with the banner not being populated
-		// -> happens when the banner is updated
-		const out = await this.orm.em.findOne(User, { id }, { fields: ['*'], populate: ['banner'] });
-		delete out.banner.banner_user; // avoid circular reference
-		return out;
+		delete user.banner.banner_user; // avoid circular reference
+		return user;
 	}
 
 	@UseRequestContext()
 	async getBanner(id: number): Promise<UserBanner> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['banner'], populate: true });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['banner'] });
 		if (!user.banner) throw new NotFoundException('User has no banner');
 		return user.banner;
 	}
 
 	@UseRequestContext()
 	async deleteBanner(id: number): Promise<void> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['banner'], populate: true });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['banner'] });
 		if (!user.banner) throw new NotFoundException('User has no banner to be deleted');
 
 		this.filesService.deleteOnDisk(user.banner);
@@ -379,7 +376,7 @@ export class UsersService {
 
 	@UseRequestContext()
 	async getUserRoles(id: number, input: { show_expired: boolean; show_revoked: boolean }) {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['roles'], populate: true });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['roles'] });
 		const roles = user.roles.getItems();
 
 		if (!input.show_expired) roles.filter((p) => p.expires > new Date());
