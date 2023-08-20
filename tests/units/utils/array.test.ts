@@ -19,6 +19,22 @@ describe('Array (unit)', () => {
 		});
 	});
 
+	describe('.unique()', () => {
+		it('should remove any duplicates', () => {
+			const array = [1, 2, 3, 4, 5, 1, 2, 3, 4, 5];
+			expect(array.unique()).toEqual([1, 2, 3, 4, 5]);
+		});
+
+		it('should not remove anything if there are no duplicates', () => {
+			const array = [1, 2, 3, 4, 5];
+			expect(array.unique()).toEqual([1, 2, 3, 4, 5]);
+		});
+
+		it('should return an empty array if the input array is empty', () => {
+			expect([].unique()).toEqual([]);
+		});
+	});
+
 	describe('.haveEqualObjects()', () => {
 		it('should return true if all objects in the array have the same type', () => {
 			expect([].haveEqualObjects()).toBe(true);

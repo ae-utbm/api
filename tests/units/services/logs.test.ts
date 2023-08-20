@@ -4,15 +4,15 @@ import { User } from '@modules/users/entities/user.entity';
 
 import { moduleFixture, orm } from '../..';
 
-describe('LogsService', () => {
+describe('LogsService (unit)', () => {
 	let logsService: LogsService;
 
 	beforeAll(() => {
 		logsService = moduleFixture.get<LogsService>(LogsService);
 	});
 
-	describe('LogsService.deleteOldLogs()', () => {
-		it('Should delete logs that are older than 60 days', async () => {
+	describe('.deleteOldLogs()', () => {
+		it('should delete logs that are older than 60 days', async () => {
 			// First we create a log that is older than 60 days
 			const user = await orm.em.findOne(User, { id: 1 });
 			const log = orm.em.create(Log, {

@@ -4,15 +4,15 @@ import { User } from '@modules/users/entities/user.entity';
 
 import { moduleFixture, orm } from '../..';
 
-describe('PermissionsService', () => {
+describe('PermissionsService (unit)', () => {
 	let permissionsService: PermissionsService;
 
 	beforeAll(() => {
 		permissionsService = moduleFixture.get<PermissionsService>(PermissionsService);
 	});
 
-	describe('PermissionsService.revokeExpiredPermissions()', () => {
-		it('Should revoke permissions that have expired', async () => {
+	describe('.revokeExpiredPermissions()', () => {
+		it('should revoke permissions that have expired', async () => {
 			// First we add a permission that is expired
 			const permission = orm.em.create(Permission, {
 				name: 'CAN_DELETE_LOGS_OF_USER',

@@ -3,15 +3,15 @@ import { PromotionsService } from '@modules/promotions/promotions.service';
 
 import { moduleFixture, orm } from '../..';
 
-describe('PromotionsService', () => {
+describe('PromotionsService (unit)', () => {
 	let promotionsService: PromotionsService;
 
 	beforeAll(() => {
 		promotionsService = moduleFixture.get<PromotionsService>(PromotionsService);
 	});
 
-	describe('PromotionsService.createNewPromotion()', () => {
-		it('Should create a new promotion', async () => {
+	describe('.createNewPromotion()', () => {
+		it('should create a new promotion', async () => {
 			const currentLatest = await promotionsService.findLatest();
 
 			await promotionsService.createNewPromotion();
