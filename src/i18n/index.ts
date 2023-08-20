@@ -98,7 +98,7 @@ export namespace Errors {
 
 	export namespace Image {
 		export const InvalidAspectRatio = (options: Response & { aspect_ratio: aspect_ratio }): string =>
-			generic('responses.errors.image.invalid_aspect_ratio', { aspect_ration: options.aspect_ratio }, options.i18n);
+			generic('responses.errors.image.invalid_aspect_ratio', { aspect_ratio: options.aspect_ratio }, options.i18n);
 
 		export const InvalidMimeType = (options: Response): string =>
 			generic('responses.errors.image.invalid_mime_type', {}, options.i18n);
