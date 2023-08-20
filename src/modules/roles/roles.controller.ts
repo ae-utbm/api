@@ -19,7 +19,7 @@ import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
 import { validateObject } from '@utils/validate';
 
-import { RolePatchDTO } from './dto/patch.dto';
+import { RoleEditUsersDTO, RolePatchDTO } from './dto/patch.dto';
 import { RolePostDTO } from './dto/post.dto';
 import { Role } from './entities/role.entity';
 import { RolesService } from './roles.service';
@@ -107,37 +107,47 @@ export class RolesController {
 		return this.rolesService.getUsers(id);
 	}
 
-	@Post(':role_id/users/:user_id')
+	@Post(':role_id/users')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_ROLE')
-	@ApiOperation({ summary: 'Add a user to the role' })
+	@ApiOperation({ summary: 'Add users to the role' })
 	@ApiOkResponse({ type: [BaseUserResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiNotFoundResponse({ description: 'Role or user not found' })
-	async addUserToRole(@Param('role_id') role_id: number, @Param('user_id') user_id: number) {
+	@ApiNotFoundResponse({ description: 'Role not found' })
+	async addUsersToRole(@Param('role_id') role_id: number, @Body() body: RoleEditUsersDTO) {
 		if (typeof role_id !== 'number' && parseInt(role_id, 10) != role_id)
 			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'role_id' }));
 
-		if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
+		if (!body.users || !Array.isArray(body.users) || body.users.length === 0)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Array, field: 'users' }));
 
-		return this.rolesService.addUser(role_id, user_id);
+		body.users.forEach((user_id) => {
+			if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
+				throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
+		});
+
+		return this.rolesService.addUsers(role_id, body.users);
 	}
 
-	@Delete(':role_id/users/:user_id')
+	@Delete(':role_id/users')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_ROLE')
-	@ApiOperation({ summary: 'Remove a user from the role' })
+	@ApiOperation({ summary: 'Remove users from the role' })
 	@ApiOkResponse({ type: [BaseUserResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiNotFoundResponse({ description: 'Role or user not found' })
-	async removeUserToRole(@Param('role_id') role_id: number, @Param('user_id') user_id: number) {
+	@ApiNotFoundResponse({ description: 'Role not found' })
+	async removeUserToRole(@Param('role_id') role_id: number, @Body('') body: RoleEditUsersDTO) {
 		if (typeof role_id !== 'number' && parseInt(role_id, 10) != role_id)
 			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'role_id' }));
 
-		if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
+		if (!body.users || !Array.isArray(body.users) || body.users.length === 0)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Array, field: 'users' }));
 
-		return this.rolesService.removeUser(role_id, user_id);
+		body.users.forEach((user_id) => {
+			if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
+				throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
+		});
+
+		return this.rolesService.removeUsers(role_id, body.users);
 	}
 }

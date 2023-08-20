@@ -21,6 +21,7 @@ import { checkEmail, sendEmail } from '@utils/email';
 import { checkPasswordStrength, generateRandomPassword } from '@utils/password';
 import { getTemplate } from '@utils/template';
 
+import { BaseUserResponseDTO } from './dto/base-user.dto';
 import { UserPatchDTO } from './dto/patch.dto';
 
 @Injectable()
@@ -100,8 +101,8 @@ export class UsersService {
 	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter = true): Promise<User | Partial<User>> {
 		let user: User = null;
 
-		if (id) user = await this.orm.em.findOne(User, { id });
-		if (email) user = await this.orm.em.findOne(User, { email });
+		if (id) user = await this.orm.em.findOne(User, { id }, { populate: true });
+		if (email) user = await this.orm.em.findOne(User, { email }, { populate: true });
 
 		if (!id && !email) throw new BadRequestException(Errors.Generic.IdOrEmailMissing({ i18n: this.i18n, type: User }));
 		if (!user && id) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id }));
@@ -184,26 +185,6 @@ export class UsersService {
 	}
 
 	@UseRequestContext()
-	async verifyEmail(user_id: number, token: string): Promise<User> {
-		if (!user_id || !token) throw new BadRequestException('Missing user id or token');
-
-		const user = await this.orm.em.findOne(User, { id: user_id });
-		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id: user_id }));
-
-		if (user.email_verified)
-			throw new BadRequestException(Errors.Email.AlreadyVerified({ i18n: this.i18n, type: User }));
-
-		if (!compareSync(token, user.email_verification))
-			throw new UnauthorizedException(Errors.Email.InvalidVerificationToken({ i18n: this.i18n }));
-
-		user.email_verified = true;
-		user.email_verification = null;
-
-		await this.orm.em.persistAndFlush(user);
-		return user;
-	}
-
-	@UseRequestContext()
 	async registerByAdmin(input: UserPostByAdminDTO): Promise<User> {
 		if (await this.orm.em.findOne(User, { email: input.email }))
 			throw new BadRequestException(`User already with the email '${input.email}' already exists`);
@@ -227,6 +208,26 @@ export class UsersService {
 				password,
 			}),
 		});
+
+		await this.orm.em.persistAndFlush(user);
+		return user;
+	}
+
+	@UseRequestContext()
+	async verifyEmail(user_id: number, token: string): Promise<User> {
+		if (!user_id || !token) throw new BadRequestException('Missing user id or token');
+
+		const user = await this.orm.em.findOne(User, { id: user_id });
+		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id: user_id }));
+
+		if (user.email_verified)
+			throw new BadRequestException(Errors.Email.AlreadyVerified({ i18n: this.i18n, type: User }));
+
+		if (!compareSync(token, user.email_verification))
+			throw new UnauthorizedException(Errors.Email.InvalidVerificationToken({ i18n: this.i18n }));
+
+		user.email_verified = true;
+		user.email_verification = null;
 
 		await this.orm.em.persistAndFlush(user);
 		return user;
@@ -259,7 +260,7 @@ export class UsersService {
 
 	@UseRequestContext()
 	async updatePicture(id: number, file: Express.Multer.File): Promise<User> {
-		const user = await this.orm.em.findOne(User, { id });
+		const user = await this.orm.em.findOne(User, { id }, { fields: ['picture'], populate: true });
 		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id, i18n: this.i18n }));
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
@@ -270,7 +271,6 @@ export class UsersService {
 
 		// Remove old file if present
 		if (user.picture) {
-			await user.picture.init();
 			this.filesService.deleteOnDisk(user.picture);
 
 			user.picture.filename = fileInfos.filename;
@@ -293,33 +293,29 @@ export class UsersService {
 
 		await this.orm.em.persistAndFlush(user);
 
-		// Fix issue with the picture not being populated
-		// -> happens when the picture is updated
-		const out = await this.orm.em.findOne(User, { id }, { fields: ['*'], populate: ['picture'] });
-		delete out.picture.picture_user; // avoid circular reference
-		return out;
+		delete user.picture.picture_user; // avoid circular reference
+		return user;
 	}
 
 	@UseRequestContext()
 	async getPicture(id: number): Promise<UserPicture> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['picture'] });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['picture'], populate: true });
 		if (!user.picture) throw new NotFoundException('User has no picture');
 		return user.picture;
 	}
 
 	@UseRequestContext()
 	async deletePicture(id: number): Promise<void> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['picture'] });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['picture'], populate: true });
 		if (!user.picture) throw new NotFoundException('User has no picture to be deleted');
 
-		await user.picture.init();
 		this.filesService.deleteOnDisk(user.picture);
 		await this.orm.em.removeAndFlush(user.picture);
 	}
 
 	@UseRequestContext()
 	async updateBanner(id: number, file: Express.Multer.File): Promise<User> {
-		const user = await this.orm.em.findOne(User, { id });
+		const user = await this.orm.em.findOne(User, { id }, { fields: ['banner'], populate: true });
 		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id, i18n: this.i18n }));
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
@@ -330,7 +326,6 @@ export class UsersService {
 
 		// Remove old file if present
 		if (user.banner) {
-			await user.banner.init();
 			this.filesService.deleteOnDisk(user.banner);
 
 			user.banner.filename = fileInfos.filename;
@@ -362,17 +357,16 @@ export class UsersService {
 
 	@UseRequestContext()
 	async getBanner(id: number): Promise<UserBanner> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['banner'] });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['banner'], populate: true });
 		if (!user.banner) throw new NotFoundException('User has no banner');
 		return user.banner;
 	}
 
 	@UseRequestContext()
 	async deleteBanner(id: number): Promise<void> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['banner'] });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['banner'], populate: true });
 		if (!user.banner) throw new NotFoundException('User has no banner to be deleted');
 
-		await user.banner.init();
 		this.filesService.deleteOnDisk(user.banner);
 		await this.orm.em.removeAndFlush(user.banner);
 	}
@@ -385,7 +379,7 @@ export class UsersService {
 
 	@UseRequestContext()
 	async getUserRoles(id: number, input: { show_expired: boolean; show_revoked: boolean }) {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['roles'] });
+		const user = await this.orm.em.findOneOrFail(User, { id }, { fields: ['roles'], populate: true });
 		const roles = user.roles.getItems();
 
 		if (!input.show_expired) roles.filter((p) => p.expires > new Date());

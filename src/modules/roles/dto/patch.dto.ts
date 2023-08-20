@@ -10,3 +10,9 @@ export class RolePatchDTO extends RolePostDTO implements RolePatchDto {
 	@IsNumber()
 	id: number;
 }
+
+export class RoleEditUsersDTO {
+	@ApiProperty({ required: true, type: [Number], example: [1, 2, 3] })
+	@IsNumber({}, { each: true })
+	users: number[];
+}

@@ -8,6 +8,7 @@ import { I18nService } from 'nestjs-i18n';
 import { Errors } from '@i18n';
 import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
 import { User } from '@modules/users/entities/user.entity';
+import { UsersService } from '@modules/users/users.service';
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
 import { RolePatchDTO } from './dto/patch.dto';
@@ -15,7 +16,11 @@ import { Role } from './entities/role.entity';
 
 @Injectable()
 export class RolesService {
-	constructor(private readonly orm: MikroORM, private readonly i18n: I18nService<I18nTranslations>) {}
+	constructor(
+		private readonly orm: MikroORM,
+		private readonly i18n: I18nService<I18nTranslations>,
+		private readonly usersService: UsersService,
+	) {}
 
 	/**
 	 * Automatically revoke roles that have expired
@@ -54,15 +59,11 @@ export class RolesService {
 	}
 
 	@UseRequestContext()
-	async createRole(
-		name: Uppercase<string>,
-		permissions: PERMISSION_NAMES[],
-		expires: Date,
-	): Promise<Omit<Role, 'users'>> {
-		name = name.toUpperCase();
+	async createRole(name: string, permissions: PERMISSION_NAMES[], expires: Date): Promise<Omit<Role, 'users'>> {
+		const roleName = name.toUpperCase();
 
-		if (await this.orm.em.findOne(Role, { name }))
-			throw new BadRequestException(Errors.Role.NameAlreadyUsed({ name, i18n: this.i18n }));
+		if (await this.orm.em.findOne(Role, { name: roleName }))
+			throw new BadRequestException(Errors.Role.NameAlreadyUsed({ name: roleName, i18n: this.i18n }));
 
 		// Remove eventual duplicates
 		permissions = permissions.unique();
@@ -72,7 +73,7 @@ export class RolesService {
 				throw new BadRequestException(Errors.Permission.Invalid({ permission: p, i18n: this.i18n }));
 		});
 
-		const role = this.orm.em.create(Role, { name, permissions, expires });
+		const role = this.orm.em.create(Role, { name: roleName, permissions, expires });
 		await this.orm.em.persistAndFlush(role);
 
 		delete role.users;
@@ -85,7 +86,7 @@ export class RolesService {
 		if (!role) throw new NotFoundException(Errors.Generic.IdNotFound({ type: Role, id: input.id, i18n: this.i18n }));
 
 		role.name = input.name.toUpperCase();
-		role.permissions = input.permissions;
+		role.permissions = input.permissions.unique();
 		role.expires = input.expires;
 		await this.orm.em.persistAndFlush(role);
 
@@ -101,56 +102,32 @@ export class RolesService {
 	}
 
 	@UseRequestContext()
-	async addUser(role_id: number, user_id: number): Promise<BaseUserResponseDTO[]> {
-		const role = await this.orm.em.findOne(Role, { id: role_id });
+	async addUsers(role_id: number, users_id: number[]): Promise<BaseUserResponseDTO[]> {
+		const role = await this.orm.em.findOne(Role, { id: role_id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(Errors.Generic.IdNotFound({ type: Role, id: role_id, i18n: this.i18n }));
 
-		const user = await this.orm.em.findOne(User, { id: user_id });
-		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id: user_id, i18n: this.i18n }));
+		const users = await this.orm.em.find(User, { id: { $in: users_id } });
+		if (!users.length)
+			throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id: users_id.toString(), i18n: this.i18n }));
 
-		await role.users.init();
-		role.users.add(user);
-		await this.orm.em.persistAndFlush([role, user]);
+		role.users.add(users);
 
-		const res: BaseUserResponseDTO[] = [];
-		role.users.getItems().forEach((user) =>
-			res.push({
-				id: user.id,
-				updated_at: user.updated_at,
-				created_at: user.created_at,
-				first_name: user.first_name,
-				last_name: user.last_name,
-				nickname: user.nickname,
-			}),
-		);
-
-		return res;
+		await this.orm.em.persistAndFlush([role, ...users]);
+		return this.usersService.asBaseUsers(role.users.getItems().sort((a, b) => a.id - b.id));
 	}
 
 	@UseRequestContext()
-	async removeUser(role_id: number, user_id: number): Promise<BaseUserResponseDTO[]> {
-		const role = await this.orm.em.findOne(Role, { id: role_id });
+	async removeUsers(role_id: number, users_id: number[]): Promise<BaseUserResponseDTO[]> {
+		const role = await this.orm.em.findOne(Role, { id: role_id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(Errors.Generic.IdNotFound({ type: Role, id: role_id, i18n: this.i18n }));
 
-		const user = await this.orm.em.findOne(User, { id: user_id });
-		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id: user_id, i18n: this.i18n }));
+		const users = await this.orm.em.find(User, { id: { $in: users_id } });
+		if (!users.length)
+			throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id: users_id.toString(), i18n: this.i18n }));
 
-		await role.users.init();
-		role.users.remove(user);
-		await this.orm.em.persistAndFlush([role, user]);
+		role.users.remove(users);
 
-		const res: BaseUserResponseDTO[] = [];
-		role.users.getItems().forEach((user) =>
-			res.push({
-				id: user.id,
-				updated_at: user.updated_at,
-				created_at: user.created_at,
-				first_name: user.first_name,
-				last_name: user.last_name,
-				nickname: user.nickname,
-			}),
-		);
-
-		return res;
+		await this.orm.em.persistAndFlush([role, ...users]);
+		return this.usersService.asBaseUsers(role.users.getItems().sort((a, b) => a.id - b.id));
 	}
 }

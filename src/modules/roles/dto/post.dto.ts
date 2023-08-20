@@ -8,7 +8,7 @@ import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 export class RolePostDTO implements RolePostDto {
 	@ApiProperty({ type: String, example: 'AE_ADMINS' })
 	@IsString()
-	name: Uppercase<string>;
+	name: string;
 
 	@ApiProperty({ enum: PERMISSIONS_NAMES, isArray: true })
 	@IsString()
