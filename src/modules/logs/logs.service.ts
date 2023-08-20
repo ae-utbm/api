@@ -29,14 +29,13 @@ export class LogsService {
 
 	async getUserLogs(id: number) {
 		const user = await this.usersService.findOne({ id });
+		const logs = user.logs.getItems().map((log) => ({ ...log, user: log.user.id }));
 
-		await user.logs.init();
-		return user.logs.getItems();
+		return logs;
 	}
 
 	async deleteUserLogs(id: number) {
 		const user = await this.usersService.findOne({ id });
-		await user.logs.init();
 		user.logs.removeAll();
 
 		return { message: Success.Generic.Deleted({ i18n: this.i18n, type: Log }), statusCode: 200 };

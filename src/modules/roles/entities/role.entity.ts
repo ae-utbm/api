@@ -35,5 +35,6 @@ export class Role extends BaseEntity implements RoleEntity<Permission, User> {
 
 	/** Specify to which user the role is attached */
 	@ManyToMany(() => User, (user) => user.roles, { owner: true })
+	@ApiProperty({ type: Number, default: 1 })
 	users = new Collection<User>(this);
 }

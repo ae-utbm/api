@@ -62,6 +62,22 @@ export class UsersService {
 		return user;
 	}
 
+	public asBaseUsers(users: User[]): BaseUserResponseDTO[] {
+		const res: BaseUserResponseDTO[] = [];
+		for (const user of users) {
+			res.push({
+				id: user.id,
+				updated_at: user.updated_at,
+				created_at: user.created_at,
+				first_name: user.first_name,
+				last_name: user.last_name,
+				nickname: user.nickname,
+			});
+		}
+
+		return res;
+	}
+
 	/**
 	 * Find a user by id or email and return it
 	 * @param {Partial<Pick<User, 'id' | 'email'>>} param0 The id or email of the user to find

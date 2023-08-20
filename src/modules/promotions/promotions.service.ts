@@ -97,7 +97,7 @@ export class PromotionsService {
 
 	@UseRequestContext()
 	async updateLogo(number: number, file: Express.Multer.File): Promise<Promotion> {
-		const promotion = await this.orm.em.findOne(Promotion, { number });
+		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
 
 		if (!promotion)
 			throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, id: number, type: Promotion }));
@@ -109,7 +109,6 @@ export class PromotionsService {
 		});
 
 		if (promotion.picture) {
-			await promotion.picture.init();
 			this.filesService.deleteOnDisk(promotion.picture);
 
 			promotion.picture.filename = fileInfos.filename;
@@ -138,26 +137,23 @@ export class PromotionsService {
 	}
 
 	@UseRequestContext()
-	async getLogo(number: number) {
-		const promotion = await this.orm.em.findOne(Promotion, { number });
+	async getLogo(number: number): Promise<PromotionPicture> {
+		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
 		if (!promotion)
 			throw new NotFoundException(Errors.Generic.IdNotFound({ type: Promotion, id: number, i18n: this.i18n }));
 
 		if (!promotion.picture) throw new NotFoundException(Errors.Promotion.LogoNotFound({ i18n: this.i18n, number }));
-
-		await promotion.picture.init();
 		return promotion.picture;
 	}
 
 	@UseRequestContext()
 	async deleteLogo(number: number): Promise<Promotion> {
-		const promotion = await this.orm.em.findOne(Promotion, { number });
+		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
 		if (!promotion)
 			throw new NotFoundException(Errors.Generic.IdNotFound({ type: Promotion, id: number, i18n: this.i18n }));
 
 		if (!promotion.picture) throw new NotFoundException(Errors.Promotion.LogoNotFound({ i18n: this.i18n, number }));
 
-		await promotion.picture.init();
 		this.filesService.deleteOnDisk(promotion.picture);
 		await this.orm.em.removeAndFlush(promotion.picture);
 

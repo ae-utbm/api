@@ -109,14 +109,11 @@ export class FilesService {
 	 */
 	@UseRequestContext()
 	async getVisibilityGroup(name: Uppercase<string> = 'SUBSCRIBER'): Promise<FileVisibilityGroup> {
-		const res = await this.orm.em.findOne(FileVisibilityGroup, { name });
+		const res = await this.orm.em.findOne(FileVisibilityGroup, { name }, { populate: ['users', 'files'] });
 		if (!res)
 			throw new BadRequestException(
 				Errors.Generic.NotFound({ i18n: this.i18n, type: FileVisibilityGroup, value: name, field: 'name' }),
 			);
-
-		await res.users.init();
-		await res.files.init();
 
 		return res;
 	}

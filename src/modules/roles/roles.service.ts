@@ -40,11 +40,10 @@ export class RolesService {
 	 * @returns the array of all roles
 	 */
 	@UseRequestContext()
-	async getAllRoles(): Promise<Omit<Role, 'users'>[]> {
-		const roles = await this.orm.em.find(Role, {});
+	async getAllRoles(): Promise<(Omit<Role, 'users'> & { users: number })[]> {
+		const roles = await this.orm.em.find(Role, {}, { populate: ['users'] });
+		return roles.map((r) => ({ ...r, users: r.users.count() }));
 
-		roles.forEach((r) => delete r.users);
-		return roles;
 	}
 
 	@UseRequestContext()
@@ -75,7 +74,7 @@ export class RolesService {
 
 	@UseRequestContext()
 	async editRole(input: RolePatchDTO): Promise<Omit<Role, 'users'> & { users: number }> {
-		const role = await this.orm.em.findOne(Role, { id: input.id });
+		const role = await this.orm.em.findOne(Role, { id: input.id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(Errors.Generic.IdNotFound({ type: Role, id: input.id, i18n: this.i18n }));
 
 		role.name = input.name.toUpperCase();
@@ -83,30 +82,15 @@ export class RolesService {
 		role.expires = input.expires;
 		await this.orm.em.persistAndFlush(role);
 
-		await role.users.init();
 		return { ...role, users: role.users.count() };
 	}
 
 	@UseRequestContext()
 	async getUsers(id: number): Promise<BaseUserResponseDTO[]> {
-		const role = await this.orm.em.findOne(Role, { id });
+		const role = await this.orm.em.findOne(Role, { id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(Errors.Generic.IdNotFound({ type: Role, id, i18n: this.i18n }));
 
-		await role.users.init();
-
-		const res: BaseUserResponseDTO[] = [];
-		for (const user of role.users) {
-			res.push({
-				id: user.id,
-				updated_at: user.updated_at,
-				created_at: user.created_at,
-				first_name: user.first_name,
-				last_name: user.last_name,
-				nickname: user.nickname,
-			});
-		}
-
-		return res;
+		return this.usersService.asBaseUsers(role.users.getItems().sort((a, b) => a.id - b.id));
 	}
 
 	@UseRequestContext()

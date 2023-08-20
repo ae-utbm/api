@@ -48,11 +48,10 @@ export class PermissionsService {
 			throw new BadRequestException(Errors.Permission.Invalid({ i18n: this.i18n, permission: data.permission }));
 
 		// Find the user
-		const user = await this.orm.em.findOne(User, { id: data.id });
+		const user = await this.orm.em.findOne(User, { id: data.id }, { populate: ['permissions'] });
 		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id: data.id }));
 
 		// Check if the user already has the permission
-		await user.permissions.init();
 		if (
 			user.permissions
 				.getItems()
