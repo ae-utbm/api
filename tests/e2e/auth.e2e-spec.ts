@@ -217,13 +217,14 @@ describe('Auth (e2e)', () => {
 					first_name: 'John',
 					full_name: 'John Doe',
 					id: expect.any(Number),
-					is_currently_subscribed: false,
+					gender: 'OTHER',
+					// is_currently_subscribed: false,
 					is_minor: false,
 					last_name: 'Doe',
 					logs: [],
 					permissions: [],
 					roles: [],
-					subscriptions: [],
+					// subscriptions: [],
 					updated_at: expect.any(String),
 				});
 			});
@@ -295,9 +296,9 @@ describe('Auth (e2e)', () => {
 					email_verified: true,
 					first_name: 'unverified',
 					full_name: 'unverified user',
-					gender: null,
+					gender: 'OTHER',
 					id: user_id,
-					is_currently_subscribed: false,
+					// is_currently_subscribed: false,
 					is_minor: false,
 					last_name: 'user',
 					last_seen: null,
@@ -309,7 +310,7 @@ describe('Auth (e2e)', () => {
 					pronouns: null,
 					secondary_email: null,
 					specialty: null,
-					subscriber_account: null,
+					// subscriber_account: null,
 					updated_at: expect.any(String),
 				});
 
