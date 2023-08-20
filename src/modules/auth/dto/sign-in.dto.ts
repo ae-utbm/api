@@ -8,7 +8,7 @@ export class UserSignInDTO implements UserSignInDto {
 	@IsString()
 	email: email;
 
-	@ApiProperty()
+	@ApiProperty({ example: 'password' })
 	@IsString()
 	password: string;
 }

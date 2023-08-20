@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsString } from 'class-validator';
 
 export class TokenDTO implements UserTokenDto {
-	@ApiProperty()
+	@ApiProperty({ example: 'xxxxx.yyyyy.zzzzz' })
 	@IsString()
 	token: string;
 

@@ -4,25 +4,25 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsEmail, IsString, IsStrongPassword } from 'class-validator';
 
 export class UserPostByAdminDTO implements Omit<UserPostDto, 'password'> {
-	@ApiProperty()
+	@ApiProperty({ example: 'example@domain.com' })
 	@IsEmail()
 	email: email;
 
-	@ApiProperty()
+	@ApiProperty({ example: '1999-12-31' })
 	@IsDate()
 	birth_date: Date;
 
-	@ApiProperty()
+	@ApiProperty({ example: 'John' })
 	@IsString()
 	first_name: string;
 
-	@ApiProperty()
+	@ApiProperty({ example: 'Doe' })
 	@IsString()
 	last_name: string;
 }
 
 export class UserPostDTO extends UserPostByAdminDTO implements UserPostDto {
-	@ApiProperty()
+	@ApiProperty({ example: 'password' })
 	@IsStrongPassword()
 	password: string;
 }
