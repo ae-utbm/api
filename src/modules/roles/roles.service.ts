@@ -43,7 +43,14 @@ export class RolesService {
 	async getAllRoles(): Promise<(Omit<Role, 'users'> & { users: number })[]> {
 		const roles = await this.orm.em.find(Role, {}, { populate: ['users'] });
 		return roles.map((r) => ({ ...r, users: r.users.count() }));
+	}
 
+	@UseRequestContext()
+	async getRole(id: number): Promise<Omit<Role, 'users'> & { users: number }> {
+		const role = await this.orm.em.findOne(Role, { id }, { populate: ['users'] });
+		if (!role) throw new NotFoundException(Errors.Generic.IdNotFound({ type: Role, id, i18n: this.i18n }));
+
+		return { ...role, users: role.users.count() };
 	}
 
 	@UseRequestContext()

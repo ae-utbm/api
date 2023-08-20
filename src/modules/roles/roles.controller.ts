@@ -79,6 +79,20 @@ export class RolesController {
 		return this.rolesService.getAllRoles();
 	}
 
+	@Get(':role_id')
+	@UseGuards(PermissionGuard)
+	@GuardPermissions('CAN_READ_ROLE')
+	@ApiOperation({ summary: 'Get the specified role' })
+	@ApiOkResponse({ type: Role })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiNotFoundResponse({ description: 'Role not found' })
+	async getRole(@Param('role_id') id: number) {
+		if (typeof id !== 'number' && parseInt(id, 10) != id)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+
+		return this.rolesService.getRole(id);
+	}
+
 	@Get(':role_id/users')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_ROLE')
