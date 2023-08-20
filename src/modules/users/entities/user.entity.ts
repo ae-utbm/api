@@ -4,7 +4,7 @@ import {
 	Cascade,
 	Collection,
 	Entity,
-	EntityDTO,
+	// EntityDTO,
 	ManyToMany,
 	ManyToOne,
 	OneToMany,
@@ -31,11 +31,11 @@ export class User
 {
 	//* INFORMATIONS
 	@Property()
-	@ApiProperty()
+	@ApiProperty({ example: 'John' })
 	first_name: string;
 
 	@Property()
-	@ApiProperty()
+	@ApiProperty({ example: 'Doe' })
 	last_name: string;
 
 	@Property({ onCreate: () => false })
@@ -47,28 +47,28 @@ export class User
 
 	/** Get the full name of the user */
 	@Property({ persist: false })
-	@ApiProperty()
+	@ApiProperty({ example: 'John Doe' })
 	get full_name(): string {
 		return `${this.first_name} ${this.last_name}`;
 	}
 
 	@OneToOne(() => UserPicture, (picture) => picture.picture_user, { cascade: [Cascade.ALL], nullable: true })
-	@ApiProperty()
+	@ApiProperty({ type: Number, minimum: 1 })
 	picture?: UserPicture;
 
 	@OneToOne(() => UserBanner, (banner) => banner.banner_user, { cascade: [Cascade.ALL], nullable: true })
-	@ApiProperty()
+	@ApiProperty({ type: Number, minimum: 1 })
 	banner?: UserBanner;
 
 	@Property({ unique: true, type: String })
-	@ApiProperty({ type: String })
+	@ApiProperty({ type: String, example: 'example@domain.com' })
 	email: email;
 
 	@Property({ hidden: true })
 	password: string;
 
 	@Property({ type: 'date' })
-	@ApiProperty()
+	@ApiProperty({ example: new Date('1999-12-31') })
 	birth_date: Date;
 
 	/** The age of the user */
@@ -90,12 +90,12 @@ export class User
 	@ApiProperty()
 	nickname?: string;
 
-	@Property({ nullable: true })
-	@ApiProperty()
-	gender?: string;
+	@Property({ default: 'OTHER' })
+	@ApiProperty({ example: 'OTHER', enum: ['MALE', 'FEMALE', 'OTHER'] })
+	gender?: 'MALE' | 'FEMALE' | 'OTHER';
 
 	@Property({ nullable: true })
-	@ApiProperty()
+	@ApiProperty({ example: null })
 	pronouns?: string;
 
 	// TODO: use an entity relation ?
@@ -109,37 +109,37 @@ export class User
 	specialty?: string;
 
 	@ManyToOne(() => Promotion, { nullable: true })
-	@ApiProperty({ type: Number })
+	@ApiProperty({ type: Number, minimum: 1 })
 	promotion?: Promotion;
 
 	@Property({ type: 'date', nullable: true })
-	@ApiProperty()
+	@ApiProperty({ example: Date.now() })
 	last_seen?: Date;
 
 	//* SUBSCRIPTIONS
-	@OneToMany(() => Subscription, (subscription) => subscription.user, {
-		cascade: [Cascade.REMOVE],
-		nullable: true,
-		orphanRemoval: true,
-	})
-	subscriptions?: Collection<Subscription>;
+	// @OneToMany(() => Subscription, (subscription) => subscription.user, {
+	// 	cascade: [Cascade.REMOVE],
+	// 	nullable: true,
+	// 	orphanRemoval: true,
+	// })
+	// subscriptions?: Collection<Subscription>;
 
-	@Property({ nullable: true })
-	@ApiProperty()
-	subscriber_account?: string;
+	// @Property({ nullable: true })
+	// @ApiProperty()
+	// subscriber_account?: string;
 
 	/** The current subscription of the user */
-	@Property({ persist: false })
-	get current_subscription(): EntityDTO<Subscription> | undefined {
-		return this.subscriptions.toArray().find((subscription) => subscription.is_active);
-	}
+	// @Property({ persist: false })
+	// get current_subscription(): EntityDTO<Subscription> | undefined {
+	// 	return this.subscriptions.toArray().find((subscription) => subscription.is_active);
+	// }
 
 	/** True if the user is currently subscribed */
-	@Property({ persist: false })
-	@ApiProperty()
-	get is_currently_subscribed(): boolean {
-		return this.current_subscription !== undefined;
-	}
+	// @Property({ persist: false })
+	// @ApiProperty()
+	// get is_currently_subscribed(): boolean {
+	// 	return this.current_subscription !== undefined;
+	// }
 
 	//* CONTACT
 	@Property({ nullable: true })
