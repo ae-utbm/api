@@ -65,7 +65,7 @@ export class UsersService {
 
 	public asBaseUsers(users: User[]): BaseUserResponseDTO[] {
 		const res: BaseUserResponseDTO[] = [];
-		for (const user of users) {
+		for (const user of users.sort((a, b) => a.id - b.id)) {
 			res.push({
 				id: user.id,
 				updated_at: user.updated_at,

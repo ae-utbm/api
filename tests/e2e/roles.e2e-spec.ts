@@ -150,6 +150,7 @@ describe('Roles (e2e)', () => {
 				});
 			});
 		});
+
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
 				const response = await request(app.getHttpServer())
@@ -322,6 +323,21 @@ describe('Roles (e2e)', () => {
 					error: 'Forbidden',
 					statusCode: 403,
 					message: 'Forbidden resource',
+				});
+			});
+		});
+
+		describe('404 : Not Found', () => {
+			it('when the role id does not exist', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/roles/9999')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.expect(404);
+
+				expect(response.body).toEqual({
+					statusCode: 404,
+					message: Errors.Generic.IdNotFound({ i18n, id: 9999, type: Role }),
+					error: 'Not Found',
 				});
 			});
 		});
@@ -543,11 +559,12 @@ describe('Roles (e2e)', () => {
 
 		describe('201 : Created', () => {
 			it('should add the users to the role', async () => {
+				const role_id = (await orm.em.findOne(Role, { name: 'TEST_TEST_ROLE' })).id;
 				const response = await request(app.getHttpServer())
-					.post('/roles/1/users')
+					.post(`/roles/${role_id}/users`)
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
-						users: [1, 5],
+						users: [1, 2, 5],
 					})
 					.expect(201);
 
@@ -564,6 +581,173 @@ describe('Roles (e2e)', () => {
 					first_name: 'root',
 					last_name: 'root',
 					nickname: 'noot noot',
+				});
+
+				expect(body[1]).toEqual({
+					id: 2,
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
+					first_name: 'unverified',
+					last_name: 'user',
+					nickname: null,
+				});
+
+				expect(body[2]).toEqual({
+					id: 5,
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
+					first_name: 'perms',
+					last_name: 'moderator',
+					nickname: null,
+				});
+			});
+		});
+	});
+
+	describe('(DELETE) /roles/:roles_id/users', () => {
+		describe('400 : Bad Request', () => {
+			it('when the id is invalid', async () => {
+				const response = await request(app.getHttpServer())
+					.delete('/roles/invalid/users')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.send({
+						users: [1, 2, 3],
+					})
+					.expect(400);
+
+				expect(response.body).toEqual({
+					statusCode: 400,
+					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'role_id' }),
+					error: 'Bad Request',
+				});
+			});
+
+			it('when the user id is invalid', async () => {
+				const response = await request(app.getHttpServer())
+					.delete('/roles/1/users')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.send({
+						users: ['invalid'],
+					})
+					.expect(400);
+
+				expect(response.body).toEqual({
+					statusCode: 400,
+					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'user_id' }),
+					error: 'Bad Request',
+				});
+			});
+
+			it('when no user ids are given', async () => {
+				const response = await request(app.getHttpServer())
+					.delete('/roles/1/users')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.send({
+						users: [],
+					})
+					.expect(400);
+
+				expect(response.body).toEqual({
+					statusCode: 400,
+					message: Errors.Generic.FieldInvalid({ i18n, type: Array, field: 'users' }),
+					error: 'Bad Request',
+				});
+			});
+		});
+
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).delete('/roles/1/users').expect(401);
+
+				expect(response.body).toEqual({
+					statusCode: 401,
+					message: 'Unauthorized',
+				});
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.delete('/roles/1/users')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					statusCode: 403,
+					message: 'Forbidden resource',
+				});
+			});
+		});
+
+		describe('404 : Not Found', () => {
+			it('when the role does not exist', async () => {
+				const response = await request(app.getHttpServer())
+					.delete('/roles/9999/users')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.send({
+						users: [1, 2, 3],
+					})
+					.expect(404);
+
+				expect(response.body).toEqual({
+					statusCode: 404,
+					message: Errors.Generic.IdNotFound({ i18n, id: 9999, type: Role }),
+					error: 'Not Found',
+				});
+			});
+
+			it('when the user does not exist', async () => {
+				const response = await request(app.getHttpServer())
+					.delete('/roles/1/users')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.send({
+						users: [9999],
+					})
+					.expect(404);
+
+				expect(response.body).toEqual({
+					statusCode: 404,
+					message: Errors.Generic.IdNotFound({ i18n, id: 9999, type: User }),
+					error: 'Not Found',
+				});
+			});
+		});
+
+		describe('200 : Ok', () => {
+			it('when the role exist and the users are removed', async () => {
+				const role_id = (await orm.em.findOne(Role, { name: 'TEST_TEST_ROLE' })).id;
+				const response = await request(app.getHttpServer())
+					.delete(`/roles/${role_id}/users`)
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.send({
+						users: [2],
+					})
+					.expect(200);
+
+				const body = response.body as Array<unknown>;
+
+				expect(body).toBeInstanceOf(Array);
+				expect(body.length).toEqual(2);
+				expect(body.haveEqualObjects()).toBe(true);
+
+				expect(body[0]).toEqual({
+					id: 1,
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
+					first_name: 'root',
+					last_name: 'root',
+					nickname: 'noot noot',
+				});
+
+				expect(body[1]).toEqual({
+					id: 5,
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
+					first_name: 'perms',
+					last_name: 'moderator',
+					nickname: null,
 				});
 			});
 		});

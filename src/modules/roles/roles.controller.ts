@@ -96,7 +96,7 @@ export class RolesController {
 	@Get(':role_id/users')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_ROLE')
-	@ApiOperation({ summary: 'Get user of the specified role' })
+	@ApiOperation({ summary: 'Get user(s) of the specified role' })
 	@ApiOkResponse({ type: [BaseUserResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
@@ -110,7 +110,7 @@ export class RolesController {
 	@Post(':role_id/users')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_ROLE')
-	@ApiOperation({ summary: 'Add users to the role' })
+	@ApiOperation({ summary: 'Add user(s) to the role' })
 	@ApiOkResponse({ type: [BaseUserResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
@@ -132,11 +132,11 @@ export class RolesController {
 	@Delete(':role_id/users')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_ROLE')
-	@ApiOperation({ summary: 'Remove users from the role' })
+	@ApiOperation({ summary: 'Remove user(s) from the role' })
 	@ApiOkResponse({ type: [BaseUserResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
-	async removeUserToRole(@Param('role_id') role_id: number, @Body('') body: RoleEditUsersDTO) {
+	async removeUsersToRole(@Param('role_id') role_id: number, @Body('') body: RoleEditUsersDTO) {
 		if (typeof role_id !== 'number' && parseInt(role_id, 10) != role_id)
 			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'role_id' }));
 

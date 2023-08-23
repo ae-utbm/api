@@ -30,11 +30,12 @@ export class RolesService {
 	@UseRequestContext()
 	async revokeExpiredRoles(): Promise<void> {
 		const roles = await this.orm.em.find(Role, { expires: { $lte: new Date() }, revoked: false });
-		if (!roles.length) return;
 
-		roles.forEach((role) => {
-			role.revoked = true;
-			role.updated_at = new Date();
+		roles.map((r) => {
+			r.revoked = true;
+			r.updated_at = new Date();
+
+			return r;
 		});
 
 		await this.orm.em.persistAndFlush(roles);
@@ -98,7 +99,7 @@ export class RolesService {
 		const role = await this.orm.em.findOne(Role, { id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(Errors.Generic.IdNotFound({ type: Role, id, i18n: this.i18n }));
 
-		return this.usersService.asBaseUsers(role.users.getItems().sort((a, b) => a.id - b.id));
+		return this.usersService.asBaseUsers(role.users.getItems());
 	}
 
 	@UseRequestContext()
@@ -113,7 +114,7 @@ export class RolesService {
 		role.users.add(users);
 
 		await this.orm.em.persistAndFlush([role, ...users]);
-		return this.usersService.asBaseUsers(role.users.getItems().sort((a, b) => a.id - b.id));
+		return this.usersService.asBaseUsers(role.users.getItems());
 	}
 
 	@UseRequestContext()
@@ -128,6 +129,6 @@ export class RolesService {
 		role.users.remove(users);
 
 		await this.orm.em.persistAndFlush([role, ...users]);
-		return this.usersService.asBaseUsers(role.users.getItems().sort((a, b) => a.id - b.id));
+		return this.usersService.asBaseUsers(role.users.getItems());
 	}
 }
