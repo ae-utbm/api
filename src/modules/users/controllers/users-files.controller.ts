@@ -29,7 +29,7 @@ import { FilesService } from '@modules/files/files.service';
 import { User } from '../entities/user.entity';
 import { UsersService } from '../users.service';
 
-@ApiTags('Users')
+@ApiTags('Users Files')
 @Controller('users')
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
