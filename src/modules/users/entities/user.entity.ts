@@ -98,15 +98,15 @@ export class User
 	@ApiProperty({ example: null })
 	pronouns?: string;
 
-	// TODO: use an entity relation ?
-	@Property({ nullable: true })
-	@ApiProperty()
-	cursus?: string;
+	// TODO: use an entity relation with both cursus and specialty (called semester ?)
+	//* Should be a One to Many relation (one user can have multiple semester)
+	// @Property({ nullable: true })
+	// @ApiProperty()
+	// cursus?: string;
 
-	// TODO: use an entity relation ?
-	@Property({ nullable: true })
-	@ApiProperty()
-	specialty?: string;
+	// @Property({ nullable: true })
+	// @ApiProperty()
+	// specialty?: string;
 
 	@ManyToOne(() => Promotion, { nullable: true })
 	@ApiProperty({ type: Number, minimum: 1 })
@@ -117,6 +117,7 @@ export class User
 	last_seen?: Date;
 
 	//* SUBSCRIPTIONS
+	// TODO: to be implemented
 	// @OneToMany(() => Subscription, (subscription) => subscription.user, {
 	// 	cascade: [Cascade.REMOVE],
 	// 	nullable: true,
