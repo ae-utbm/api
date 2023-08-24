@@ -40,7 +40,7 @@ export class UsersService {
 	 */
 	@Cron('0 */10 * * * *')
 	@UseRequestContext()
-	async checkForUnverifiedUsers() {
+	async deleteUnverifiedUsers() {
 		const users = await this.orm.em.find(User, {
 			email_verified: false,
 			created_at: { $lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
@@ -51,19 +51,38 @@ export class UsersService {
 		}
 	}
 
+	/**
+	 * Remove fields that the user as set to private
+	 * @param {User[]} users The users to filter
+	 * @returns {Promise<Partial<User>[]>} The filtered users
+	 */
 	@UseRequestContext()
-	public async checkVisibility(user: User): Promise<Partial<User>> {
-		const visibility = await this.orm.em.findOneOrFail(UserVisibility, { user });
+	async removePrivateFields(users: User[]): Promise<Partial<User>[]> {
+		const res: Partial<User>[] = [];
 
-		Object.entries(visibility).forEach(([key, value]) => {
-			// @ts-ignore
-			if (value === false) user[key] = undefined;
+		const visibilities = await this.findVisibilities(users.map((u) => u.id));
+		visibilities.forEach((v) => {
+			const user = users.find((u) => u.id === v.user.id);
+			if (!user) return;
+
+			Object.entries(v).forEach(([key, value]) => {
+				// TODO - Find a better alternative (which should be type safe & easy to maintain)
+				// @ts-ignore
+				if (value === false) user[key] = undefined;
+			});
+
+			res.push(user);
 		});
 
-		return user;
+		return res;
 	}
 
-	public asBaseUsers(users: User[]): BaseUserResponseDTO[] {
+	/**
+	 * Keep only the base fields of a user
+	 * @param {User[]} users the users to filter
+	 * @returns {BaseUserResponseDTO[]} The "filtered" users
+	 */
+	asBaseUsers(users: User[]): BaseUserResponseDTO[] {
 		const res: BaseUserResponseDTO[] = [];
 		for (const user of users.sort((a, b) => a.id - b.id)) {
 			res.push({
@@ -108,21 +127,32 @@ export class UsersService {
 		if (!user && id) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id }));
 		if (!user && email) throw new NotFoundException(Errors.Email.NotFound({ i18n: this.i18n, type: User, email }));
 
-		return filter ? await this.checkVisibility(user) : user;
+		return filter ? (await this.removePrivateFields([user]))[0] : user;
 	}
 
+	/**
+	 * Return the visibility parameters of a user
+	 * @param {number} ids The ids of the users
+	 * @returns {Promise<UserVisibility>} The visibility parameters of each user
+	 */
 	@UseRequestContext()
-	async findVisibility({ id }: Partial<Pick<User, 'id'>>): Promise<UserVisibility> {
-		const user = await this.orm.em.findOne(User, { id });
-		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id }));
+	async findVisibilities(ids: number[] | number): Promise<UserVisibility[]> {
+		if (typeof ids === 'number') ids = [ids];
 
-		return await this.orm.em.findOne(UserVisibility, { user });
+		const users = await this.orm.em.find(User, { id: { $in: ids } });
+		if (!users)
+			throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id: ids.toString() }));
+
+		return await this.orm.em.find(UserVisibility, { user: { $in: users } });
 	}
 
+	async findAll(filter: false): Promise<User[]>;
+	async findAll(filter: true): Promise<Partial<User>[]>;
+
 	@UseRequestContext()
-	async findAll(filter = true) {
+	async findAll(filter = true): Promise<User[] | Partial<User>[]> {
 		const users = await this.orm.em.find(User, {});
-		if (filter) return users.map(async (user) => await this.checkVisibility(user));
+		if (filter) return this.removePrivateFields(users);
 
 		return users;
 	}
@@ -187,7 +217,7 @@ export class UsersService {
 	@UseRequestContext()
 	async registerByAdmin(input: UserPostByAdminDTO): Promise<User> {
 		if (await this.orm.em.findOne(User, { email: input.email }))
-			throw new BadRequestException(`User already with the email '${input.email}' already exists`);
+			throw new BadRequestException(Errors.Email.AlreadyUsed({ i18n: this.i18n, email: input.email }));
 
 		if (!checkEmail(input.email))
 			throw new BadRequestException(Errors.Email.Invalid({ i18n: this.i18n, email: input.email }));

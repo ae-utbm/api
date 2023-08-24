@@ -113,7 +113,7 @@ export class UsersDataController {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
 			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
 
-		return this.usersService.findOne({ id }, false);
+		return this.usersService.findOne({ id });
 	}
 
 	@Get(':id/visibility')
@@ -126,7 +126,7 @@ export class UsersDataController {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
 			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
 
-		return this.usersService.findVisibility({ id });
+		return this.usersService.findVisibilities([id]);
 	}
 
 	@Get(':id/roles')
