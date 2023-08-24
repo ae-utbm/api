@@ -29,11 +29,6 @@ export class UserVisibility extends BaseEntity implements UserVisibilityEntity<U
 	@ApiProperty({ type: Boolean, default: true })
 	birth_date: boolean;
 
-	/** Wether the user nickname should be visible or not */
-	@Property({ onCreate: () => true })
-	@ApiProperty({ type: Boolean, default: true })
-	nickname: boolean;
-
 	/** Wether the user gender should be visible or not */
 	@Property({ onCreate: () => false })
 	@ApiProperty({ type: Boolean, default: false })
