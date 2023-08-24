@@ -384,4 +384,15 @@ export class UsersService {
 
 		return roles;
 	}
+
+	@UseRequestContext()
+	async getUserPermissions(id: number, input: { show_expired: boolean; show_revoked: boolean }) {
+		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['permissions'] });
+		const permissions = user.permissions.getItems();
+
+		if (!input.show_expired) permissions.filter((p) => p.expires > new Date());
+		if (!input.show_revoked) permissions.filter((p) => p.revoked === false);
+
+		return permissions;
+	}
 }

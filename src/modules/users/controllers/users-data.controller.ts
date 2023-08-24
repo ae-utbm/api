@@ -12,6 +12,7 @@ import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.d
 import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
+import { Permission } from '@modules/permissions/entities/permission.entity';
 import { Role } from '@modules/roles/entities/role.entity';
 import { validateObject } from '@utils/validate';
 
@@ -134,10 +135,23 @@ export class UsersDataController {
 	@ApiOperation({ summary: 'Get roles of a user' })
 	@ApiOkResponse({ description: 'Roles of the user', type: [Role] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getRoleUsers(@Param('id') id: number) {
+	async getUserRoles(@Param('id') id: number) {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
 			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
 
 		return this.usersService.getUserRoles(id, { show_expired: true, show_revoked: true });
+	}
+
+	@Get(':id/permissions')
+	@UseGuards(PermissionGuard)
+	@GuardSelfOrPermissions('id', ['CAN_READ_USER'])
+	@ApiOperation({ summary: 'Get permissions of a user' })
+	@ApiOkResponse({ description: 'Permissions of the user', type: [Permission] })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	async getUserPermissions(@Param('id') id: number) {
+		if (typeof id !== 'number' && parseInt(id, 10) != id)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+
+		return this.usersService.getUserPermissions(id, { show_expired: true, show_revoked: true });
 	}
 }
