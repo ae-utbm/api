@@ -68,6 +68,7 @@ export class LoggingInterceptor implements NestInterceptor {
 					log.error_message = response.error_message;
 					log.updated_at = new Date();
 
+					user.last_seen = new Date();
 					await em.flush();
 				},
 			}),
