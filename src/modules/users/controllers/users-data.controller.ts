@@ -89,26 +89,26 @@ export class UsersDataController {
 		return this.usersService.delete(id);
 	}
 
-	@Get(':id')
+	@Get(':id/data')
+	@UseGuards(SelfOrPermissionGuard)
+	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PRIVATE'])
+	@ApiOperation({ summary: 'Get private information of a user' })
+	@ApiOkResponse({ description: 'User data', type: User })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	async getPrivate(@Param('id') id: number) {
+		if (typeof id !== 'number' && parseInt(id, 10) != id)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+
+		return this.usersService.findOne({ id }, false);
+	}
+
+	@Get(':id/data/public')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER'])
 	@ApiOperation({ summary: 'Get public information of a user' })
 	@ApiOkResponse({ description: 'User data, excepted privates fields (set in the visibility table)', type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async get(@Param('id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
-
-		return this.usersService.findOne({ id });
-	}
-
-	@Get(':id/private')
-	@UseGuards(SelfOrPermissionGuard)
-	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PRIVATE'])
-	@ApiOperation({ summary: 'Get information of a user' })
-	@ApiOkResponse({ description: 'User data', type: User })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getAsPrivate(@Param('id') id: number) {
+	async getPublic(@Param('id') id: number) {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
 			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
 
