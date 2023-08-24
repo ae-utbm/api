@@ -68,12 +68,12 @@ export class User
 	password: string;
 
 	@Property({ type: 'date' })
-	@ApiProperty({ example: new Date('1999-12-31') })
+	@ApiProperty({ example: new Date('1999-12-31').toISOString() })
 	birth_date: Date;
 
 	/** The age of the user */
 	@Property({ persist: false })
-	@ApiProperty()
+	@ApiProperty({ minimum: 13 })
 	get age(): number {
 		const diff = Date.now() - this.birth_date.getTime();
 		const age = new Date(diff);
@@ -112,8 +112,8 @@ export class User
 	@ApiProperty({ type: Number, minimum: 1 })
 	promotion?: Promotion;
 
-	@Property({ type: 'date', nullable: true })
-	@ApiProperty({ example: Date.now() })
+	@Property({ type: 'date', nullable: true, onCreate: () => new Date() })
+	@ApiProperty({ example: new Date().toISOString() })
 	last_seen?: Date;
 
 	//* SUBSCRIPTIONS
