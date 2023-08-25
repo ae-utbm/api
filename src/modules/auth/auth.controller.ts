@@ -87,7 +87,7 @@ export class AuthController {
 		if (token.trim() === '')
 			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: String, field: 'token' }));
 
-		if (redirect_url && redirect_url !== '') {
+		if (redirect_url && redirect_url.trim().startsWith('https://ae.utbm.fr/')) {
 			await this.userService.verifyEmail(user_id, token);
 			res.redirect(HttpStatus.PERMANENT_REDIRECT, redirect_url.trim());
 		}
