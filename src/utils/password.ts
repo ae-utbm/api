@@ -1,3 +1,5 @@
+import * as crypto from 'crypto';
+
 const SPECIAL_CHARS = '!@#$%^&*()';
 const LOWERCASE_CHARS = 'abcdefghijklmnopqrstuvwxyz';
 const UPPERCASE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -14,10 +16,10 @@ export function generateRandomPassword(length: number = MINIMUM_PASSWORD_LENGTH)
 	if (length < MINIMUM_PASSWORD_LENGTH) length = MINIMUM_PASSWORD_LENGTH;
 
 	const password = [
-		SPECIAL_CHARS[Math.floor(Math.random() * SPECIAL_CHARS.length)],
-		LOWERCASE_CHARS[Math.floor(Math.random() * LOWERCASE_CHARS.length)],
-		UPPERCASE_CHARS[Math.floor(Math.random() * UPPERCASE_CHARS.length)],
-		NUMBERS[Math.floor(Math.random() * NUMBERS.length)],
+		SPECIAL_CHARS[crypto.randomInt(SPECIAL_CHARS.length)],
+		LOWERCASE_CHARS[crypto.randomInt(LOWERCASE_CHARS.length)],
+		UPPERCASE_CHARS[crypto.randomInt(UPPERCASE_CHARS.length)],
+		NUMBERS[crypto.randomInt(NUMBERS.length)],
 	];
 
 	const remainingLength = length - 4;
