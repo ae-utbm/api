@@ -18,7 +18,7 @@ export function checkEmail(email: email): boolean {
 	if (whitelisted.includes(email)) return true;
 	else if (blacklist.some((host) => email.endsWith(host))) return false;
 
-	const regex = new RegExp(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/);
+	const regex = new RegExp(/^\w+(?:[\.-]?\w+)*@\w+(?:[\.-]?\w+)*(?:\.\w{2,3})+$/);
 	return regex.test(email);
 }
 
