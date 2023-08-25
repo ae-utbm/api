@@ -319,15 +319,55 @@ describe('Auth (e2e)', () => {
 				orm.em.clear();
 				// ------------------------------
 			});
+
+			it('when "redirect_url" is provided but the url is not valid', async () => {
+				const response = await request(app.getHttpServer())
+					.get(`/auth/confirm/${user_id}/${token}/${encodeURIComponent('https://ae-utbm.fr')}`)
+					.expect(200);
+
+				expect(response.body).toEqual({
+					age: expect.any(Number),
+					banner: null,
+					birth_date: '2000-01-01T00:00:00.000Z',
+					created_at: expect.any(String),
+					email: 'unverified@email.com',
+					email_verified: true,
+					first_name: 'unverified',
+					full_name: 'unverified user',
+					gender: 'OTHER',
+					id: user_id,
+					is_minor: false,
+					last_name: 'user',
+					last_seen: expect.any(String),
+					nickname: null,
+					parent_contact: null,
+					phone: null,
+					picture: null,
+					promotion: null,
+					pronouns: null,
+					secondary_email: null,
+					updated_at: expect.any(String),
+				});
+
+				// Reset user email_verified to false (for other tests)
+				const user = await orm.em.findOne(User, { id: user_id });
+
+				user.email_verified = false;
+				user.email_verification = hashSync(token, 10);
+
+				await orm.em.persistAndFlush(user);
+				orm.em.clear();
+				// ------------------------------
+			});
 		});
 
 		describe('308 : Permanent Redirect', () => {
 			it('when "redirect_url" is provided', async () => {
 				const response = await request(app.getHttpServer())
-					.get(`/auth/confirm/${user_id}/${token}/${encodeURIComponent('https://example.com')}`)
+					.get(`/auth/confirm/${user_id}/${token}/${encodeURIComponent('https://ae.utbm.fr/')}`)
 					.expect(308);
 
-				expect((response.header as { location: string }).location).toEqual('https://example.com');
+				expect((response.header as { location: string }).location).toEqual('https://ae.utbm.fr/');
 
 				// Reset user email_verified to false (for other tests)
 				const user = await orm.em.findOne(User, { id: user_id });
