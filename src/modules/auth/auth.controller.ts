@@ -64,22 +64,39 @@ export class AuthController {
 		return this.userService.register(registerDto);
 	}
 
-	@Get('confirm/:user_id/:token/:redirect_url?')
-	@ApiParam({ name: 'redirect_url', required: false })
-	@ApiOperation({ summary: 'Validate a user account' })
+	@Get('confirm/:user_id/:token')
+	@ApiParam({ name: 'user_id', type: Number })
+	@ApiParam({ name: 'token', type: String })
+	@ApiOperation({ summary: 'Validate a user account and redirect after' })
 	@ApiOkResponse({ description: 'User account validated', type: User })
+	@ApiNotFoundResponse({ description: 'User not found' })
+	@ApiBadRequestResponse({ description: 'Bad request, missing id/token or email already verified' })
+	@ApiUnauthorizedResponse({ description: 'Unauthorized, invalid token' })
+	async verifyEmail(@Param('user_id') user_id: number, @Param('token') token: string) {
+		if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
+
+		if (token.trim() === '')
+			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: String, field: 'token' }));
+
+		return this.userService.verifyEmail(user_id, token);
+	}
+
+	@Get('confirm/:user_id/:token/redirect')
+	@ApiParam({ name: 'user_id', type: Number })
+	@ApiParam({ name: 'token', type: String })
+	@ApiOperation({ summary: 'Validate a user account and redirect after' })
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiBadRequestResponse({ description: 'Bad request, missing id/token or email already verified' })
 	@ApiUnauthorizedResponse({ description: 'Unauthorized, invalid token' })
 	@ApiResponse({
 		status: HttpStatus.PERMANENT_REDIRECT,
-		description: 'User account validated, redirecting to redirect_url',
+		description: 'User account validated, redirecting to ae.utbm.fr',
 	})
-	async verifyEmail(
+	async verifyEmailAndRedirect(
 		@Res() res: express.Response,
 		@Param('user_id') user_id: number,
 		@Param('token') token: string,
-		@Param('redirect_url') redirect_url?: string,
 	) {
 		if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
 			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
@@ -87,11 +104,7 @@ export class AuthController {
 		if (token.trim() === '')
 			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: String, field: 'token' }));
 
-		if (redirect_url && redirect_url !== '') {
-			await this.userService.verifyEmail(user_id, token);
-			res.redirect(HttpStatus.PERMANENT_REDIRECT, redirect_url.trim());
-		}
-
-		res.send(await this.userService.verifyEmail(user_id, token));
+		await this.userService.verifyEmail(user_id, token);
+		res.redirect(HttpStatus.PERMANENT_REDIRECT, 'https://ae.utbm.fr/');
 	}
 }

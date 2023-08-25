@@ -322,9 +322,9 @@ describe('Auth (e2e)', () => {
 		});
 
 		describe('308 : Permanent Redirect', () => {
-			it('when "redirect_url" is provided', async () => {
+			it('when redirect is provided', async () => {
 				const response = await request(app.getHttpServer())
-					.get(`/auth/confirm/${user_id}/${token}/${encodeURIComponent('https://example.com')}`)
+					.get(`/auth/confirm/${user_id}/${token}/redirect`)
 					.expect(308);
 
 				expect((response.header as { location: string }).location).toEqual('https://example.com');
