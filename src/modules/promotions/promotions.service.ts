@@ -120,7 +120,7 @@ export class PromotionsService {
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
 			directory: join(this.configService.get<string>('files.promotions'), 'logo'),
-			filename: `promotion_${number}`,
+			filename: `promotion_${promotion.number}`,
 			aspectRatio: '1:1',
 		});
 
