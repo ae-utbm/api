@@ -62,6 +62,22 @@ export class PromotionsService {
 	}
 
 	@UseRequestContext()
+	async findCurrent(): Promise<PromotionResponseDTO[]> {
+		const promotions = await this.orm.em.find(
+			Promotion,
+			{},
+			{ orderBy: { number: 'DESC' }, fields: ['*', 'picture', 'users'], limit: 5 },
+		);
+		const res: PromotionResponseDTO[] = [];
+
+		for (const promotion of promotions) {
+			res.push({ ...promotion, users: promotion.users.count() });
+		}
+
+		return res;
+	}
+
+	@UseRequestContext()
 	async findOne(number: number): Promise<PromotionResponseDTO> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['*', 'picture', 'users'] });
 		if (!promotion)

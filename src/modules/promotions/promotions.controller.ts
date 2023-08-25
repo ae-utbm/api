@@ -59,6 +59,26 @@ export class PromotionsController {
 		return this.promotionsService.findAll();
 	}
 
+	@Get('latest')
+	@UseGuards(PermissionGuard)
+	@GuardPermissions('CAN_READ_PROMOTION')
+	@ApiOkResponse({ type: PromotionResponseDTO })
+	@ApiOperation({ summary: 'Get the latest promotion' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	async getLatest() {
+		return this.promotionsService.findLatest();
+	}
+
+	@Get('current')
+	@UseGuards(PermissionGuard)
+	@GuardPermissions('CAN_READ_PROMOTION')
+	@ApiOkResponse({ type: [PromotionResponseDTO] })
+	@ApiOperation({ summary: 'Get promotions currently active' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	async getCurrent() {
+		return this.promotionsService.findCurrent();
+	}
+
 	@Post(':number/logo')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PROMOTION')
