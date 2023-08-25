@@ -63,7 +63,6 @@ export class UsersService {
 		const visibilities = await this.findVisibilities(users.map((u) => u.id));
 		visibilities.forEach((v) => {
 			const user = users.find((u) => u.id === v.user.id);
-			if (!user) return;
 
 			Object.entries(v).forEach(([key, value]) => {
 				// TODO - Find a better alternative (which should be type safe & easy to maintain)
@@ -133,7 +132,7 @@ export class UsersService {
 	/**
 	 * Return the visibility parameters of a user
 	 * @param {number} ids The ids of the users
-	 * @returns {Promise<UserVisibility>} The visibility parameters of each user
+	 * @returns {Promise<UserVisibility[]>} The visibility parameters of each user
 	 */
 	@UseRequestContext()
 	async findVisibilities(ids: number[] | number): Promise<UserVisibility[]> {
