@@ -15,7 +15,9 @@ import { I18nService } from 'nestjs-i18n';
 
 import { Errors } from '@i18n';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
+import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
+import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { validateObject } from '@utils/validate';
 
 import { PermissionPatchDTO } from './dto/patch.dto';
@@ -71,8 +73,8 @@ export class PermissionsController {
 	}
 
 	@Get(':user_id')
-	@UseGuards(PermissionGuard)
-	@GuardPermissions('CAN_READ_PERMISSIONS_OF_USER')
+	@UseGuards(SelfOrPermissionGuard)
+	@GuardSelfOrPermissions('user_id', ['CAN_READ_PERMISSIONS_OF_USER'])
 	@ApiOperation({ summary: 'Get all permissions of a user (active, revoked and expired)' })
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
