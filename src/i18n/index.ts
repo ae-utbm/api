@@ -89,6 +89,9 @@ export namespace Errors {
 	}
 
 	export namespace File {
+		export const Infected = (options: Response & { file: string }): string =>
+			generic('responses.errors.file.infected', { file: options.file }, options.i18n);
+
 		export const InvalidMimeType = (options: Response & { mime_type: string[] }): string =>
 			generic('responses.errors.file.invalid_mime_type', { mime_type: options.mime_type.join(', ') }, options.i18n);
 

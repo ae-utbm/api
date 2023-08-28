@@ -71,6 +71,10 @@ export class FilesService {
 		const filepath = join(options.directory, filename);
 		const size = buffer.byteLength;
 
+		// Scan the file with an antivirus
+		if (await this.scanWithAntivirus(buffer))
+			throw new BadRequestException(Errors.File.Infected({ i18n: this.i18n, file: filename }));
+
 		// Write the file on disk
 		mkdirSync(options.directory, { recursive: true });
 		writeFileSync(filepath, buffer);
@@ -106,6 +110,17 @@ export class FilesService {
 		buffer = await convertToWebp(buffer);
 
 		return this.writeOnDisk(buffer, options, ['image/webp', 'image/gif']);
+	}
+
+	/**
+	 * Scan a file with an Antivirus
+	 * TODO: Implement an antivirus (do a specific PR for it, as it's quite a big feature)
+	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	private async scanWithAntivirus(buffer: Buffer): Promise<boolean> {
+		return new Promise((resolve) => {
+			resolve(false);
+		});
 	}
 
 	/**
