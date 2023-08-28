@@ -16,7 +16,7 @@ To run this project, you will need to install [Node.js](https://nodejs.org/en/) 
 
 ```bash
 # clone the repository
-git clone 'https://github.com/ae-utbm/api.git'
+git clone --recurse-submodules 'https://github.com/ae-utbm/api.git'
 
 # install dependencies
 pnpm install
