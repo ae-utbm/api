@@ -21,7 +21,9 @@ async function bootstrap() {
 
 	const config = new DocumentBuilder()
 		.setTitle('AE UTBM — REST API')
-		.setDescription('<a href="https://ae.utbm.fr">back to main website</a>')
+		.setDescription(
+			'<a href="https://ae.utbm.fr">Back to main website</a><br/><a href="/-json">Export as JSON</a>&nbsp;—&nbsp;<a href="/-yaml">Export as YAML</a>',
+		)
 		.setVersion(pkg.version)
 		.addBearerAuth()
 		.build();

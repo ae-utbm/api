@@ -27,7 +27,11 @@ body {
 
 .swagger-ui .info {
 	margin: 0 !important;
-	padding: 30px 0 !important;
+	padding: 20px 0 !important;
+}
+
+.swagger-ui .info .description .renderedMarkdown p {
+	margin: 0;
 }
 
 .swagger-ui .information-container.wrapper {
@@ -208,6 +212,9 @@ html>body>div#swagger-ui>section.swagger-ui.swagger-container>div.swagger-ui>div
 		background: #f7f7f7 url('/public/arrow_down.svg');
 	}
 
+	.swagger-ui .information-container.wrapper::before {
+		border-color: #f7f7f7;
+	}
 }
 
 .swagger-ui select {
