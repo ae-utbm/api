@@ -1,4 +1,4 @@
-import type { I18nTranslations, MimeType, aspect_ratio } from '@types';
+import type { I18nTranslations, aspect_ratio } from '@types';
 
 import { randomUUID } from 'crypto';
 import { accessSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
@@ -7,11 +7,12 @@ import { Readable } from 'stream';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { fromBuffer, MimeType } from 'file-type';
 import { I18nService } from 'nestjs-i18n';
 
 import { Errors } from '@i18n';
 import { User } from '@modules/users/entities/user.entity';
-import { convertToWebp, getImageFileExtension, hasAspectRatio } from '@utils/images';
+import { convertToWebp, hasAspectRatio } from '@utils/images';
 
 import { FileVisibilityGroup } from './entities/file-visibility.entity';
 import { File } from './entities/file.entity';
@@ -60,16 +61,13 @@ export class FilesService {
 	async writeOnDisk(buffer: Buffer, options: WriteFileOptions, allowedMimetype: MimeType[]) {
 		if (!buffer) throw new BadRequestException(Errors.File.NotProvided({ i18n: this.i18n }));
 
-		const fileTypeFromBuffer = (await import('file-type')).fileTypeFromBuffer;
-		const fileType = await fileTypeFromBuffer(buffer);
-
+		const fileType = await fromBuffer(buffer);
 		if (!fileType) throw new BadRequestException(Errors.File.UndefinedMimeType({ i18n: this.i18n }));
 
 		if (!allowedMimetype.includes(fileType.mime))
 			throw new BadRequestException(Errors.File.InvalidMimeType({ i18n: this.i18n, mime_type: allowedMimetype }));
 
-		const extension = await getImageFileExtension(buffer);
-		const filename = `${options.filename}_${randomUUID()}.${extension}`;
+		const filename = `${options.filename}_${randomUUID()}.${fileType.ext}`;
 		const filepath = join(options.directory, filename);
 		const size = buffer.byteLength;
 
@@ -78,7 +76,8 @@ export class FilesService {
 		writeFileSync(filepath, buffer);
 
 		return {
-			extension,
+			mimetype: fileType.mime,
+			extension: fileType.ext,
 			filename,
 			filepath,
 			size,

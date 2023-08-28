@@ -303,7 +303,7 @@ export class UsersService {
 			this.filesService.deleteOnDisk(user.picture);
 
 			user.picture.filename = fileInfos.filename;
-			user.picture.mimetype = `image/${fileInfos.extension}`;
+			user.picture.mimetype = fileInfos.mimetype;
 			user.picture.description = `Picture of ${user.full_name}`;
 			user.picture.path = fileInfos.filepath;
 			user.picture.size = fileInfos.size;
@@ -312,7 +312,7 @@ export class UsersService {
 		} else
 			user.picture = this.orm.em.create(UserPicture, {
 				filename: fileInfos.filename,
-				mimetype: `image/${fileInfos.extension}`,
+				mimetype: fileInfos.mimetype,
 				description: `Picture of ${user.full_name}`,
 				path: fileInfos.filepath,
 				picture_user: user,
@@ -358,7 +358,7 @@ export class UsersService {
 			this.filesService.deleteOnDisk(user.banner);
 
 			user.banner.filename = fileInfos.filename;
-			user.banner.mimetype = `image/${fileInfos.extension}`;
+			user.banner.mimetype = fileInfos.mimetype;
 			user.banner.description = `Banner of ${user.full_name}`;
 			user.banner.path = fileInfos.filepath;
 			user.banner.size = fileInfos.size;
@@ -367,7 +367,7 @@ export class UsersService {
 		} else
 			user.banner = this.orm.em.create(UserBanner, {
 				filename: fileInfos.filename,
-				mimetype: `image/${fileInfos.extension}`,
+				mimetype: fileInfos.mimetype,
 				description: `Banner of ${user.full_name}`,
 				path: fileInfos.filepath,
 				banner_user: user,

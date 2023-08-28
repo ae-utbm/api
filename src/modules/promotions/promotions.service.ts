@@ -128,7 +128,7 @@ export class PromotionsService {
 			this.filesService.deleteOnDisk(promotion.picture);
 
 			promotion.picture.filename = fileInfos.filename;
-			promotion.picture.mimetype = `image/${fileInfos.extension}`;
+			promotion.picture.mimetype = fileInfos.mimetype;
 			promotion.picture.path = fileInfos.filepath;
 			promotion.picture.size = fileInfos.size;
 
@@ -136,7 +136,7 @@ export class PromotionsService {
 		} else
 			promotion.picture = this.orm.em.create(PromotionPicture, {
 				filename: fileInfos.filename,
-				mimetype: `image/${fileInfos.extension}`,
+				mimetype: fileInfos.mimetype,
 				description: `Promotion logo of the promotion ${promotion.number}`,
 				path: fileInfos.filepath,
 				picture_promotion: promotion,
