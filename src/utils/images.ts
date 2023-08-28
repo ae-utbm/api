@@ -28,13 +28,3 @@ export async function convertToWebp(buffer: Buffer): Promise<Buffer> {
 	// convert the image to webp otherwise
 	return sharp(buffer).webp().toBuffer();
 }
-
-/**
- * Get the extension of a file
- * @param {Buffer} buffer The buffer of the file
- * @returns {string} The extension of the file (without the dot)
- */
-export async function getImageFileExtension(buffer: Buffer): Promise<string> {
-	const { format } = await sharp(buffer).metadata();
-	return format;
-}
