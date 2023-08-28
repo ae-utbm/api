@@ -1,3 +1,5 @@
+import { randomInt } from './password';
+
 export {};
 
 declare global {
@@ -14,6 +16,12 @@ declare global {
 		 * @returns {T[]} The array without duplicate items.
 		 */
 		unique(): T[];
+
+		/**
+		 * Shuffle the array.
+		 * @returns {T[]} The shuffled array.
+		 */
+		shuffle(): T[];
 
 		/**
 		 * Returns true if all objects in the array have the same type.
@@ -44,6 +52,25 @@ if (!Array.prototype.remove) {
 if (!Array.prototype.unique) {
 	Array.prototype.unique = function <T>(this: T[]): T[] {
 		return this.filter((item, index) => this.indexOf(item) === index);
+	};
+}
+
+if (!Array.prototype.shuffle) {
+	Array.prototype.shuffle = function <T>(this: T[]): T[] {
+		let currentIndex = this.length;
+		let randomIndex = null;
+
+		// While there remain elements to shuffle.
+		while (currentIndex > 0) {
+			// Pick a remaining element.
+			randomIndex = randomInt(currentIndex - 1);
+			currentIndex--;
+
+			// And swap it with the current element.
+			[this[currentIndex], this[randomIndex]] = [this[randomIndex], this[currentIndex]];
+		}
+
+		return this;
 	};
 }
 
