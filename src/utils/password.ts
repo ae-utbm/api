@@ -7,6 +7,20 @@ const NUMBERS = '0123456789';
 
 const MINIMUM_PASSWORD_LENGTH = 8;
 
+export function randomInt(max = 12, min = 0) {
+	const range = max - min + 1;
+	const bytesNeeded = Math.ceil(Math.log2(range) / 8);
+
+	if (bytesNeeded === 0) {
+		return min; // Range is just a single number
+	}
+
+	const randomBytes = crypto.randomBytes(bytesNeeded);
+	const randomValue = randomBytes.readUIntBE(0, bytesNeeded);
+
+	return min + (randomValue % range);
+}
+
 /**
  * Generates a random password of the given length.
  * @param {number} length the length of the password to generate
@@ -16,18 +30,17 @@ export function generateRandomPassword(length: number = MINIMUM_PASSWORD_LENGTH)
 	if (length < MINIMUM_PASSWORD_LENGTH) length = MINIMUM_PASSWORD_LENGTH;
 
 	const password = [
-		SPECIAL_CHARS[crypto.randomInt(SPECIAL_CHARS.length)],
-		LOWERCASE_CHARS[crypto.randomInt(LOWERCASE_CHARS.length)],
-		UPPERCASE_CHARS[crypto.randomInt(UPPERCASE_CHARS.length)],
-		NUMBERS[crypto.randomInt(NUMBERS.length)],
+		SPECIAL_CHARS[randomInt(SPECIAL_CHARS.length)],
+		LOWERCASE_CHARS[randomInt(LOWERCASE_CHARS.length)],
+		UPPERCASE_CHARS[randomInt(UPPERCASE_CHARS.length)],
+		NUMBERS[randomInt(NUMBERS.length)],
 	];
 
 	const remainingLength = length - 4;
 
 	for (let i = 0; i < remainingLength; i++) {
 		const charSet = SPECIAL_CHARS + LOWERCASE_CHARS + UPPERCASE_CHARS + NUMBERS;
-		const randomIndex = Math.floor(Math.random() * charSet.length);
-		password.push(charSet[randomIndex]);
+		password.push(charSet[randomInt(charSet.length)]);
 	}
 
 	return password.join('');
