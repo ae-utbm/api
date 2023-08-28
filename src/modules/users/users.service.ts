@@ -300,7 +300,7 @@ export class UsersService {
 
 		// Remove old file if present
 		if (user.picture) {
-			this.filesService.deleteOnDisk(user.picture);
+			this.filesService.deleteFromDisk(user.picture);
 
 			user.picture.filename = fileInfos.filename;
 			user.picture.mimetype = fileInfos.mimetype;
@@ -338,7 +338,7 @@ export class UsersService {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['picture'] });
 		if (!user.picture) throw new NotFoundException('User has no picture to be deleted');
 
-		this.filesService.deleteOnDisk(user.picture);
+		this.filesService.deleteFromDisk(user.picture);
 		await this.orm.em.removeAndFlush(user.picture);
 	}
 
@@ -355,7 +355,7 @@ export class UsersService {
 
 		// Remove old file if present
 		if (user.banner) {
-			this.filesService.deleteOnDisk(user.banner);
+			this.filesService.deleteFromDisk(user.banner);
 
 			user.banner.filename = fileInfos.filename;
 			user.banner.mimetype = fileInfos.mimetype;
@@ -393,7 +393,7 @@ export class UsersService {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['banner'] });
 		if (!user.banner) throw new NotFoundException('User has no banner to be deleted');
 
-		this.filesService.deleteOnDisk(user.banner);
+		this.filesService.deleteFromDisk(user.banner);
 		await this.orm.em.removeAndFlush(user.banner);
 	}
 

@@ -144,7 +144,7 @@ export class FilesService {
 	 * @param {File} file The file to delete
 	 * @param {boolean} silent If true, the function will not throw an error if the file doesn't exist
 	 */
-	deleteOnDisk(file: File, silent: boolean = true) {
+	deleteFromDisk(file: File, silent: boolean = true) {
 		try {
 			accessSync(file.path);
 		} catch {

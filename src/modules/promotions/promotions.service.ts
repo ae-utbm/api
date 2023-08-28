@@ -125,7 +125,7 @@ export class PromotionsService {
 		});
 
 		if (promotion.picture) {
-			this.filesService.deleteOnDisk(promotion.picture);
+			this.filesService.deleteFromDisk(promotion.picture);
 
 			promotion.picture.filename = fileInfos.filename;
 			promotion.picture.mimetype = fileInfos.mimetype;
@@ -170,7 +170,7 @@ export class PromotionsService {
 
 		if (!promotion.picture) throw new NotFoundException(Errors.Promotion.LogoNotFound({ i18n: this.i18n, number }));
 
-		this.filesService.deleteOnDisk(promotion.picture);
+		this.filesService.deleteFromDisk(promotion.picture);
 		await this.orm.em.removeAndFlush(promotion.picture);
 
 		return promotion;
