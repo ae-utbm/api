@@ -1,4 +1,4 @@
-import type { I18nTranslations, aspect_ratio } from '@types';
+import type { I18nTranslations, MimeType, aspect_ratio } from '@types';
 
 import { randomUUID } from 'crypto';
 import { accessSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
@@ -57,10 +57,17 @@ export class FilesService {
 	/**
 	 * Upload file on disk
 	 */
-	async writeOnDisk(buffer: Buffer, options: WriteFileOptions) {
+	async writeOnDisk(buffer: Buffer, options: WriteFileOptions, allowedMimetype: MimeType[]) {
 		if (!buffer) throw new BadRequestException(Errors.File.NotProvided({ i18n: this.i18n }));
 
-		// TODO: find another way to get the file extension (might break for non-image files)
+		const fileTypeFromBuffer = (await import('file-type')).fileTypeFromBuffer;
+		const fileType = await fileTypeFromBuffer(buffer);
+
+		if (!fileType) throw new BadRequestException(Errors.File.UndefinedMimeType({ i18n: this.i18n }));
+
+		if (!allowedMimetype.includes(fileType.mime))
+			throw new BadRequestException(Errors.File.InvalidMimeType({ i18n: this.i18n, mime_type: allowedMimetype }));
+
 		const extension = await getImageFileExtension(buffer);
 		const filename = `${options.filename}_${randomUUID()}.${extension}`;
 		const filepath = join(options.directory, filename);
@@ -88,7 +95,7 @@ export class FilesService {
 		let buffer = file.buffer;
 
 		if (!file.mimetype.startsWith('image/'))
-			throw new BadRequestException(Errors.Image.InvalidMimeType({ i18n: this.i18n }));
+			throw new BadRequestException(Errors.File.InvalidMimeType({ i18n: this.i18n, mime_type: ['image/*'] }));
 
 		// Check if the file respect the aspect ratio
 		if (!(await hasAspectRatio(buffer, options.aspectRatio)))
@@ -99,7 +106,7 @@ export class FilesService {
 		// Convert the file to webp (unless it's a GIF or already a webp)
 		buffer = await convertToWebp(buffer);
 
-		return this.writeOnDisk(buffer, options);
+		return this.writeOnDisk(buffer, options, ['image/webp', 'image/gif']);
 	}
 
 	/**

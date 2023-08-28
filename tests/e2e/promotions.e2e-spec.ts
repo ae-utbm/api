@@ -347,7 +347,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Image.InvalidMimeType({ i18n }),
+					message: Errors.File.InvalidMimeType({ i18n, mime_type: ['image/*'] }),
 				});
 			});
 

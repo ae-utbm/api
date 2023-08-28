@@ -89,19 +89,22 @@ export namespace Errors {
 	}
 
 	export namespace File {
+		export const InvalidMimeType = (options: Response & { mime_type: string[] }): string =>
+			generic('responses.errors.file.invalid_mime_type', { mime_type: options.mime_type.join(', ') }, options.i18n);
+
 		export const NotProvided = (options: Response): string =>
 			generic('responses.errors.file.no_file', {}, options.i18n);
 
 		export const NotFoundOnDisk = (options: Response & { file: string }): string =>
 			generic('responses.errors.file.not_found_on_disk', { file: options.file }, options.i18n);
+
+		export const UndefinedMimeType = (options: Response): string =>
+			generic('responses.errors.file.undefined_mime_type', {}, options.i18n);
 	}
 
 	export namespace Image {
 		export const InvalidAspectRatio = (options: Response & { aspect_ratio: aspect_ratio }): string =>
 			generic('responses.errors.image.invalid_aspect_ratio', { aspect_ratio: options.aspect_ratio }, options.i18n);
-
-		export const InvalidMimeType = (options: Response): string =>
-			generic('responses.errors.image.invalid_mime_type', {}, options.i18n);
 	}
 
 	export namespace JWT {

@@ -23,7 +23,9 @@
     },
     "file": {
       "no_file": "No file was provided.",
-      "not_found_on_disk": "File '{file}' not found on disk."
+      "not_found_on_disk": "File '{file}' not found on disk.",
+      "invalid_mime_type": "The given file has not one of the expected mime type : '[{mime_type}]'.",
+      "undefined_mime_type": "The given file has an undefined mime type."
     },
     "id": {
       "invalid": "'{type}' ID '{id}' is invalid.",
@@ -33,8 +35,7 @@
       "missing": "Missing '{type}' ID or email fields."
     },
     "image": {
-      "invalid_aspect_ratio": "The given image does not respect the expected '{aspect_ratio}' aspect ratio.",
-      "invalid_mime_type": "The given file is not an image."
+      "invalid_aspect_ratio": "The given image does not respect the expected '{aspect_ratio}' aspect ratio."
     },
     "password": {
       "mismatch": "Password mismatch",
