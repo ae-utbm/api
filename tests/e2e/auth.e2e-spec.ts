@@ -320,6 +320,62 @@ describe('Auth (e2e)', () => {
 				// ------------------------------
 			});
 		});
+	});
+
+	describe('(GET) /auth/verify/:user_id/:token/redirect', () => {
+		// Defined in the seeder class (unverified user)
+		const user_id = 2;
+		const token = 'token';
+
+		describe('400 : Bad Request', () => {
+			it('when the "user_id" is not a number', async () => {
+				const fakeId = 'invalid';
+				const response = await request(app.getHttpServer())
+					.get(`/auth/confirm/${fakeId}/${token}/redirect`)
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'user_id' }),
+				});
+			});
+
+			it('when the "token" is empty', async () => {
+				const token = ' ';
+				const response = await request(app.getHttpServer()).get(`/auth/confirm/1/${token}/redirect`).expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: Errors.Generic.FieldInvalid({ i18n, type: String, field: 'token' }),
+				});
+			});
+
+			it("when the user's email is already verified", async () => {
+				const response = await request(app.getHttpServer()).get(`/auth/confirm/1/anything/redirect`).expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: Errors.Email.AlreadyVerified({ i18n, type: User }),
+				});
+			});
+		});
+
+		describe('401 : Unauthorized', () => {
+			it('when the token is invalid', async () => {
+				const response = await request(app.getHttpServer())
+					.get(`/auth/confirm/${user_id}/invalid_token/redirect`)
+					.expect(401);
+
+				expect(response.body).toEqual({
+					error: 'Unauthorized',
+					statusCode: 401,
+					message: Errors.Email.InvalidVerificationToken({ i18n }),
+				});
+			});
+		});
 
 		describe('308 : Permanent Redirect', () => {
 			it('when redirect is provided', async () => {
