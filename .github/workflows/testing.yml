@@ -6,26 +6,21 @@ on:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
-    services:
-      postgres:
-        image: postgres:latest
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_DB: ae_test
-          POSTGRES_HOST: '127.0.0.1'
-          POSTGRES_PORT: 5432
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Setup PostgresSQL
+        uses: ikalnytskyi/action-setup-postgres@v4
+        with:
+          database: ae_test
+          port: 5432
+          username: postgres
+          password: postgres
+
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -60,6 +55,6 @@ jobs:
       - name: Export coverage results
         uses: actions/upload-artifact@v3
         with:
-          name: Coverage results
+          name: Coverage results (${{ matrix.os }})
           path: ./coverage
           retention-days: 7

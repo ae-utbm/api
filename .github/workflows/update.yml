@@ -1,5 +1,5 @@
 # https://docs.github.com/en/actions/using-workflows/reusing-workflows
-name: PR/Push update
+name: Code update
 
 on:
   pull_request:
@@ -8,10 +8,10 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  execute-lint:
+  linting:
     uses: ./.github/workflows/linting.yml
 
-  execute-tests:
-    needs: execute-lint
-    if: ${{ needs.execute-lint.result == 'success' }}
+  testing:
+    needs: linting
+    if: ${{ needs.linting.result == 'success' }}
     uses: ./.github/workflows/testing.yml
