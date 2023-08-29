@@ -6,7 +6,11 @@ on:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     services:
       postgres:
@@ -60,6 +64,6 @@ jobs:
       - name: Export coverage results
         uses: actions/upload-artifact@v3
         with:
-          name: Coverage results
+          name: Coverage results (${{ matrix.os }})
           path: ./coverage
           retention-days: 7
