@@ -17,7 +17,6 @@ jobs:
         uses: ikalnytskyi/action-setup-postgres@v4
         with:
           database: ae_test
-          host: '127.0.0.1'
           port: 5432
           username: postgres
           password: postgres
