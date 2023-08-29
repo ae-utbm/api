@@ -15,3 +15,8 @@ jobs:
     needs: execute-lint
     if: ${{ needs.execute-lint.result == 'success' }}
     uses: ./.github/workflows/testing.yml
+
+  execute-code-analysis:
+    needs: execute-tests
+    if: ${{ needs.execute-tests.result == 'success' }}
+    uses: ./.github/workflows/codeql.yml
