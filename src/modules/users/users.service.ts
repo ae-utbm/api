@@ -200,13 +200,13 @@ export class UsersService {
 			html: getTemplate('emails/register_user', this.i18n, {
 				username: registered.full_name,
 				link: this.configService.get<boolean>('production')
-					? `https://ae.utbm.fr/api/auth/confirm/${registered.id}/${encodeURI(email_token)}/${encodeURI(
-							'https://ae.utbm.fr',
-					  )}`
-					: `http://localhost:${this.configService.get<string>('port')}/api/auth/confirm/${registered.id}/${encodeURI(
+					? `${this.configService.get<string>('production_url')}/auth/confirm/${registered.id}/${encodeURI(
+							email_token,
+					  )}/redirect`
+					: `http://localhost:${this.configService.get<string>('port')}/auth/confirm/${registered.id}/${encodeURI(
 							email_token,
 					  )}`,
-				days: 7,
+				days: this.configService.get<number>('email.token_validity'),
 			}),
 		});
 

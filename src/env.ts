@@ -2,6 +2,7 @@ import { join } from 'path';
 
 export default () => ({
 	production: process.env['DEBUG'] === 'false',
+	production_url: 'https://ae.utbm.fr/api',
 	port: parseInt(process.env['API_PORT'], 10) || 3000,
 	auth: {
 		jwtKey: process.env['JWT_KEY'],
@@ -22,6 +23,7 @@ export default () => ({
 			user: process.env['EMAIL_AUTH_USER'],
 			pass: process.env['EMAIL_AUTH_PASS'],
 		},
+		token_validity: 7, // number of days before the account being deleted
 		whitelist: {
 			// Email addresses that are allowed to be used to register
 			// even if they're domain is blacklisted
