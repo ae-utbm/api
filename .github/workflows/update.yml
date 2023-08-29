@@ -20,3 +20,7 @@ jobs:
     needs: execute-tests
     if: ${{ needs.execute-tests.result == 'success' }}
     uses: ./.github/workflows/codeql.yml
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
