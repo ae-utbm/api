@@ -9,25 +9,24 @@ const MINIMUM_PASSWORD_LENGTH = 8;
 
 /**
  * Safely generates a random integer between the given range.
- * @param {number} max @default 12
- * @param {number} min @default 0
- * @returns {number} the generated integer
+ * @param {number} max Maximum value **included** in the range @default 12
+ * @param {number} min Minimum value **included** in the range @default 0
+ * @returns {number} The generated integer
  */
 export function randomInt(max: number = 12, min: number = 0): number {
 	if (max === min) return min;
 	if (max < min) [max, min] = [min, max];
 
-	const range = max - min;
-	const bytesNeeded = Math.ceil(Math.log2(range) / 8);
+	const range = max - min + 1;
+	const byteCount = Math.ceil(Math.log2(range) / 8); // Number of bytes needed to represent the range
 
-	if (bytesNeeded === 0) {
-		return min; // Range is just a single number
-	}
+	let randomNumber = 0;
+	do {
+		const randomBytes = crypto.randomBytes(byteCount);
+		randomNumber = randomBytes.readUIntBE(0, byteCount);
+	} while (randomNumber >= range);
 
-	const randomBytes = crypto.randomBytes(bytesNeeded);
-	const randomValue = randomBytes.readUIntBE(0, bytesNeeded);
-
-	return min + (randomValue % range);
+	return randomNumber + min;
 }
 
 /**
@@ -49,7 +48,7 @@ export function generateRandomPassword(length: number = MINIMUM_PASSWORD_LENGTH)
 
 	for (let i = 0; i < remainingLength; i++) {
 		const charSet = SPECIAL_CHARS + LOWERCASE_CHARS + UPPERCASE_CHARS + NUMBERS;
-		password.push(charSet[randomInt(charSet.length)]);
+		password.push(charSet[randomInt(charSet.length - 1)]);
 	}
 
 	return password.join('');
