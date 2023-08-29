@@ -8,19 +8,20 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  execute-lint:
+  linting:
     uses: ./.github/workflows/linting.yml
 
-  execute-tests:
-    needs: execute-lint
-    if: ${{ needs.execute-lint.result == 'success' }}
+  testing:
+    needs: linting
+    if: ${{ needs.linting.result == 'success' }}
     uses: ./.github/workflows/testing.yml
 
-  execute-code-analysis:
-    needs: execute-tests
-    if: ${{ needs.execute-tests.result == 'success' }}
+  analyzing:
+    needs: testing
+    if: ${{ needs.testing.result == 'success' }}
     uses: ./.github/workflows/codeql.yml
     permissions:
       actions: read
       contents: read
       security-events: write
+      pull-requests: write
