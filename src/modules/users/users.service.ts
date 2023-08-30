@@ -11,13 +11,13 @@ import { I18nContext, I18nService } from 'nestjs-i18n';
 
 import { Errors } from '@i18n';
 import { UserPostByAdminDTO, UserPostDTO } from '@modules/auth/dto/register.dto';
+import { EmailsService } from '@modules/emails/emails.service';
 import { FilesService } from '@modules/files/files.service';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
 import { User } from '@modules/users/entities/user.entity';
 import { checkBirthDate } from '@utils/dates';
-import { checkEmail, sendEmail } from '@utils/email';
 import { checkPasswordStrength, generateRandomPassword } from '@utils/password';
 import { getTemplate } from '@utils/template';
 
@@ -27,10 +27,11 @@ import { UserPatchDTO } from './dto/patch.dto';
 @Injectable()
 export class UsersService {
 	constructor(
-		private readonly i18n: I18nService<I18nTranslations>,
-		private readonly configService: ConfigService,
 		private readonly orm: MikroORM,
+		private readonly i18n: I18nService<I18nTranslations>,
 		private readonly filesService: FilesService,
+		private readonly emailsService: EmailsService,
+		private readonly configService: ConfigService,
 	) {}
 
 	/**
@@ -165,8 +166,7 @@ export class UsersService {
 			}
 		});
 
-		if (!checkEmail(input.email))
-			throw new BadRequestException(Errors.Email.Invalid({ i18n: this.i18n, email: input.email }));
+		this.emailsService.validateEmail(input.email);
 
 		if (await this.orm.em.findOne(User, { email: input.email }))
 			throw new BadRequestException(Errors.Email.AlreadyUsed({ i18n: this.i18n, email: input.email }));
@@ -194,7 +194,7 @@ export class UsersService {
 		// Fetch the user again to get the id
 		const registered = await this.orm.em.findOne(User, { email: input.email });
 
-		await sendEmail({
+		await this.emailsService.sendEmail({
 			to: [registered.email],
 			subject: this.i18n.t('templates.register_common.subject', { lang: I18nContext.current().lang }),
 			html: getTemplate('emails/register_user', this.i18n, {
@@ -218,8 +218,7 @@ export class UsersService {
 		if (await this.orm.em.findOne(User, { email: input.email }))
 			throw new BadRequestException(Errors.Email.AlreadyUsed({ i18n: this.i18n, email: input.email }));
 
-		if (!checkEmail(input.email))
-			throw new BadRequestException(Errors.Email.Invalid({ i18n: this.i18n, email: input.email }));
+		this.emailsService.validateEmail(input.email);
 
 		if (!checkBirthDate(input.birth_date))
 			throw new BadRequestException(Errors.BirthDate.Invalid({ i18n: this.i18n, date: input.birth_date }));
@@ -229,7 +228,7 @@ export class UsersService {
 		const user = this.orm.em.create(User, { ...input, password: hashSync(password, 10), email_verified: true });
 		this.orm.em.create(UserVisibility, { user });
 
-		await sendEmail({
+		await this.emailsService.sendEmail({
 			to: [user.email],
 			subject: this.i18n.t('templates.register_common.subject', { lang: I18nContext.current().lang }),
 			html: getTemplate('emails/register_user_by_admin', this.i18n, {
@@ -268,8 +267,7 @@ export class UsersService {
 
 		if (!user) throw new NotFoundException(`User with id ${input.id} not found`);
 
-		if (input.email && !checkEmail(input.email))
-			throw new BadRequestException(Errors.Email.Invalid({ i18n: this.i18n, email: input.email }));
+		if (input.email) this.emailsService.validateEmail(input.email);
 
 		if (input.hasOwnProperty('birth_date') || input.hasOwnProperty('first_name') || input.hasOwnProperty('last_name')) {
 			const currentUser = await this.findOne({ id: requestUserId }, false);

@@ -8,6 +8,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AcceptLanguageResolver, I18nModule } from 'nestjs-i18n';
 
 import { AuthModule } from '@modules/auth/auth.module';
+import { EmailsModule } from '@modules/emails/emails.module';
 import { FilesModule } from '@modules/files/files.module';
 import { LoggingInterceptor } from '@modules/logs/interceptor/logging.interceptor';
 import { LogsModule } from '@modules/logs/logs.module';
@@ -20,12 +21,13 @@ import env from './env';
 
 @Module({
 	imports: [
+		AuthModule,
 		ConfigModule.forRoot({
 			isGlobal: true,
 			load: [env],
 		}),
-		ScheduleModule.forRoot(),
-		MikroOrmModule.forRoot(),
+		EmailsModule,
+		FilesModule,
 		I18nModule.forRoot({
 			fallbackLanguage: 'en-US',
 			loaderOptions: {
@@ -35,13 +37,13 @@ import env from './env';
 			resolvers: [AcceptLanguageResolver],
 			typesOutputPath: join(__dirname, '../src/types/api/i18n.d.ts').replace(`${sep}dist`, ''),
 		}),
-		AuthModule,
 		LogsModule,
+		MikroOrmModule.forRoot(),
 		PermissionsModule,
 		PromotionsModule,
 		RolesModule,
+		ScheduleModule.forRoot(),
 		UsersModule,
-		FilesModule,
 	],
 	providers: [
 		{

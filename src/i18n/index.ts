@@ -69,17 +69,23 @@ export namespace Errors {
 	}
 
 	export namespace Email {
-		export const Invalid = (options: Response & { email: TEmail }): string =>
-			generic('responses.errors.email.invalid', { email: options.email }, options.i18n);
-
 		export const AlreadyUsed = (options: Response & { email: string }): string =>
 			generic('responses.errors.email.used', { email: options.email }, options.i18n);
 
 		export const AlreadyVerified = <T>(options: NamedResponse<T>): string =>
 			generic('responses.errors.email.verified', { type: options.type }, options.i18n);
 
+		export const Blacklisted = (options: Response & { email: TEmail }): string =>
+			generic('responses.errors.email.blacklisted', { email: options.email }, options.i18n);
+
+		export const Invalid = (options: Response & { email: TEmail }): string =>
+			generic('responses.errors.email.invalid', { email: options.email }, options.i18n);
+
 		export const InvalidVerificationToken = (options: Response): string =>
 			generic('responses.errors.email.token.invalid', {}, options.i18n);
+
+		export const Malformed = (options: Response & { email: TEmail }): string =>
+			generic('responses.errors.email.malformed', { email: options.email }, options.i18n);
 
 		export const NotVerified = <T>(options: NamedResponse<T>): string =>
 			generic('responses.errors.email.unverified', { type: options.type }, options.i18n);

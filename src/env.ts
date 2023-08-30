@@ -24,11 +24,12 @@ export default () => ({
 			pass: process.env['EMAIL_AUTH_PASS'],
 		},
 		token_validity: 7, // number of days before the account being deleted
-		whitelist: {
+		whitelist: [
 			// Email addresses that are allowed to be used to register
 			// even if they're domain is blacklisted
-			email: ['ae.info@utbm.fr', ...(process.env['WHITELISTED_EMAILS']?.split(';') ?? [])],
-		},
+			'ae.info@utbm.fr',
+			...(process.env['WHITELISTED_EMAILS']?.split(';') ?? []),
+		],
 		blacklist: {
 			host: ['@utbm.fr', ...(process.env['BLACKLISTED_HOSTS']?.split(';') ?? [])],
 		},

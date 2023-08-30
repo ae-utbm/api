@@ -151,7 +151,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Email.Invalid({ i18n, email: email as unknown as email }),
+					message: Errors.Email.Blacklisted({ i18n, email: email as unknown as email }),
 				});
 			});
 
