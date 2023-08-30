@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '@modules/auth/auth.service';
 import { EmailsService } from '@modules/emails/emails.service';
 import { FilesService } from '@modules/files/files.service';
+import { TranslateService } from '@modules/translate/translate.service';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
 import { User } from '@modules/users/entities/user.entity';
 
@@ -14,7 +15,7 @@ import { UsersService } from './users.service';
 
 @Module({
 	imports: [MikroOrmModule.forFeature([User, UserVisibility])],
-	providers: [UsersService, JwtService, FilesService, EmailsService, AuthService],
+	providers: [UsersService, JwtService, FilesService, EmailsService, AuthService, TranslateService],
 	controllers: [UsersDataController, UsersFilesController],
 	exports: [UsersService],
 })

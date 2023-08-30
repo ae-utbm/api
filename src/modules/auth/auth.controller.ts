@@ -1,5 +1,3 @@
-import type { I18nTranslations } from '@types';
-
 import { Controller, Post, Body, Param, Get, Res, HttpStatus, BadRequestException } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
@@ -12,9 +10,8 @@ import {
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import express from 'express';
-import { I18nService } from 'nestjs-i18n';
 
-import { Errors } from '@i18n';
+import { TranslateService } from '@modules/translate/translate.service';
 import { User } from '@modules/users/entities/user.entity';
 import { UsersService } from '@modules/users/users.service';
 import { validateObject } from '@utils/validate';
@@ -28,9 +25,9 @@ import { TokenDTO } from './dto/token.dto';
 @Controller('auth')
 export class AuthController {
 	constructor(
+		private readonly t: TranslateService,
 		private readonly authService: AuthService,
 		private readonly userService: UsersService,
-		private readonly i18n: I18nService<I18nTranslations>,
 	) {}
 
 	@Post('login')
@@ -43,7 +40,7 @@ export class AuthController {
 			objectToValidate: signInDto,
 			objectType: UserPostDTO,
 			requiredKeys: ['password', 'email'],
-			i18n: this.i18n,
+			t: this.t,
 		});
 
 		return this.authService.signIn(signInDto.email, signInDto.password);
@@ -58,7 +55,7 @@ export class AuthController {
 			objectToValidate: registerDto,
 			objectType: UserPostDTO,
 			requiredKeys: ['password', 'first_name', 'last_name', 'email', 'birth_date'],
-			i18n: this.i18n,
+			t: this.t,
 		});
 
 		return this.userService.register(registerDto);
@@ -74,10 +71,9 @@ export class AuthController {
 	@ApiUnauthorizedResponse({ description: 'Unauthorized, invalid token' })
 	async verifyEmail(@Param('user_id') user_id: number, @Param('token') token: string) {
 		if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'user_id'));
 
-		if (token.trim() === '')
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: String, field: 'token' }));
+		if (token.trim() === '') throw new BadRequestException(this.t.Errors.Field.Invalid(String, 'token'));
 
 		return this.userService.verifyEmail(user_id, token);
 	}
@@ -99,10 +95,9 @@ export class AuthController {
 		@Param('token') token: string,
 	) {
 		if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'user_id'));
 
-		if (token.trim() === '')
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: String, field: 'token' }));
+		if (token.trim() === '') throw new BadRequestException(this.t.Errors.Field.Invalid(String, 'token'));
 
 		await this.userService.verifyEmail(user_id, token);
 		res.redirect(HttpStatus.PERMANENT_REDIRECT, 'https://ae.utbm.fr/');

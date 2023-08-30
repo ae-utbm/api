@@ -1,4 +1,4 @@
-import type { I18nTranslations, aspect_ratio } from '@types';
+import type { aspect_ratio } from '@types';
 
 import { randomUUID } from 'crypto';
 import { accessSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
@@ -8,9 +8,8 @@ import { Readable } from 'stream';
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { fromBuffer, MimeType } from 'file-type';
-import { I18nService } from 'nestjs-i18n';
 
-import { Errors } from '@i18n';
+import { TranslateService } from '@modules/translate/translate.service';
 import { User } from '@modules/users/entities/user.entity';
 import { convertToWebp, hasAspectRatio } from '@utils/images';
 
@@ -28,7 +27,7 @@ type WriteImageOptions = WriteFileOptions & {
 
 @Injectable()
 export class FilesService {
-	constructor(private readonly orm: MikroORM, private readonly i18n: I18nService<I18nTranslations>) {}
+	constructor(private readonly orm: MikroORM, private readonly t: TranslateService) {}
 
 	/**
 	 * Determine if the given user can read the given file.
@@ -59,21 +58,20 @@ export class FilesService {
 	 * Upload file on disk
 	 */
 	async writeOnDisk(buffer: Buffer, options: WriteFileOptions, allowedMimetype: MimeType[]) {
-		if (!buffer) throw new BadRequestException(Errors.File.NotProvided({ i18n: this.i18n }));
+		if (!buffer) throw new BadRequestException(this.t.Errors.File.NotProvided());
 
 		const fileType = await fromBuffer(buffer);
-		if (!fileType) throw new BadRequestException(Errors.File.UndefinedMimeType({ i18n: this.i18n }));
+		if (!fileType) throw new BadRequestException(this.t.Errors.File.UndefinedMimeType());
 
 		if (!allowedMimetype.includes(fileType.mime))
-			throw new BadRequestException(Errors.File.InvalidMimeType({ i18n: this.i18n, mime_type: allowedMimetype }));
+			throw new BadRequestException(this.t.Errors.File.InvalidMimeType(allowedMimetype));
 
 		const filename = `${options.filename}_${randomUUID()}.${fileType.ext}`;
 		const filepath = join(options.directory, filename);
 		const size = buffer.byteLength;
 
 		// Scan the file with an antivirus
-		if (await this.scanWithAntivirus(buffer))
-			throw new BadRequestException(Errors.File.Infected({ i18n: this.i18n, file: filename }));
+		if (await this.scanWithAntivirus(buffer)) throw new BadRequestException(this.t.Errors.File.Infected(filename));
 
 		// Write the file on disk
 		mkdirSync(options.directory, { recursive: true });
@@ -93,18 +91,16 @@ export class FilesService {
 	 * (unless it's a GIF or webp already)
 	 */
 	async writeOnDiskAsImage(file: Express.Multer.File, options: WriteImageOptions) {
-		if (!file) throw new BadRequestException(Errors.File.NotProvided({ i18n: this.i18n }));
+		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
 
 		let buffer = file.buffer;
 
 		if (!file.mimetype.startsWith('image/'))
-			throw new BadRequestException(Errors.File.InvalidMimeType({ i18n: this.i18n, mime_type: ['image/*'] }));
+			throw new BadRequestException(this.t.Errors.File.InvalidMimeType(['image/*']));
 
 		// Check if the file respect the aspect ratio
 		if (!(await hasAspectRatio(buffer, options.aspectRatio)))
-			throw new BadRequestException(
-				Errors.Image.InvalidAspectRatio({ i18n: this.i18n, aspect_ratio: options.aspectRatio }),
-			);
+			throw new BadRequestException(this.t.Errors.Image.InvalidAspectRatio(options.aspectRatio));
 
 		// Convert the file to webp (unless it's a GIF or already a webp)
 		buffer = await convertToWebp(buffer);
@@ -131,10 +127,7 @@ export class FilesService {
 	@UseRequestContext()
 	async getVisibilityGroup(name: Uppercase<string> = 'SUBSCRIBER'): Promise<FileVisibilityGroup> {
 		const res = await this.orm.em.findOne(FileVisibilityGroup, { name }, { populate: ['users', 'files'] });
-		if (!res)
-			throw new BadRequestException(
-				Errors.Generic.NotFound({ i18n: this.i18n, type: FileVisibilityGroup, value: name, field: 'name' }),
-			);
+		if (!res) throw new BadRequestException(this.t.Errors.Entity.NotFound(FileVisibilityGroup, name, 'name'));
 
 		return res;
 	}
@@ -149,7 +142,7 @@ export class FilesService {
 			accessSync(file.path);
 		} catch {
 			if (silent) return;
-			throw new NotFoundException(Errors.File.NotFoundOnDisk({ i18n: this.i18n, file: file.filename }));
+			throw new NotFoundException(this.t.Errors.File.NotFoundOnDisk(file.filename));
 		}
 
 		rmSync(file.path);
@@ -161,12 +154,10 @@ export class FilesService {
 	 * @returns {Readable} The stream of the file
 	 */
 	toReadable(file: File): Readable {
-		const i18n = this.i18n;
-
 		try {
 			accessSync(file.path);
 		} catch {
-			throw new NotFoundException(Errors.File.NotFoundOnDisk({ i18n, file: file.filename }));
+			throw new NotFoundException(this.t.Errors.File.NotFoundOnDisk(file.filename));
 		}
 
 		const readable = new Readable({

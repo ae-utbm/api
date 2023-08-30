@@ -1,5 +1,3 @@
-import type { I18nTranslations } from '@types';
-
 import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -11,11 +9,10 @@ import {
 	ApiBadRequestResponse,
 	ApiNotFoundResponse,
 } from '@nestjs/swagger';
-import { I18nService } from 'nestjs-i18n';
 
-import { Errors } from '@i18n';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
+import { TranslateService } from '@modules/translate/translate.service';
 import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
 import { validateObject } from '@utils/validate';
 
@@ -29,7 +26,7 @@ import { RolesService } from './roles.service';
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
 export class RolesController {
-	constructor(private readonly rolesService: RolesService, private readonly i18n: I18nService<I18nTranslations>) {}
+	constructor(private readonly rolesService: RolesService, private readonly t: TranslateService) {}
 
 	@Post()
 	@UseGuards(PermissionGuard)
@@ -43,7 +40,7 @@ export class RolesController {
 			objectToValidate: body,
 			objectType: RolePostDTO,
 			requiredKeys: ['name', 'permissions', 'expires'],
-			i18n: this.i18n,
+			t: this.t,
 		});
 
 		return this.rolesService.createRole(body.name, body.permissions, body.expires);
@@ -63,7 +60,7 @@ export class RolesController {
 			objectType: RolePostDTO,
 			requiredKeys: ['id'],
 			optionalKeys: ['name', 'permissions', 'expires'],
-			i18n: this.i18n,
+			t: this.t,
 		});
 
 		return this.rolesService.editRole(body);
@@ -88,7 +85,7 @@ export class RolesController {
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async getRole(@Param('role_id') id: number) {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
 
 		return this.rolesService.getRole(id);
 	}
@@ -102,7 +99,7 @@ export class RolesController {
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async getRoleUsers(@Param('role_id') id: number) {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
 
 		return this.rolesService.getUsers(id);
 	}
@@ -116,14 +113,14 @@ export class RolesController {
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async addUsersToRole(@Param('role_id') role_id: number, @Body() body: RoleEditUsersDTO) {
 		if (typeof role_id !== 'number' && parseInt(role_id, 10) != role_id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'role_id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'role_id'));
 
 		if (!body.users || !Array.isArray(body.users) || body.users.length === 0)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Array, field: 'users' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Array, 'users'));
 
 		body.users.forEach((user_id) => {
 			if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
-				throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
+				throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'user_id'));
 		});
 
 		return this.rolesService.addUsers(role_id, body.users);
@@ -138,14 +135,14 @@ export class RolesController {
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async removeUsersToRole(@Param('role_id') role_id: number, @Body('') body: RoleEditUsersDTO) {
 		if (typeof role_id !== 'number' && parseInt(role_id, 10) != role_id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'role_id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'role_id'));
 
 		if (!body.users || !Array.isArray(body.users) || body.users.length === 0)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Array, field: 'users' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Array, 'users'));
 
 		body.users.forEach((user_id) => {
 			if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
-				throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'user_id' }));
+				throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'user_id'));
 		});
 
 		return this.rolesService.removeUsers(role_id, body.users);

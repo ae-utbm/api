@@ -1,11 +1,8 @@
-import type { I18nTranslations } from '@types';
-
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { I18nService } from 'nestjs-i18n';
 
-import { Success } from '@i18n';
+import { TranslateService } from '@modules/translate/translate.service';
 import { UsersService } from '@modules/users/users.service';
 
 import { Log } from './entities/log.entity';
@@ -13,9 +10,9 @@ import { Log } from './entities/log.entity';
 @Injectable()
 export class LogsService {
 	constructor(
-		private readonly usersService: UsersService,
-		private readonly i18n: I18nService<I18nTranslations>,
 		private readonly orm: MikroORM,
+		private readonly t: TranslateService,
+		private readonly usersService: UsersService,
 	) {}
 
 	/**
@@ -39,6 +36,6 @@ export class LogsService {
 		await user.logs.init();
 		user.logs.removeAll();
 
-		return { message: Success.Generic.Deleted({ i18n: this.i18n, type: Log }), statusCode: 200 };
+		return { message: this.t.Success.Entity.Deleted(Log), statusCode: 200 };
 	}
 }

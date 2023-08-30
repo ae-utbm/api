@@ -1,15 +1,12 @@
-import type { I18nTranslations } from '@types';
-
 import { join } from 'path';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
-import { I18nService } from 'nestjs-i18n';
 
-import { Errors } from '@i18n';
 import { FilesService } from '@modules/files/files.service';
+import { TranslateService } from '@modules/translate/translate.service';
 
 import { PromotionResponseDTO } from './dto/promotion.dto';
 import { PromotionPicture } from './entities/promotion-picture.entity';
@@ -19,8 +16,8 @@ import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
 @Injectable()
 export class PromotionsService {
 	constructor(
+		private readonly t: TranslateService,
 		private readonly orm: MikroORM,
-		private readonly i18n: I18nService<I18nTranslations>,
 		private readonly configService: ConfigService,
 		private readonly filesService: FilesService,
 	) {}
@@ -80,8 +77,7 @@ export class PromotionsService {
 	@UseRequestContext()
 	async findOne(number: number): Promise<PromotionResponseDTO> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['*', 'picture', 'users'] });
-		if (!promotion)
-			throw new NotFoundException(Errors.Generic.IdNotFound({ type: Promotion, id: number, i18n: this.i18n }));
+		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
 
 		return {
 			...promotion,
@@ -92,8 +88,7 @@ export class PromotionsService {
 	@UseRequestContext()
 	async getUsers(number: number): Promise<BaseUserResponseDTO[]> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['users'] });
-		if (!promotion)
-			throw new NotFoundException(Errors.Generic.IdNotFound({ type: Promotion, id: number, i18n: this.i18n }));
+		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
 
 		const res: BaseUserResponseDTO[] = [];
 
@@ -115,8 +110,7 @@ export class PromotionsService {
 	async updateLogo(number: number, file: Express.Multer.File): Promise<Promotion> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
 
-		if (!promotion)
-			throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, id: number, type: Promotion }));
+		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
 			directory: join(this.configService.get<string>('files.promotions'), 'logo'),
@@ -155,20 +149,18 @@ export class PromotionsService {
 	@UseRequestContext()
 	async getLogo(number: number): Promise<PromotionPicture> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
-		if (!promotion)
-			throw new NotFoundException(Errors.Generic.IdNotFound({ type: Promotion, id: number, i18n: this.i18n }));
+		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
 
-		if (!promotion.picture) throw new NotFoundException(Errors.Promotion.LogoNotFound({ i18n: this.i18n, number }));
+		if (!promotion.picture) throw new NotFoundException(this.t.Errors.Promotion.LogoNotFound(number));
 		return promotion.picture;
 	}
 
 	@UseRequestContext()
 	async deleteLogo(number: number): Promise<Promotion> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
-		if (!promotion)
-			throw new NotFoundException(Errors.Generic.IdNotFound({ type: Promotion, id: number, i18n: this.i18n }));
+		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
 
-		if (!promotion.picture) throw new NotFoundException(Errors.Promotion.LogoNotFound({ i18n: this.i18n, number }));
+		if (!promotion.picture) throw new NotFoundException(this.t.Errors.Promotion.LogoNotFound(number));
 
 		this.filesService.deleteFromDisk(promotion.picture);
 		await this.orm.em.removeAndFlush(promotion.picture);

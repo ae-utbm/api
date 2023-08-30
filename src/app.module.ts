@@ -15,6 +15,7 @@ import { LogsModule } from '@modules/logs/logs.module';
 import { PermissionsModule } from '@modules/permissions/permissions.module';
 import { PromotionsModule } from '@modules/promotions/promotions.module';
 import { RolesModule } from '@modules/roles/roles.module';
+import { TranslateModule } from '@modules/translate/translate.module';
 import { UsersModule } from '@modules/users/users.module';
 
 import env from './env';
@@ -43,6 +44,7 @@ import env from './env';
 		PromotionsModule,
 		RolesModule,
 		ScheduleModule.forRoot(),
+		TranslateModule,
 		UsersModule,
 	],
 	providers: [

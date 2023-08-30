@@ -3,12 +3,11 @@ import { join } from 'path';
 
 import request from 'supertest';
 
-import { Errors } from '@i18n';
 import { TokenDTO } from '@modules/auth/dto/token.dto';
 import { PromotionPicture } from '@modules/promotions/entities/promotion-picture.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
 
-import { app, config, i18n, orm } from '..';
+import { app, config, t, orm } from '..';
 
 describe('Promotions (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -93,7 +92,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: Errors.Generic.FieldInvalid({ i18n, field: 'number', type: Number }),
+					message: t.Errors.Field.Invalid(Number, 'number'),
 				});
 			});
 		});
@@ -132,7 +131,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Not Found',
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ id: 999999, type: 'Promotion', i18n }),
+					message: t.Errors.Id.NotFound('Promotion', 999999),
 				});
 			});
 		});
@@ -165,7 +164,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: Errors.Generic.FieldInvalid({ i18n, field: 'number', type: Number }),
+					message: t.Errors.Field.Invalid(Number, 'number'),
 				});
 			});
 		});
@@ -204,7 +203,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Not Found',
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ id: 999999, type: Promotion, i18n }),
+					message: t.Errors.Id.NotFound(Promotion, 999999),
 				});
 			});
 		});
@@ -239,7 +238,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: Errors.Generic.FieldInvalid({ i18n, field: 'number', type: Number }),
+					message: t.Errors.Field.Invalid(Number, 'number'),
 				});
 			});
 		});
@@ -278,7 +277,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Not Found',
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ id: 999999, type: Promotion, i18n }),
+					message: t.Errors.Id.NotFound(Promotion, 999999),
 				});
 			});
 
@@ -290,7 +289,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Not Found',
 					statusCode: 404,
-					message: Errors.Promotion.LogoNotFound({ number: 21, i18n }),
+					message: t.Errors.Promotion.LogoNotFound(21),
 				});
 			});
 		});
@@ -333,7 +332,7 @@ describe('Promotions (e2e)', () => {
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
-					message: Errors.File.NotProvided({ i18n }),
+					message: t.Errors.File.NotProvided(),
 					statusCode: 400,
 				});
 			});
@@ -347,7 +346,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.File.InvalidMimeType({ i18n, mime_type: ['image/*'] }),
+					message: t.Errors.File.InvalidMimeType(['image/*']),
 				});
 			});
 
@@ -360,7 +359,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Image.InvalidAspectRatio({ i18n, aspect_ratio: '1:1' }),
+					message: t.Errors.Image.InvalidAspectRatio('1:1'),
 				});
 			});
 
@@ -373,7 +372,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: Errors.Generic.FieldInvalid({ i18n, field: 'number', type: Number }),
+					message: t.Errors.Field.Invalid(Number, 'number'),
 				});
 			});
 		});
@@ -413,7 +412,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Not Found',
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ id: 999999, type: Promotion, i18n }),
+					message: t.Errors.Id.NotFound(Promotion, 999999),
 				});
 			});
 		});
@@ -508,7 +507,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: Errors.Generic.FieldInvalid({ i18n, field: 'number', type: Number }),
+					message: t.Errors.Field.Invalid(Number, 'number'),
 				});
 			});
 		});
@@ -547,7 +546,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Not Found',
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ id: 999999, type: Promotion, i18n }),
+					message: t.Errors.Id.NotFound(Promotion, 999999),
 				});
 			});
 
@@ -559,7 +558,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Not Found',
 					statusCode: 404,
-					message: Errors.Promotion.LogoNotFound({ number: 20, i18n }),
+					message: t.Errors.Promotion.LogoNotFound(20),
 				});
 			});
 		});

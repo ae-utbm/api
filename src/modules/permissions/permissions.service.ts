@@ -1,11 +1,10 @@
-import type { I18nTranslations, PermissionEntity } from '@types';
+import type { PermissionEntity } from '@types';
 
 import { MikroORM, UseRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { I18nService } from 'nestjs-i18n';
 
-import { Errors } from '@i18n';
+import { TranslateService } from '@modules/translate/translate.service';
 import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
 import { PermissionPatchDTO } from './dto/patch.dto';
@@ -15,7 +14,7 @@ import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class PermissionsService {
-	constructor(private readonly orm: MikroORM, private readonly i18n: I18nService<I18nTranslations>) {}
+	constructor(private readonly orm: MikroORM, private readonly t: TranslateService) {}
 
 	/**
 	 * Automatically revoke permissions that have expired.
@@ -45,11 +44,11 @@ export class PermissionsService {
 	async addPermissionToUser(data: PermissionPostDTO): Promise<PermissionEntity<number>> {
 		// Check if the permission is valid
 		if (!PERMISSIONS_NAMES.includes(data.permission))
-			throw new BadRequestException(Errors.Permission.Invalid({ i18n: this.i18n, permission: data.permission }));
+			throw new BadRequestException(this.t.Errors.Permission.Invalid(data.permission));
 
 		// Find the user
 		const user = await this.orm.em.findOne(User, { id: data.id }, { populate: ['permissions'] });
-		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id: data.id }));
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, data.id));
 
 		// Check if the user already has the permission
 		if (
@@ -58,9 +57,7 @@ export class PermissionsService {
 				.map((p) => p.name)
 				.includes(data.permission)
 		)
-			throw new BadRequestException(
-				Errors.Permission.AlreadyOnUser({ i18n: this.i18n, permission: data.permission, user: user.full_name }),
-			);
+			throw new BadRequestException(this.t.Errors.Permission.AlreadyOnUser(data.permission, user.full_name));
 
 		// Add the permission to the user
 		const permission = this.orm.em.create(Permission, {
@@ -83,7 +80,7 @@ export class PermissionsService {
 	@UseRequestContext()
 	async getPermissionsOfUser(id: number): Promise<Permission[]> {
 		const user = await this.orm.em.findOne(User, { id });
-		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id }));
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 
 		return user.permissions.loadItems();
 	}
@@ -91,14 +88,10 @@ export class PermissionsService {
 	@UseRequestContext()
 	async editPermissionOfUser(data: PermissionPatchDTO): Promise<Permission> {
 		const user = await this.orm.em.findOne(User, { id: data.user_id });
-		if (!user)
-			throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id: data.user_id }));
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, data.user_id));
 
 		const perm = await this.orm.em.findOne(Permission, { id: data.id, user });
-		if (!perm)
-			throw new NotFoundException(
-				Errors.Permission.NotFoundOnUser({ i18n: this.i18n, user: user.full_name, permission: data.name }),
-			);
+		if (!perm) throw new NotFoundException(this.t.Errors.Permission.NotFoundOnUser(data.name, user.full_name));
 
 		if (data.name) perm.name = data.name;
 		if (data.expires) perm.expires = data.expires;

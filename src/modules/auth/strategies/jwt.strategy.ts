@@ -1,11 +1,11 @@
-import type { I18nTranslations, JWTPayload } from '@types';
+import type { JWTPayload } from '@types';
 
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { I18nService } from 'nestjs-i18n';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
+import { TranslateService } from '@modules/translate/translate.service';
 import { validateObject } from '@utils/validate';
 
 import { AuthService } from '../auth.service';
@@ -16,7 +16,7 @@ import { AuthService } from '../auth.service';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
 	constructor(
-		private readonly i18n: I18nService<I18nTranslations>,
+		private readonly t: TranslateService,
 		private readonly configService: ConfigService,
 		private readonly authService: AuthService,
 	) {
@@ -37,7 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 			objectToValidate: payload,
 			objectType: 'JWTPayload',
 			requiredKeys: ['sub', 'email', 'iat', 'exp'],
-			i18n: this.i18n,
+			t: this.t,
 		});
 
 		// Find the user from the payload

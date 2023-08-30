@@ -9,10 +9,10 @@ import { Cron } from '@nestjs/schedule';
 import { compareSync, hashSync } from 'bcrypt';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 
-import { Errors } from '@i18n';
 import { UserPostByAdminDTO, UserPostDTO } from '@modules/auth/dto/register.dto';
 import { EmailsService } from '@modules/emails/emails.service';
 import { FilesService } from '@modules/files/files.service';
+import { TranslateService } from '@modules/translate/translate.service';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
@@ -27,6 +27,7 @@ import { UserPatchDTO } from './dto/patch.dto';
 @Injectable()
 export class UsersService {
 	constructor(
+		private readonly t: TranslateService,
 		private readonly orm: MikroORM,
 		private readonly i18n: I18nService<I18nTranslations>,
 		private readonly filesService: FilesService,
@@ -123,9 +124,10 @@ export class UsersService {
 		if (id) user = await this.orm.em.findOne(User, { id });
 		if (email) user = await this.orm.em.findOne(User, { email });
 
-		if (!id && !email) throw new BadRequestException(Errors.Generic.IdOrEmailMissing({ i18n: this.i18n, type: User }));
-		if (!user && id) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id }));
-		if (!user && email) throw new NotFoundException(Errors.Email.NotFound({ i18n: this.i18n, type: User, email }));
+		if (!id && !email) throw new BadRequestException(this.t.Errors.Field.Missing(User, 'id/email'));
+
+		if (!user && id) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
+		if (!user && email) throw new NotFoundException(this.t.Errors.Email.NotFound(User, email));
 
 		return filter ? (await this.removePrivateFields([user]))[0] : user;
 	}
@@ -140,8 +142,7 @@ export class UsersService {
 		if (typeof ids === 'number') ids = [ids];
 
 		const users = await this.orm.em.find(User, { id: { $in: ids } });
-		if (!users)
-			throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id: ids.toString() }));
+		if (!users) throw new NotFoundException(this.t.Errors.Id.NotFound(User, ids.join(', ')));
 
 		return await this.orm.em.find(UserVisibility, { user: { $in: users } });
 	}
@@ -169,13 +170,12 @@ export class UsersService {
 		this.emailsService.validateEmail(input.email);
 
 		if (await this.orm.em.findOne(User, { email: input.email }))
-			throw new BadRequestException(Errors.Email.AlreadyUsed({ i18n: this.i18n, email: input.email }));
+			throw new BadRequestException(this.t.Errors.Email.AlreadyUsed(input.email));
 
 		if (!checkBirthDate(input.birth_date))
-			throw new BadRequestException(Errors.BirthDate.Invalid({ i18n: this.i18n, date: input.birth_date }));
+			throw new BadRequestException(this.t.Errors.BirthDate.Invalid(input.birth_date));
 
-		if (!checkPasswordStrength(input.password))
-			throw new BadRequestException(Errors.Password.Weak({ i18n: this.i18n }));
+		if (!checkPasswordStrength(input.password)) throw new BadRequestException(this.t.Errors.Password.Weak());
 
 		// Check if the password is already hashed
 		if (input.password.length !== 60) input.password = hashSync(input.password, 10);
@@ -216,12 +216,12 @@ export class UsersService {
 	@UseRequestContext()
 	async registerByAdmin(input: UserPostByAdminDTO): Promise<User> {
 		if (await this.orm.em.findOne(User, { email: input.email }))
-			throw new BadRequestException(Errors.Email.AlreadyUsed({ i18n: this.i18n, email: input.email }));
+			throw new BadRequestException(this.t.Errors.Email.AlreadyUsed(input.email));
 
 		this.emailsService.validateEmail(input.email);
 
 		if (!checkBirthDate(input.birth_date))
-			throw new BadRequestException(Errors.BirthDate.Invalid({ i18n: this.i18n, date: input.birth_date }));
+			throw new BadRequestException(this.t.Errors.BirthDate.Invalid(input.birth_date));
 
 		// Generate a random password & hash it
 		const password = generateRandomPassword(12);
@@ -246,13 +246,12 @@ export class UsersService {
 		if (!user_id || !token) throw new BadRequestException('Missing user id or token');
 
 		const user = await this.orm.em.findOne(User, { id: user_id });
-		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ i18n: this.i18n, type: User, id: user_id }));
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, user_id));
 
-		if (user.email_verified)
-			throw new BadRequestException(Errors.Email.AlreadyVerified({ i18n: this.i18n, type: User }));
+		if (user.email_verified) throw new BadRequestException(this.t.Errors.Email.AlreadyVerified(User));
 
 		if (!compareSync(token, user.email_verification))
-			throw new UnauthorizedException(Errors.Email.InvalidVerificationToken({ i18n: this.i18n }));
+			throw new UnauthorizedException(this.t.Errors.Email.InvalidVerificationToken());
 
 		user.email_verified = true;
 		user.email_verification = null;
@@ -288,7 +287,7 @@ export class UsersService {
 	@UseRequestContext()
 	async updatePicture(id: number, file: Express.Multer.File): Promise<User> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['picture'] });
-		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id, i18n: this.i18n }));
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
 			directory: join(this.configService.get<string>('files.users'), 'pictures'),
@@ -343,7 +342,7 @@ export class UsersService {
 	@UseRequestContext()
 	async updateBanner(id: number, file: Express.Multer.File): Promise<User> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['banner'] });
-		if (!user) throw new NotFoundException(Errors.Generic.IdNotFound({ type: User, id, i18n: this.i18n }));
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
 			directory: join(this.configService.get<string>('files.users'), 'banners'),

@@ -1,11 +1,10 @@
 import request from 'supertest';
 
-import { Errors } from '@i18n';
 import { RolePostDTO } from '@modules/roles/dto/post.dto';
 import { Role } from '@modules/roles/entities/role.entity';
 import { User } from '@modules/users/entities/user.entity';
 
-import { app, i18n, orm } from '..';
+import { app, t, orm } from '..';
 
 describe('Roles (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -98,7 +97,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: Errors.Generic.FieldMissing({ field: 'expires', type: RolePostDTO, i18n }),
+					message: t.Errors.Field.Missing(RolePostDTO, 'expires'),
 					error: 'Bad Request',
 				});
 			});
@@ -116,7 +115,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: Errors.Permission.Invalid({ i18n, permission: 'test' }),
+					message: t.Errors.Permission.Invalid('test'),
 					error: 'Bad Request',
 				});
 			});
@@ -134,7 +133,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: Errors.Role.NameAlreadyUsed({ i18n, name: 'PERMISSIONS_MODERATOR' }),
+					message: t.Errors.Role.NameAlreadyUsed('PERMISSIONS_MODERATOR'),
 					error: 'Bad Request',
 				});
 			});
@@ -205,7 +204,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: Errors.Generic.FieldMissing({ field: 'id', type: RolePostDTO, i18n }),
+					message: t.Errors.Field.Missing(RolePostDTO, 'id'),
 					error: 'Bad Request',
 				});
 			});
@@ -251,7 +250,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ i18n, id: 9999, type: Role }),
+					message: t.Errors.Id.NotFound(Role, 9999),
 					error: 'Not Found',
 				});
 			});
@@ -295,7 +294,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'id' }),
+					message: t.Errors.Field.Invalid(Number, 'id'),
 					error: 'Bad Request',
 				});
 			});
@@ -336,7 +335,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ i18n, id: 9999, type: Role }),
+					message: t.Errors.Id.NotFound(Role, 9999),
 					error: 'Not Found',
 				});
 			});
@@ -378,7 +377,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'id' }),
+					message: t.Errors.Field.Invalid(Number, 'id'),
 					error: 'Bad Request',
 				});
 			});
@@ -419,7 +418,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ i18n, id: 9999, type: Role }),
+					message: t.Errors.Id.NotFound(Role, 9999),
 					error: 'Not Found',
 				});
 			});
@@ -459,7 +458,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'role_id' }),
+					message: t.Errors.Field.Invalid(Number, 'role_id'),
 					error: 'Bad Request',
 				});
 			});
@@ -475,7 +474,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'user_id' }),
+					message: t.Errors.Field.Invalid(Number, 'user_id'),
 					error: 'Bad Request',
 				});
 			});
@@ -491,7 +490,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: Array, field: 'users' }),
+					message: t.Errors.Field.Invalid(Array, 'users'),
 					error: 'Bad Request',
 				});
 			});
@@ -535,7 +534,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ i18n, id: 9999, type: Role }),
+					message: t.Errors.Id.NotFound(Role, 9999),
 					error: 'Not Found',
 				});
 			});
@@ -551,7 +550,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ i18n, id: 9999, type: User }),
+					message: t.Errors.Id.NotFound(User, 9999),
 					error: 'Not Found',
 				});
 			});
@@ -617,7 +616,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'role_id' }),
+					message: t.Errors.Field.Invalid(Number, 'role_id'),
 					error: 'Bad Request',
 				});
 			});
@@ -633,7 +632,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'user_id' }),
+					message: t.Errors.Field.Invalid(Number, 'user_id'),
 					error: 'Bad Request',
 				});
 			});
@@ -649,7 +648,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: Array, field: 'users' }),
+					message: t.Errors.Field.Invalid(Array, 'users'),
 					error: 'Bad Request',
 				});
 			});
@@ -693,7 +692,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ i18n, id: 9999, type: Role }),
+					message: t.Errors.Id.NotFound(Role, 9999),
 					error: 'Not Found',
 				});
 			});
@@ -709,7 +708,7 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ i18n, id: 9999, type: User }),
+					message: t.Errors.Id.NotFound(User, 9999),
 					error: 'Not Found',
 				});
 			});

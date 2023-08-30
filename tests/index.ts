@@ -1,7 +1,5 @@
 /* istanbul ignore file */
 
-import type { I18nTranslations } from '@types';
-
 import 'tsconfig-paths/register';
 import '@utils/index';
 
@@ -10,17 +8,17 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { TestingModule, Test } from '@nestjs/testing';
-import { I18nService } from 'nestjs-i18n';
 
 import { AppModule } from '@app.module';
 import env from '@env';
+import { TranslateService } from '@modules/translate/translate.service';
 
 let moduleFixture: TestingModule;
 let config: ConfigService;
-let i18n: I18nService<I18nTranslations>;
 let jwt: JwtService;
 let app: NestExpressApplication;
 let orm: MikroORM;
+let t: TranslateService;
 
 /**
  * This file is used to setup the ORM & the NestJS application before running each suite of tests.
@@ -38,7 +36,7 @@ beforeAll(async () => {
 	app.useStaticAssets(env().files.baseDir, { index: false, prefix: '/public' });
 
 	orm = moduleFixture.get<MikroORM>(MikroORM);
-	i18n = moduleFixture.get<I18nService<I18nTranslations>>(I18nService);
+	t = moduleFixture.get<TranslateService>(TranslateService);
 	config = moduleFixture.get<ConfigService>(ConfigService);
 	jwt = moduleFixture.get<JwtService>(JwtService);
 
@@ -53,4 +51,4 @@ afterAll(async () => {
 	await app.close();
 });
 
-export { moduleFixture, config, app, orm, i18n, jwt };
+export { moduleFixture, config, app, orm, t, jwt };

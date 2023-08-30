@@ -1,10 +1,9 @@
-import type { I18nTranslations, KeysOf } from '@types';
+import type { KeysOf } from '@types';
 import type { Class } from 'type-fest';
 
 import { BadRequestException } from '@nestjs/common';
-import { I18nService } from 'nestjs-i18n';
 
-import { Errors } from '@i18n';
+import { TranslateService } from '@modules/translate/translate.service';
 
 export function validateObject<T extends object, C extends Class<unknown>>(options: {
 	/** Object to be checked */
@@ -18,7 +17,7 @@ export function validateObject<T extends object, C extends Class<unknown>>(optio
 	optionalKeys?: KeysOf<T>;
 
 	/** Translation service */
-	i18n: I18nService<I18nTranslations>;
+	t: TranslateService;
 }): void | never {
 	if (
 		(!options.requiredKeys && !options.optionalKeys) ||
@@ -31,21 +30,15 @@ export function validateObject<T extends object, C extends Class<unknown>>(optio
 	keysToValidate.forEach((key) => {
 		// Check for unexpected fields in the given object
 		if (!options.requiredKeys?.includes(key) && !options.optionalKeys?.includes(key))
-			throw new BadRequestException(
-				Errors.Generic.FieldUnexpected({ i18n: options.i18n, type: options.objectType, field: key }),
-			);
+			throw new BadRequestException(options.t.Errors.Field.Unexpected(options.objectType, key));
 	});
 
 	options.requiredKeys.forEach((field) => {
 		// If the field is required but not present, throw an error (Missing field)
 		if (!keysToValidate.includes(field))
-			throw new BadRequestException(
-				Errors.Generic.FieldMissing({ i18n: options.i18n, type: options.objectType, field }),
-			);
+			throw new BadRequestException(options.t.Errors.Field.Missing(options.objectType, field));
 
 		if (options.objectToValidate[field] === undefined || options.objectToValidate[field] === null)
-			throw new BadRequestException(
-				Errors.Generic.FieldMissing({ i18n: options.i18n, type: options.objectType, field }),
-			);
+			throw new BadRequestException(options.t.Errors.Field.Missing(options.objectType, field));
 	});
 }

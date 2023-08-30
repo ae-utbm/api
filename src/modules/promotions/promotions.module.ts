@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '@modules/auth/auth.service';
 import { EmailsService } from '@modules/emails/emails.service';
 import { FilesService } from '@modules/files/files.service';
+import { TranslateService } from '@modules/translate/translate.service';
 import { UsersService } from '@modules/users/users.service';
 
 import { PromotionPicture } from './entities/promotion-picture.entity';
@@ -14,7 +15,7 @@ import { PromotionsService } from './promotions.service';
 
 @Module({
 	imports: [MikroOrmModule.forFeature([Promotion, PromotionPicture])],
-	providers: [PromotionsService, JwtService, UsersService, FilesService, EmailsService, AuthService],
+	providers: [PromotionsService, JwtService, UsersService, FilesService, EmailsService, AuthService, TranslateService],
 	controllers: [PromotionsController],
 	exports: [PromotionsService],
 })

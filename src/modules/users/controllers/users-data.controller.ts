@@ -1,12 +1,9 @@
-import type { I18nTranslations } from '@types';
 import type { Request } from 'express';
 
 import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { I18nService } from 'nestjs-i18n';
 
-import { Errors } from '@i18n';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
@@ -14,6 +11,7 @@ import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { Role } from '@modules/roles/entities/role.entity';
+import { TranslateService } from '@modules/translate/translate.service';
 import { validateObject } from '@utils/validate';
 
 import { UserPatchDTO } from '../dto/patch.dto';
@@ -26,7 +24,7 @@ import { UsersService } from '../users.service';
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
 export class UsersDataController {
-	constructor(private readonly usersService: UsersService, private readonly i18n: I18nService<I18nTranslations>) {}
+	constructor(private readonly usersService: UsersService, private readonly t: TranslateService) {}
 
 	@Post()
 	@UseGuards(PermissionGuard)
@@ -39,7 +37,7 @@ export class UsersDataController {
 			objectToValidate: input,
 			objectType: UserPostByAdminDTO,
 			requiredKeys: ['email', 'birth_date', 'first_name', 'last_name'],
-			i18n: this.i18n,
+			t: this.t,
 		});
 
 		return this.usersService.registerByAdmin(input);
@@ -72,7 +70,7 @@ export class UsersDataController {
 				'specialty',
 				'promotion',
 			],
-			i18n: this.i18n,
+			t: this.t,
 		});
 
 		return this.usersService.update(req.user.id, input);
@@ -85,7 +83,7 @@ export class UsersDataController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async delete(@Param('id') id: number) {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
 
 		return this.usersService.delete(id);
 	}
@@ -98,7 +96,7 @@ export class UsersDataController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getPrivate(@Param('id') id: number) {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
 
 		return this.usersService.findOne({ id }, false);
 	}
@@ -111,7 +109,7 @@ export class UsersDataController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getPublic(@Param('id') id: number) {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
 
 		return this.usersService.findOne({ id });
 	}
@@ -124,7 +122,7 @@ export class UsersDataController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getVisibility(@Param('id') id: number) {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
 
 		return this.usersService.findVisibilities([id]);
 	}
@@ -137,7 +135,7 @@ export class UsersDataController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getUserRoles(@Param('id') id: number) {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
 
 		return this.usersService.getUserRoles(id, { show_expired: true, show_revoked: true });
 	}
@@ -150,7 +148,7 @@ export class UsersDataController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getUserPermissions(@Param('id') id: number) {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
 
 		return this.usersService.getUserPermissions(id, { show_expired: true, show_revoked: true });
 	}

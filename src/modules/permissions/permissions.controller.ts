@@ -1,4 +1,4 @@
-import type { I18nTranslations, PermissionEntity } from '@types';
+import type { PermissionEntity } from '@types';
 
 import { Body, Controller, Get, Param, Post, UseGuards, Patch, BadRequestException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -11,13 +11,12 @@ import {
 	ApiTags,
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { I18nService } from 'nestjs-i18n';
 
-import { Errors } from '@i18n';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
+import { TranslateService } from '@modules/translate/translate.service';
 import { validateObject } from '@utils/validate';
 
 import { PermissionPatchDTO } from './dto/patch.dto';
@@ -30,10 +29,7 @@ import { PermissionsService } from './permissions.service';
 @ApiTags('Permissions')
 @ApiBearerAuth()
 export class PermissionsController {
-	constructor(
-		private readonly permsService: PermissionsService,
-		private readonly i18n: I18nService<I18nTranslations>,
-	) {}
+	constructor(private readonly permsService: PermissionsService, private readonly t: TranslateService) {}
 
 	@Post()
 	@UseGuards(PermissionGuard)
@@ -47,7 +43,7 @@ export class PermissionsController {
 			objectToValidate: body,
 			objectType: PermissionPostDTO,
 			requiredKeys: ['expires', 'id', 'permission'],
-			i18n: this.i18n,
+			t: this.t,
 		});
 
 		return this.permsService.addPermissionToUser(body);
@@ -66,7 +62,7 @@ export class PermissionsController {
 			objectType: PermissionPatchDTO,
 			requiredKeys: ['id'],
 			optionalKeys: ['expires', 'revoked', 'user_id', 'name'],
-			i18n: this.i18n,
+			t: this.t,
 		});
 
 		return this.permsService.editPermissionOfUser(body);
@@ -82,7 +78,7 @@ export class PermissionsController {
 	@ApiParam({ name: 'user_id', description: 'The user ID' })
 	getUserPermissions(@Param('user_id') id: number) {
 		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(Errors.Generic.FieldInvalid({ i18n: this.i18n, type: Number, field: 'id' }));
+			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
 
 		return this.permsService.getPermissionsOfUser(id);
 	}

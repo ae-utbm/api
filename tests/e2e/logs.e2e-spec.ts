@@ -1,11 +1,10 @@
 import request from 'supertest';
 
-import { Errors, Success } from '@i18n';
 import { TokenDTO } from '@modules/auth/dto/token.dto';
 import { Log } from '@modules/logs/entities/log.entity';
 import { User } from '@modules/users/entities/user.entity';
 
-import { app, i18n } from '..';
+import { app, t } from '..';
 
 describe('Logs (e2e)', () => {
 	let tokenUnverified: string;
@@ -58,7 +57,7 @@ describe('Logs (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'id' }),
+					message: t.Errors.Field.Invalid(Number, 'id'),
 				});
 			});
 		});
@@ -81,7 +80,7 @@ describe('Logs (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 401,
-					message: Errors.Email.NotVerified({ i18n, type: User }),
+					message: t.Errors.Email.NotVerified(User),
 					error: 'Unauthorized',
 				});
 			});
@@ -127,7 +126,7 @@ describe('Logs (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Not Found',
 					statusCode: 404,
-					message: Errors.Generic.IdNotFound({ i18n, type: User, id: fakeId }),
+					message: t.Errors.Id.NotFound(User, fakeId),
 				});
 			});
 		});
@@ -196,7 +195,7 @@ describe('Logs (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'id' }),
+					message: t.Errors.Field.Invalid(Number, 'id'),
 				});
 			});
 		});
@@ -236,7 +235,7 @@ describe('Logs (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 200,
-					message: Success.Generic.Deleted({ i18n, type: Log }),
+					message: t.Success.Entity.Deleted(Log),
 				});
 			});
 		});

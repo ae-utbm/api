@@ -34,9 +34,6 @@
       "invalid": "'{type}' ID '{id}' is invalid.",
       "not_found": "'{type}' with ID '{id}' not found."
     },
-    "id_or_email": {
-      "missing": "Missing '{type}' ID or email fields."
-    },
     "image": {
       "invalid_aspect_ratio": "The given image does not respect the expected '{aspect_ratio}' aspect ratio."
     },

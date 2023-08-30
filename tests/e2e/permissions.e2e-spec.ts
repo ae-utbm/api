@@ -1,12 +1,11 @@
 import request from 'supertest';
 
-import { Errors } from '@i18n';
 import { TokenDTO } from '@modules/auth/dto/token.dto';
 import { PermissionPostDTO } from '@modules/permissions/dto/post.dto';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { User } from '@modules/users/entities/user.entity';
 
-import { app, i18n, orm } from '..';
+import { app, t, orm } from '..';
 
 describe('Permissions (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -42,7 +41,7 @@ describe('Permissions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: Errors.Permission.Invalid({ i18n, permission: 'INVALID' }),
+					message: t.Errors.Permission.Invalid('INVALID'),
 				});
 			});
 
@@ -56,7 +55,7 @@ describe('Permissions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: Errors.Generic.FieldMissing({ i18n, field: 'expires', type: PermissionPostDTO }),
+					message: t.Errors.Field.Missing(PermissionPostDTO, 'expires'),
 				});
 			});
 
@@ -70,7 +69,7 @@ describe('Permissions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: Errors.Permission.AlreadyOnUser({ i18n, permission: 'ROOT', user: 'root root' }),
+					message: t.Errors.Permission.AlreadyOnUser('ROOT', 'root root'),
 				});
 			});
 		});
@@ -112,7 +111,7 @@ describe('Permissions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 404,
 					error: 'Not Found',
-					message: Errors.Generic.IdNotFound({ i18n, id: 999999, type: User }),
+					message: t.Errors.Id.NotFound(User, 999999),
 				});
 			});
 		});
@@ -182,7 +181,7 @@ describe('Permissions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 404,
 					error: 'Not Found',
-					message: Errors.Generic.IdNotFound({ i18n, id: 999999, type: User }),
+					message: t.Errors.Id.NotFound(User, 999999),
 				});
 			});
 
@@ -196,7 +195,7 @@ describe('Permissions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 404,
 					error: 'Not Found',
-					message: Errors.Permission.NotFoundOnUser({ i18n, user: 'root root', permission: 'ROOT' }),
+					message: t.Errors.Permission.NotFoundOnUser('ROOT', 'root root'),
 				});
 			});
 		});
@@ -233,7 +232,7 @@ describe('Permissions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: Errors.Generic.FieldInvalid({ i18n, field: 'id', type: Number }),
+					message: t.Errors.Field.Invalid(Number, 'id'),
 				});
 			});
 		});
@@ -274,7 +273,7 @@ describe('Permissions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 404,
 					error: 'Not Found',
-					message: Errors.Generic.IdNotFound({ i18n, id: 999999, type: User }),
+					message: t.Errors.Id.NotFound(User, 999999),
 				});
 			});
 		});

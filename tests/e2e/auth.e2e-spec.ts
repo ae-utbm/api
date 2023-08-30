@@ -3,12 +3,11 @@ import type { email } from '@types';
 import { hashSync } from 'bcrypt';
 import request from 'supertest';
 
-import { Errors } from '@i18n';
 import { UserPostDTO } from '@modules/auth/dto/register.dto';
 import { User } from '@modules/users/entities/user.entity';
 import { generateRandomPassword } from '@utils/password';
 
-import { orm, app, i18n } from '..';
+import { orm, app, t } from '..';
 
 describe('Auth (e2e)', () => {
 	describe('(POST) /auth/login', () => {
@@ -22,7 +21,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Generic.FieldMissing({ i18n, type: UserPostDTO, field: 'email' }),
+					message: t.Errors.Field.Missing(UserPostDTO, 'email'),
 				});
 			});
 		});
@@ -37,7 +36,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Unauthorized',
 					statusCode: 401,
-					message: Errors.Password.Mismatch({ i18n }),
+					message: t.Errors.Password.Mismatch(),
 				});
 			});
 		});
@@ -53,7 +52,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Not Found',
 					statusCode: 404,
-					message: Errors.Email.NotFound({ i18n, type: User, email }),
+					message: t.Errors.Email.NotFound(User, email),
 				});
 			});
 		});
@@ -94,7 +93,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.BirthDate.Invalid({ i18n, date: tomorrow }),
+					message: t.Errors.BirthDate.Invalid(tomorrow),
 				});
 			});
 
@@ -109,7 +108,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.BirthDate.Invalid({ i18n, date: birth_date }),
+					message: t.Errors.BirthDate.Invalid(birth_date),
 				});
 			});
 
@@ -123,7 +122,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Password.Weak({ i18n }),
+					message: t.Errors.Password.Weak(),
 				});
 			});
 
@@ -137,7 +136,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Email.Invalid({ i18n, email: email as unknown as email }),
+					message: t.Errors.Email.Invalid(email as unknown as email),
 				});
 			});
 
@@ -151,7 +150,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Email.Blacklisted({ i18n, email: email as unknown as email }),
+					message: t.Errors.Email.Blacklisted(email as unknown as email),
 				});
 			});
 
@@ -165,7 +164,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Email.AlreadyUsed({ i18n, email }),
+					message: t.Errors.Email.AlreadyUsed(email),
 				});
 			});
 
@@ -178,7 +177,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Generic.FieldMissing({ i18n, type: UserPostDTO, field: 'first_name' }),
+					message: t.Errors.Field.Missing(UserPostDTO, 'first_name'),
 				});
 			});
 
@@ -191,7 +190,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Generic.FieldUnexpected({ i18n, type: UserPostDTO, field: 'never_gonna' }),
+					message: t.Errors.Field.Unexpected(UserPostDTO, 'never_gonna'),
 				});
 			});
 		});
@@ -243,7 +242,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'user_id' }),
+					message: t.Errors.Field.Invalid(Number, 'user_id'),
 				});
 			});
 
@@ -254,7 +253,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: String, field: 'token' }),
+					message: t.Errors.Field.Invalid(String, 'token'),
 				});
 			});
 
@@ -264,7 +263,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Email.AlreadyVerified({ i18n, type: User }),
+					message: t.Errors.Email.AlreadyVerified(User),
 				});
 			});
 		});
@@ -276,7 +275,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Unauthorized',
 					statusCode: 401,
-					message: Errors.Email.InvalidVerificationToken({ i18n }),
+					message: t.Errors.Email.InvalidVerificationToken(),
 				});
 			});
 		});
@@ -337,7 +336,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: Number, field: 'user_id' }),
+					message: t.Errors.Field.Invalid(Number, 'user_id'),
 				});
 			});
 
@@ -348,7 +347,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Generic.FieldInvalid({ i18n, type: String, field: 'token' }),
+					message: t.Errors.Field.Invalid(String, 'token'),
 				});
 			});
 
@@ -358,7 +357,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Email.AlreadyVerified({ i18n, type: User }),
+					message: t.Errors.Email.AlreadyVerified(User),
 				});
 			});
 		});
@@ -372,7 +371,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Unauthorized',
 					statusCode: 401,
-					message: Errors.Email.InvalidVerificationToken({ i18n }),
+					message: t.Errors.Email.InvalidVerificationToken(),
 				});
 			});
 		});

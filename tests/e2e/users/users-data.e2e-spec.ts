@@ -1,10 +1,9 @@
 import request from 'supertest';
 
-import { Errors } from '@i18n';
 import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
 import { TokenDTO } from '@modules/auth/dto/token.dto';
 
-import { app, i18n } from '../..';
+import { app, t } from '../..';
 
 describe('Users Data (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -44,7 +43,7 @@ describe('Users Data (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Generic.FieldMissing({ type: UserPostByAdminDTO, i18n, field: 'email' }),
+					message: t.Errors.Field.Missing(UserPostByAdminDTO, 'email'),
 				});
 			});
 
@@ -63,7 +62,7 @@ describe('Users Data (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Email.AlreadyUsed({ i18n, email: 'ae.info@utbm.fr' }),
+					message: t.Errors.Email.AlreadyUsed('ae.info@utbm.fr'),
 				});
 			});
 
@@ -82,7 +81,7 @@ describe('Users Data (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.Email.Blacklisted({ i18n, email: 'any@utbm.fr' }),
+					message: t.Errors.Email.Blacklisted('any@utbm.fr'),
 				});
 			});
 
@@ -103,7 +102,7 @@ describe('Users Data (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: Errors.BirthDate.Invalid({ i18n, date }),
+					message: t.Errors.BirthDate.Invalid(date),
 				});
 			});
 		});
