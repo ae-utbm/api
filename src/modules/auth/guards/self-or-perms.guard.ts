@@ -6,9 +6,6 @@ import { checkSelf } from './self.guard';
 @Injectable()
 export class SelfOrPermissionGuard extends PermissionGuard implements CanActivate {
 	override async canActivate(context: ExecutionContext) {
-		return (
-			checkSelf(context, this.jwtService, this.configService, this.i18nService, this.reflector) ||
-			super.canActivate(context)
-		);
+		return checkSelf(context, this.reflector, this.authService) || super.canActivate(context);
 	}
 }
