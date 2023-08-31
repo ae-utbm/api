@@ -82,6 +82,100 @@ describe('Promotions (e2e)', () => {
 		});
 	});
 
+	describe('(GET) /promotions/current', () => {
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).get('/promotions/current');
+
+				expect(response.body).toEqual({
+					statusCode: 401,
+					message: 'Unauthorized',
+				});
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/promotions/current')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					statusCode: 403,
+					message: 'Forbidden resource',
+				});
+			});
+		});
+
+		describe('200 : Ok', () => {
+			it('when the user is authorized, return the current promotions', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/promotions/current')
+					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
+
+				const body = response.body as Array<unknown>;
+
+				expect(body).toBeInstanceOf(Array);
+				expect(body.length).toEqual(5);
+				expect(body.haveEqualObjects()).toBe(true);
+
+				expect(body[0]).toEqual({
+					id: expect.any(Number),
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
+					number: expect.any(Number),
+					picture: null,
+					users: expect.any(Number),
+				});
+			});
+		});
+	});
+
+	describe('(GET) /promotions/latest', () => {
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).get('/promotions/latest');
+
+				expect(response.body).toEqual({
+					statusCode: 401,
+					message: 'Unauthorized',
+				});
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/promotions/latest')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					statusCode: 403,
+					message: 'Forbidden resource',
+				});
+			});
+		});
+
+		describe('200 : Ok', () => {
+			it('when the user is authorized, return the latest promotion', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/promotions/latest')
+					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
+
+				expect(response.body).toEqual({
+					id: expect.any(Number),
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
+					number: expect.any(Number),
+					picture: null,
+					users: expect.any(Number),
+				});
+			});
+		});
+	});
+
 	describe('(GET) /promotions/:number', () => {
 		describe('400 : Bad Request', () => {
 			it('when the promotion number is invalid', async () => {

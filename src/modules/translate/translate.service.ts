@@ -73,6 +73,7 @@ export class TranslateService {
 		JWT: {
 			Expired: () => this.generic('responses.errors.jwt.expired', {}),
 			Invalid: () => this.generic('responses.errors.jwt.invalid', {}),
+			/* istanbul ignore next-line */
 			Unknown: () => this.generic('responses.errors.jwt.unknown', {}),
 		},
 		Password: {
