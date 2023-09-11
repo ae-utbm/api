@@ -22,4 +22,5 @@
   "editor.formatOnSave": true,
   "editor.fontLigatures": true,
   "editor.fontFamily": "'Fira Code', Consolas, 'Courier New', monospace",
+  "material-icon-theme.activeIconPack": "nest"
 }
