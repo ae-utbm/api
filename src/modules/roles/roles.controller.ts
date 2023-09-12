@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
 	ApiTags,
@@ -9,12 +9,13 @@ import {
 	ApiBadRequestResponse,
 	ApiNotFoundResponse,
 } from '@nestjs/swagger';
+import { z } from 'zod';
 
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { TranslateService } from '@modules/translate/translate.service';
 import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
-import { validateObject } from '@utils/validate';
+import { validate } from '@utils/validate';
 
 import { RoleEditUsersDTO, RolePatchDTO } from './dto/patch.dto';
 import { RolePostDTO } from './dto/post.dto';
@@ -36,12 +37,14 @@ export class RolesController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiBadRequestResponse({ description: 'Role name is not uppercase or already exists' })
 	async createRole(@Body() body: RolePostDTO) {
-		validateObject({
-			objectToValidate: body,
-			objectType: RolePostDTO,
-			requiredKeys: ['name', 'permissions', 'expires'],
-			t: this.t,
-		});
+		const schema = z
+			.object({
+				name: z.string().refine((name) => name === name.toUpperCase(), {}),
+				permissions: z.array(z.string()),
+				expires: z.string().datetime(),
+			})
+			.strict();
+		validate(schema, body);
 
 		return this.rolesService.createRole(body.name, body.permissions, body.expires);
 	}
@@ -55,13 +58,18 @@ export class RolesController {
 	@ApiBadRequestResponse({ description: 'Role name is not uppercase' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async editRole(@Body() body: RolePatchDTO) {
-		validateObject({
-			objectToValidate: body,
-			objectType: RolePostDTO,
-			requiredKeys: ['id'],
-			optionalKeys: ['name', 'permissions', 'expires'],
-			t: this.t,
-		});
+		const schema = z
+			.object({
+				id: z.number(),
+				name: z
+					.string()
+					.refine((name) => name === name.toUpperCase(), {})
+					.optional(),
+				permissions: z.array(z.string()).optional(),
+				expires: z.string().datetime().optional(),
+			})
+			.strict();
+		validate(schema, body);
 
 		return this.rolesService.editRole(body);
 	}
@@ -84,8 +92,7 @@ export class RolesController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async getRole(@Param('role_id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.rolesService.getRole(id);
 	}
@@ -98,8 +105,7 @@ export class RolesController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async getRoleUsers(@Param('role_id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.rolesService.getUsers(id);
 	}
@@ -112,16 +118,14 @@ export class RolesController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async addUsersToRole(@Param('role_id') role_id: number, @Body() body: RoleEditUsersDTO) {
-		if (typeof role_id !== 'number' && parseInt(role_id, 10) != role_id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'role_id'));
+		validate(z.coerce.number().int().min(1), role_id);
 
-		if (!body.users || !Array.isArray(body.users) || body.users.length === 0)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Array, 'users'));
-
-		body.users.forEach((user_id) => {
-			if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
-				throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'user_id'));
-		});
+		const schema = z
+			.object({
+				users: z.array(z.number().int().min(1).positive()).min(1),
+			})
+			.strict();
+		validate(schema, body);
 
 		return this.rolesService.addUsers(role_id, body.users);
 	}
@@ -134,16 +138,14 @@ export class RolesController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async removeUsersToRole(@Param('role_id') role_id: number, @Body('') body: RoleEditUsersDTO) {
-		if (typeof role_id !== 'number' && parseInt(role_id, 10) != role_id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'role_id'));
+		validate(z.coerce.number().int().min(1), role_id);
 
-		if (!body.users || !Array.isArray(body.users) || body.users.length === 0)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Array, 'users'));
-
-		body.users.forEach((user_id) => {
-			if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
-				throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'user_id'));
-		});
+		const schema = z
+			.object({
+				users: z.array(z.number().int().min(1).positive()).min(1),
+			})
+			.strict();
+		validate(schema, body);
 
 		return this.rolesService.removeUsers(role_id, body.users);
 	}

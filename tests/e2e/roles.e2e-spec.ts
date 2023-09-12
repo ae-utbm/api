@@ -1,6 +1,5 @@
 import request from 'supertest';
 
-import { RolePostDTO } from '@modules/roles/dto/post.dto';
 import { Role } from '@modules/roles/entities/role.entity';
 import { User } from '@modules/users/entities/user.entity';
 
@@ -90,15 +89,20 @@ describe('Roles (e2e)', () => {
 					.post('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
-						name: 'test',
+						name: 'TEST',
 						permissions: ['test'],
 					})
 					.expect(400);
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: t.Errors.Field.Missing(RolePostDTO, 'expires'),
 					error: 'Bad Request',
+					message: {
+						_errors: [],
+						expires: {
+							_errors: ['Required'],
+						},
+					},
 				});
 			});
 
@@ -107,15 +111,15 @@ describe('Roles (e2e)', () => {
 					.post('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
-						name: 'test',
-						permissions: ['test'],
-						expires: '2021-01-01',
+						name: 'TEST',
+						permissions: ['TEST'],
+						expires: new Date('2021-01-01').toISOString(),
 					})
 					.expect(400);
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: t.Errors.Permission.Invalid('test'),
+					message: t.Errors.Permission.Invalid('TEST'),
 					error: 'Bad Request',
 				});
 			});
@@ -127,7 +131,7 @@ describe('Roles (e2e)', () => {
 					.send({
 						name: 'PERMISSIONS_MODERATOR',
 						permissions: ['ROOT'],
-						expires: '2021-01-01',
+						expires: new Date('2021-01-01').toISOString(),
 					})
 					.expect(400);
 
@@ -171,9 +175,9 @@ describe('Roles (e2e)', () => {
 					.post('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
-						name: 'test_role',
+						name: 'TEST_ROLE',
 						permissions: ['ROOT'],
-						expires: '2999-01-01',
+						expires: new Date('2999-01-01').toISOString(),
 					})
 					.expect(201);
 
@@ -204,8 +208,16 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: t.Errors.Field.Missing(RolePostDTO, 'id'),
 					error: 'Bad Request',
+					message: {
+						_errors: [],
+						id: {
+							_errors: ['Required'],
+						},
+						name: {
+							_errors: ['Invalid input'],
+						},
+					},
 				});
 			});
 		});
@@ -243,8 +255,8 @@ describe('Roles (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
 						id: 9999,
-						name: 'test',
-						permissions: ['test'],
+						name: 'TEST',
+						permissions: ['TEST'],
 					})
 					.expect(404);
 
@@ -264,9 +276,9 @@ describe('Roles (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
 						id: role_id,
-						name: 'test_test_role',
+						name: 'TEST_TEST_ROLE',
 						permissions: ['ROOT', 'CAN_READ_ROLE', 'CAN_EDIT_ROLE'],
-						expires: new Date('2998-01-01'),
+						expires: new Date('2998-01-01').toISOString(),
 					})
 					.expect(200);
 
@@ -294,8 +306,10 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(Number, 'id'),
 					error: 'Bad Request',
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 		});
@@ -377,8 +391,10 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(Number, 'id'),
 					error: 'Bad Request',
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 		});
@@ -458,8 +474,10 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(Number, 'role_id'),
 					error: 'Bad Request',
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 
@@ -474,8 +492,16 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(Number, 'user_id'),
 					error: 'Bad Request',
+					message: {
+						_errors: [],
+						users: {
+							_errors: [],
+							0: {
+								_errors: ['Expected number, received string'],
+							},
+						},
+					},
 				});
 			});
 
@@ -490,8 +516,13 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(Array, 'users'),
 					error: 'Bad Request',
+					message: {
+						_errors: [],
+						users: {
+							_errors: ['Array must contain at least 1 element(s)'],
+						},
+					},
 				});
 			});
 		});
@@ -616,8 +647,10 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(Number, 'role_id'),
 					error: 'Bad Request',
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 
@@ -632,8 +665,16 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(Number, 'user_id'),
 					error: 'Bad Request',
+					message: {
+						_errors: [],
+						users: {
+							0: {
+								_errors: ['Expected number, received string'],
+							},
+							_errors: [],
+						},
+					},
 				});
 			});
 
@@ -648,8 +689,13 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(Array, 'users'),
 					error: 'Bad Request',
+					message: {
+						_errors: [],
+						users: {
+							_errors: ['Array must contain at least 1 element(s)'],
+						},
+					},
 				});
 			});
 		});

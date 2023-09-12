@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
 	ApiTags,
@@ -9,6 +9,7 @@ import {
 	ApiParam,
 	ApiOperation,
 } from '@nestjs/swagger';
+import { z } from 'zod';
 
 import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
@@ -16,6 +17,7 @@ import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.d
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { TranslateService } from '@modules/translate/translate.service';
+import { validate } from '@utils/validate';
 
 import { Log } from './entities/log.entity';
 import { LogsService } from './logs.service';
@@ -36,8 +38,7 @@ export class LogsController {
 	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOperation({ summary: 'Get all logs of a user' })
 	getUserLogs(@Param('user_id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.logsService.getUserLogs(id);
 	}
@@ -51,8 +52,7 @@ export class LogsController {
 	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOperation({ summary: 'Delete all logs of a user' })
 	deleteUserLogs(@Param('user_id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.logsService.deleteUserLogs(id);
 	}

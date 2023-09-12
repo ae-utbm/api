@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, Get, Res, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get, Res, HttpStatus } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
 	ApiNotFoundResponse,
@@ -10,11 +10,12 @@ import {
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import express from 'express';
+import { z } from 'zod';
 
 import { TranslateService } from '@modules/translate/translate.service';
 import { User } from '@modules/users/entities/user.entity';
 import { UsersService } from '@modules/users/users.service';
-import { validateObject } from '@utils/validate';
+import { validate } from '@utils/validate';
 
 import { AuthService } from './auth.service';
 import { UserPostDTO } from './dto/register.dto';
@@ -36,12 +37,14 @@ export class AuthController {
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiOkResponse({ description: 'OK', type: TokenDTO })
 	async login(@Body() signInDto: UserSignInDTO): Promise<TokenDTO> {
-		validateObject({
-			objectToValidate: signInDto,
-			objectType: UserPostDTO,
-			requiredKeys: ['password', 'email'],
-			t: this.t,
-		});
+		const schema = z
+			.object({
+				password: z.string(),
+				email: z.string().email(),
+			})
+			.strict();
+
+		validate(schema, signInDto);
 
 		return this.authService.signIn(signInDto.email, signInDto.password);
 	}
@@ -51,12 +54,17 @@ export class AuthController {
 	@ApiOkResponse({ description: 'User created', type: User })
 	@ApiBadRequestResponse({ description: 'Bad request, invalid fields' })
 	async register(@Body() registerDto: UserPostDTO): Promise<User> {
-		validateObject({
-			objectToValidate: registerDto,
-			objectType: UserPostDTO,
-			requiredKeys: ['password', 'first_name', 'last_name', 'email', 'birth_date'],
-			t: this.t,
-		});
+		const schema = z
+			.object({
+				password: z.string(),
+				first_name: z.string(),
+				last_name: z.string(),
+				email: z.string().email(),
+				birth_date: z.string().datetime(),
+			})
+			.strict();
+
+		validate(schema, registerDto);
 
 		return this.userService.register(registerDto);
 	}
@@ -70,10 +78,8 @@ export class AuthController {
 	@ApiBadRequestResponse({ description: 'Bad request, missing id/token or email already verified' })
 	@ApiUnauthorizedResponse({ description: 'Unauthorized, invalid token' })
 	async verifyEmail(@Param('user_id') user_id: number, @Param('token') token: string) {
-		if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'user_id'));
-
-		if (token.trim() === '') throw new BadRequestException(this.t.Errors.Field.Invalid(String, 'token'));
+		validate(z.coerce.number().int().min(1), user_id);
+		validate(z.string().min(12), token);
 
 		return this.userService.verifyEmail(user_id, token);
 	}
@@ -94,10 +100,8 @@ export class AuthController {
 		@Param('user_id') user_id: number,
 		@Param('token') token: string,
 	) {
-		if (typeof user_id !== 'number' && parseInt(user_id, 10) != user_id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'user_id'));
-
-		if (token.trim() === '') throw new BadRequestException(this.t.Errors.Field.Invalid(String, 'token'));
+		validate(z.coerce.number().int().min(1), user_id);
+		validate(z.string().min(12), token);
 
 		await this.userService.verifyEmail(user_id, token);
 		res.redirect(HttpStatus.PERMANENT_REDIRECT, 'https://ae.utbm.fr/');

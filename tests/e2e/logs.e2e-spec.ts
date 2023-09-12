@@ -57,7 +57,9 @@ describe('Logs (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(Number, 'id'),
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 		});
@@ -195,7 +197,9 @@ describe('Logs (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(Number, 'id'),
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 		});

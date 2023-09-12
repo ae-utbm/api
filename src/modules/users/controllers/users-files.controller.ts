@@ -17,6 +17,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { z } from 'zod';
 
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
@@ -24,6 +25,7 @@ import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { FilesService } from '@modules/files/files.service';
 import { TranslateService } from '@modules/translate/translate.service';
+import { validate } from '@utils/validate';
 
 import { User } from '../entities/user.entity';
 import { UsersService } from '../users.service';
@@ -59,9 +61,7 @@ export class UsersFilesController {
 	@UseInterceptors(FileInterceptor('file'))
 	async editPicture(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
 		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
-
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.usersService.updatePicture(id, file);
 	}
@@ -72,8 +72,7 @@ export class UsersFilesController {
 	@ApiOperation({ summary: 'Delete user profile picture' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async deletePicture(@Param('id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.usersService.deletePicture(id);
 	}
@@ -84,8 +83,7 @@ export class UsersFilesController {
 	@ApiOperation({ summary: 'Get user profile picture' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getPicture(@Req() req: RequestWithUser, @Param('id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		const picture = await this.usersService.getPicture(id);
 
@@ -115,9 +113,7 @@ export class UsersFilesController {
 	@UseInterceptors(FileInterceptor('file'))
 	async editBanner(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
 		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
-
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.usersService.updateBanner(id, file);
 	}
@@ -128,8 +124,7 @@ export class UsersFilesController {
 	@ApiOperation({ summary: 'Delete user profile banner' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async deleteBanner(@Param('id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.usersService.deleteBanner(id);
 	}
@@ -140,8 +135,7 @@ export class UsersFilesController {
 	@ApiOperation({ summary: 'Get user profile banner' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getBanner(@Req() req: RequestWithUser, @Param('id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		const banner = await this.usersService.getBanner(id);
 

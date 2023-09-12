@@ -1,8 +1,9 @@
 import type { Request } from 'express';
 
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { z } from 'zod';
 
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
@@ -12,7 +13,7 @@ import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard'
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { Role } from '@modules/roles/entities/role.entity';
 import { TranslateService } from '@modules/translate/translate.service';
-import { validateObject } from '@utils/validate';
+import { validate } from '@utils/validate';
 
 import { UserPatchDTO } from '../dto/patch.dto';
 import { UserVisibility } from '../entities/user-visibility.entity';
@@ -33,12 +34,16 @@ export class UsersDataController {
 	@ApiOkResponse({ description: 'The created user', type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async create(@Body() input: UserPostByAdminDTO) {
-		validateObject({
-			objectToValidate: input,
-			objectType: UserPostByAdminDTO,
-			requiredKeys: ['email', 'birth_date', 'first_name', 'last_name'],
-			t: this.t,
-		});
+		const schema = z
+			.object({
+				email: z.string().email(),
+				birth_date: z.string().datetime(),
+				first_name: z.string(),
+				last_name: z.string(),
+			})
+			.strict();
+
+		validate(schema, input);
 
 		return this.usersService.registerByAdmin(input);
 	}
@@ -50,29 +55,28 @@ export class UsersDataController {
 	@ApiOkResponse({ description: 'The updated user', type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async update(@Req() req: Request & { user: User }, @Body() input: UserPatchDTO) {
-		validateObject({
-			objectToValidate: input,
-			objectType: UserPatchDTO,
-			requiredKeys: ['id'],
-			optionalKeys: [
-				'email',
-				'password',
-				'birth_date',
-				'first_name',
-				'last_name',
-				'nickname',
-				'gender',
-				'pronouns',
-				'secondary_email',
-				'phone',
-				'parent_contact',
-				'cursus',
-				'specialty',
-				'promotion',
-			],
-			t: this.t,
-		});
+		const schema = z
+			.object({
+				id: z.coerce.number(),
+				email: z.string().email().optional(),
+				password: z.string().optional(),
+				birth_date: z.string().datetime().optional(),
+				first_name: z.string().optional(),
+				last_name: z.string().optional(),
+				nickname: z.string().optional(),
+				gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional(),
+				pronouns: z.string().optional(),
+				secondary_email: z.string().email().optional(),
+				phone: z.string().optional(),
+				parent_contact: z.string().optional(),
+				// TODO: to implement in an upcoming PR (see the user entity)
+				// cursus: z.string().optional(),
+				// specialty: z.string().optional(),
+				promotion: z.coerce.number().optional(),
+			})
+			.strict();
 
+		validate(schema, input);
 		return this.usersService.update(req.user.id, input);
 	}
 
@@ -82,8 +86,7 @@ export class UsersDataController {
 	@ApiOperation({ summary: 'Delete a user' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async delete(@Param('id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.usersService.delete(id);
 	}
@@ -95,8 +98,7 @@ export class UsersDataController {
 	@ApiOkResponse({ description: 'User data', type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getPrivate(@Param('id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.usersService.findOne({ id }, false);
 	}
@@ -108,8 +110,7 @@ export class UsersDataController {
 	@ApiOkResponse({ description: 'User data, excepted privates fields (set in the visibility table)', type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getPublic(@Param('id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.usersService.findOne({ id });
 	}
@@ -121,8 +122,7 @@ export class UsersDataController {
 	@ApiOkResponse({ description: 'User data', type: UserVisibility })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getVisibility(@Param('id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.usersService.findVisibilities([id]);
 	}
@@ -134,8 +134,7 @@ export class UsersDataController {
 	@ApiOkResponse({ description: 'Roles of the user', type: [Role] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getUserRoles(@Param('id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.usersService.getUserRoles(id, { show_expired: true, show_revoked: true });
 	}
@@ -147,8 +146,7 @@ export class UsersDataController {
 	@ApiOkResponse({ description: 'Permissions of the user', type: [Permission] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getUserPermissions(@Param('id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.usersService.getUserPermissions(id, { show_expired: true, show_revoked: true });
 	}

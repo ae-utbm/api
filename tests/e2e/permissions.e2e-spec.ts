@@ -1,7 +1,6 @@
 import request from 'supertest';
 
 import { TokenDTO } from '@modules/auth/dto/token.dto';
-import { PermissionPostDTO } from '@modules/permissions/dto/post.dto';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { User } from '@modules/users/entities/user.entity';
 
@@ -55,7 +54,12 @@ describe('Permissions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: t.Errors.Field.Missing(PermissionPostDTO, 'expires'),
+					message: {
+						_errors: [],
+						expires: {
+							_errors: ['Required'],
+						},
+					},
 				});
 			});
 
@@ -232,7 +236,9 @@ describe('Permissions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: t.Errors.Field.Invalid(Number, 'id'),
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 		});

@@ -4,9 +4,10 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { z } from 'zod';
 
 import { TranslateService } from '@modules/translate/translate.service';
-import { validateObject } from '@utils/validate';
+import { validate } from '@utils/validate';
 
 import { AuthService } from '../auth.service';
 
@@ -33,12 +34,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	 * @param payload - The payload from the JWT
 	 */
 	async validate(payload: JWTPayload) {
-		validateObject({
-			objectToValidate: payload,
-			objectType: 'JWTPayload',
-			requiredKeys: ['sub', 'email', 'iat', 'exp'],
-			t: this.t,
-		});
+		const schema = z
+			.object({
+				sub: z.number().int().min(1),
+				email: z.string().email(),
+				iat: z.number().int().min(0),
+				exp: z.number().int().min(0),
+			})
+			.strict();
+
+		validate(schema, payload);
 
 		// Find the user from the payload
 		// > If the user is not found, throw an error (Not found)

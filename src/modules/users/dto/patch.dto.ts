@@ -52,13 +52,14 @@ export class UserPatchDTO implements UserPatchDto {
 	@IsString()
 	parent_contact?: string;
 
-	@ApiProperty()
-	@IsString()
-	cursus?: string;
+	// TODO: to implement in an upcoming PR (see the user entity)
+	// @ApiProperty()
+	// @IsString()
+	// cursus?: string;
 
-	@ApiProperty()
-	@IsString()
-	specialty?: string;
+	// @ApiProperty()
+	// @IsString()
+	// specialty?: string;
 
 	@ApiProperty()
 	@IsNumber()

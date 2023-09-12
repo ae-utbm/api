@@ -186,7 +186,9 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: t.Errors.Field.Invalid(Number, 'number'),
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 		});
@@ -258,7 +260,9 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: t.Errors.Field.Invalid(Number, 'number'),
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 		});
@@ -332,7 +336,9 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: t.Errors.Field.Invalid(Number, 'number'),
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 		});
@@ -466,7 +472,9 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: t.Errors.Field.Invalid(Number, 'number'),
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 		});
@@ -601,7 +609,9 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: t.Errors.Field.Invalid(Number, 'number'),
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 		});

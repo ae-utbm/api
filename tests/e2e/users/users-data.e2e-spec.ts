@@ -1,6 +1,7 @@
+import type { email } from '@types';
+
 import request from 'supertest';
 
-import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
 import { TokenDTO } from '@modules/auth/dto/token.dto';
 
 import { app, t } from '../..';
@@ -8,6 +9,8 @@ import { app, t } from '../..';
 describe('Users Data (e2e)', () => {
 	let tokenUnauthorized: string;
 	let tokenVerified: string;
+
+	const fakeUserEmail: email = 'john.doe@example.fr';
 
 	beforeAll(async () => {
 		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
@@ -43,7 +46,12 @@ describe('Users Data (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Field.Missing(UserPostByAdminDTO, 'email'),
+					message: {
+						_errors: [],
+						email: {
+							_errors: ['Required'],
+						},
+					},
 				});
 			});
 
@@ -146,6 +154,70 @@ describe('Users Data (e2e)', () => {
 				});
 			});
 		});
-		// describe('200 : Ok', () => {});
+
+		describe('201 : Created', () => {
+			it('when the user is created', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/users')
+					.set('Authorization', `Bearer ${tokenVerified}`)
+					.send({
+						email: fakeUserEmail,
+						birth_date: new Date('2001-01-01'),
+						first_name: 'John',
+						last_name: 'Doe',
+					})
+					.expect(201);
+
+				expect(response.body).toEqual({
+					id: expect.any(Number),
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
+					first_name: 'John',
+					last_name: 'Doe',
+					email_verified: true,
+					files_visibility_groups: [],
+					full_name: 'John Doe',
+					email: fakeUserEmail,
+					birth_date: '2001-01-01T00:00:00.000Z',
+					age: expect.any(Number),
+					is_minor: false,
+					gender: 'OTHER',
+					last_seen: expect.any(String),
+					logs: [],
+					permissions: [],
+					roles: [],
+				});
+			});
+		});
+	});
+
+	describe('(PATCH) /users', () => {
+		describe('400 : Bad Request', () => {
+			it('when the user id is not a number', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/users')
+					.set('Authorization', `Bearer ${tokenVerified}`)
+					.send({
+						id: 'abc',
+					})
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: {
+						_errors: [],
+						id: {
+							_errors: ['Expected number, received nan'],
+						},
+					},
+				});
+			});
+		});
+
+		describe('401 : Unauthorized', () => {});
+		describe('403 : Forbidden', () => {});
+		describe('404 : Not Found', () => {});
+		describe('200 : Ok', () => {});
 	});
 });

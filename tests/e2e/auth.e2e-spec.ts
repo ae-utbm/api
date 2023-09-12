@@ -21,7 +21,12 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Field.Missing(UserPostDTO, 'email'),
+					message: {
+						_errors: [],
+						email: {
+							_errors: ['Required'],
+						},
+					},
 				});
 			});
 		});
@@ -136,7 +141,12 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Email.Invalid(email as unknown as email),
+					message: {
+						_errors: [],
+						email: {
+							_errors: ['Invalid email'],
+						},
+					},
 				});
 			});
 
@@ -177,7 +187,12 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Field.Missing(UserPostDTO, 'first_name'),
+					message: {
+						_errors: [],
+						first_name: {
+							_errors: ['Required'],
+						},
+					},
 				});
 			});
 
@@ -190,7 +205,9 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Field.Unexpected(UserPostDTO, 'never_gonna'),
+					message: {
+						_errors: ["Unrecognized key(s) in object: 'never_gonna'"],
+					},
 				});
 			});
 		});
@@ -229,10 +246,10 @@ describe('Auth (e2e)', () => {
 		});
 	});
 
-	describe('(GET) /auth/confirm/:user_id/:token/:redirect_url?', () => {
+	describe('(GET) /auth/confirm/:user_id/:token', () => {
 		// Defined in the seeder class (unverified user)
 		const user_id = 2;
-		const token = 'token';
+		const token = 'token67891012';
 
 		describe('400 : Bad Request', () => {
 			it('when the "user_id" is not a number', async () => {
@@ -242,23 +259,27 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(Number, 'user_id'),
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 
-			it('when the "token" is empty', async () => {
+			it('when the "token" is invalid', async () => {
 				const token = ' ';
 				const response = await request(app.getHttpServer()).get(`/auth/confirm/1/${token}/`).expect(400);
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(String, 'token'),
+					message: {
+						_errors: ['String must contain at least 12 character(s)'],
+					},
 				});
 			});
 
 			it("when the user's email is already verified", async () => {
-				const response = await request(app.getHttpServer()).get(`/auth/confirm/1/anything`).expect(400);
+				const response = await request(app.getHttpServer()).get(`/auth/confirm/1/anything1012`).expect(400);
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
@@ -324,7 +345,7 @@ describe('Auth (e2e)', () => {
 	describe('(GET) /auth/verify/:user_id/:token/redirect', () => {
 		// Defined in the seeder class (unverified user)
 		const user_id = 2;
-		const token = 'token';
+		const token = 'token67891012';
 
 		describe('400 : Bad Request', () => {
 			it('when the "user_id" is not a number', async () => {
@@ -336,23 +357,27 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(Number, 'user_id'),
+					message: {
+						_errors: ['Expected number, received nan'],
+					},
 				});
 			});
 
-			it('when the "token" is empty', async () => {
+			it('when the "token" is invalid', async () => {
 				const token = ' ';
 				const response = await request(app.getHttpServer()).get(`/auth/confirm/1/${token}/redirect`).expect(400);
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Field.Invalid(String, 'token'),
+					message: {
+						_errors: ['String must contain at least 12 character(s)'],
+					},
 				});
 			});
 
 			it("when the user's email is already verified", async () => {
-				const response = await request(app.getHttpServer()).get(`/auth/confirm/1/anything/redirect`).expect(400);
+				const response = await request(app.getHttpServer()).get(`/auth/confirm/1/anything1012/redirect`).expect(400);
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',

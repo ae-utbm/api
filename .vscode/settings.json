@@ -11,12 +11,13 @@
     "**/temp": true
   },
   "cSpell.words": [
+    "BLURPLE",
+    "datetime",
     "inversed",
     "mikro",
     "postgres",
     "postgresql",
-    "Streamable",
-    "BLURPLE"
+    "Streamable"
   ],
   "files.eol": "\n",
   "editor.formatOnSave": true,

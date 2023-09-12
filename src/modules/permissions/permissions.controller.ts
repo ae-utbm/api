@@ -1,6 +1,6 @@
 import type { PermissionEntity } from '@types';
 
-import { Body, Controller, Get, Param, Post, UseGuards, Patch, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards, Patch } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
 	ApiBearerAuth,
@@ -11,13 +11,14 @@ import {
 	ApiTags,
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { z } from 'zod';
 
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { TranslateService } from '@modules/translate/translate.service';
-import { validateObject } from '@utils/validate';
+import { validate } from '@utils/validate';
 
 import { PermissionPatchDTO } from './dto/patch.dto';
 import { PermissionPostDTO } from './dto/post.dto';
@@ -39,12 +40,14 @@ export class PermissionsController {
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	addToUser(@Body() body: PermissionPostDTO): Promise<PermissionEntity<number>> {
-		validateObject({
-			objectToValidate: body,
-			objectType: PermissionPostDTO,
-			requiredKeys: ['expires', 'id', 'permission'],
-			t: this.t,
-		});
+		const schema = z
+			.object({
+				expires: z.string().datetime(),
+				id: z.number().int().min(1).optional(),
+				permission: z.string(),
+			})
+			.strict();
+		validate(schema, body);
 
 		return this.permsService.addPermissionToUser(body);
 	}
@@ -57,13 +60,19 @@ export class PermissionsController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiOkResponse({ description: 'The modified user permission', type: Permission })
 	editPermissionFromUser(@Body() body: PermissionPatchDTO) {
-		validateObject({
-			objectToValidate: body,
-			objectType: PermissionPatchDTO,
-			requiredKeys: ['id'],
-			optionalKeys: ['expires', 'revoked', 'user_id', 'name'],
-			t: this.t,
-		});
+		const schema = z
+			.object({
+				id: z.number().int().min(1),
+				expires: z.string().datetime().optional(),
+				revoked: z.boolean().optional(),
+				user_id: z.number().int().min(1).optional(),
+				name: z
+					.string()
+					.optional()
+					.refine((name) => name === name.toUpperCase(), {}),
+			})
+			.strict();
+		validate(schema, body);
 
 		return this.permsService.editPermissionOfUser(body);
 	}
@@ -77,8 +86,7 @@ export class PermissionsController {
 	@ApiOkResponse({ description: 'User permission(s) retrieved', type: [Permission] })
 	@ApiParam({ name: 'user_id', description: 'The user ID' })
 	getUserPermissions(@Param('user_id') id: number) {
-		if (typeof id !== 'number' && parseInt(id, 10) != id)
-			throw new BadRequestException(this.t.Errors.Field.Invalid(Number, 'id'));
+		validate(z.coerce.number().int().min(1), id);
 
 		return this.permsService.getPermissionsOfUser(id);
 	}
