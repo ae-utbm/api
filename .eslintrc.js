@@ -24,7 +24,7 @@ module.exports = {
 		'node_modules',
 		'coverage',
 		'src/database/migrations',
-		'src/types/api/i18n.d.ts',
+		'src/exported/api/@types/i18n.d.ts',
 	],
 	settings: {
 		'import/resolver': {
