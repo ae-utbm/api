@@ -1,4 +1,5 @@
-import type { UserPatchDto, email } from '@types';
+import type { email } from '#types';
+import type { UserPatchDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsEmail, IsNumber, IsString } from 'class-validator';

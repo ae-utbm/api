@@ -36,7 +36,7 @@ import env from './env';
 				watch: true,
 			},
 			resolvers: [AcceptLanguageResolver],
-			typesOutputPath: join(__dirname, '../src/types/api/i18n.d.ts').replace(`${sep}dist`, ''),
+			typesOutputPath: join(__dirname, '../src/exported/api/@types/i18n.d.ts').replace(`${sep}dist`, ''),
 		}),
 		LogsModule,
 		MikroOrmModule.forRoot(),

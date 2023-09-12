@@ -1,4 +1,4 @@
-import type { email } from '@types';
+import type { email } from '#types';
 
 import { hashSync } from 'bcrypt';
 import request from 'supertest';

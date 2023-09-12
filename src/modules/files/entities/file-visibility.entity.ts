@@ -1,4 +1,4 @@
-import type { FileVisibilityGroupEntity } from '@types';
+import type { FileVisibilityGroupEntity } from '#types/api';
 
 import { Collection, Entity, ManyToMany, OneToMany, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';

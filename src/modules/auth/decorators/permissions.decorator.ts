@@ -1,4 +1,4 @@
-import type { PERMISSION_NAMES } from '@types';
+import type { PERMISSION_NAMES } from '#types/api';
 
 import { SetMetadata } from '@nestjs/common';
 

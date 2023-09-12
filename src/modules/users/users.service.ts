@@ -1,4 +1,4 @@
-import type { I18nTranslations } from '@types';
+import type { I18nTranslations } from '#types/api';
 
 import { join } from 'path';
 

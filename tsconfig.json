@@ -25,6 +25,12 @@
     "noPropertyAccessFromIndexSignature": true,
     "outDir": "./dist",
     "paths": {
+      "#types/api": [
+        "src/exported/api/@types/index.d.ts"
+      ],
+      "#types": [
+        "src/exported/global/@types/index.d.ts"
+      ],
       "@*": [
         "src/*"
       ]
@@ -37,7 +43,8 @@
     "strictNullChecks": false,
     "target": "ESNext",
     "typeRoots": [
-      "src/types",
+      "src/exported/global/@types",
+      "src/exported/api/@types",
       "node_modules/@types"
     ],
     "useDefineForClassFields": false

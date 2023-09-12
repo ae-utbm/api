@@ -1,4 +1,4 @@
-import type { PermissionEntity } from '@types';
+import type { PermissionEntity } from '#types/api';
 
 import { Body, Controller, Get, Param, Post, UseGuards, Patch } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';

@@ -1,4 +1,4 @@
-import type { RequestWithUser } from '@types';
+import type { RequestWithUser } from '#types/api';
 
 import {
 	BadRequestException,

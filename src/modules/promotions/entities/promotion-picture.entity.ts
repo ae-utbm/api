@@ -1,4 +1,4 @@
-import type { PromotionPictureEntity } from '@types';
+import type { PromotionPictureEntity } from '#types/api';
 
 import { Entity, OneToOne } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';

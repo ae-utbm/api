@@ -1,4 +1,4 @@
-import type { UserPictureEntity } from '@types';
+import type { UserPictureEntity } from '#types/api';
 
 import { Entity, OneToOne } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';

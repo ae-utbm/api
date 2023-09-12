@@ -1,4 +1,4 @@
-import type { JWTPayload } from '@types';
+import type { JWTPayload } from '#types/api';
 
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

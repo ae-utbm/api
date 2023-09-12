@@ -4,7 +4,7 @@ import path from 'path';
 import { PathImpl2 } from '@nestjs/config';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 
-import { I18nTranslations } from '@types';
+import { I18nTranslations } from '#types/api';
 
 export type templates = 'emails/register_user_by_admin' | 'emails/register_user';
 export type template_args =

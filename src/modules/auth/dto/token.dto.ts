@@ -1,4 +1,4 @@
-import type { UserTokenDto } from '@types';
+import type { UserTokenDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsString } from 'class-validator';

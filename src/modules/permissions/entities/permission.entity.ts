@@ -1,11 +1,11 @@
-import type { PermissionEntity, PERMISSION_NAMES } from '@types';
+import type { PermissionEntity, PERMISSION_NAMES } from '#types/api';
 
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';
 
+import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
 import { BaseEntity } from '@modules/_mixin/entities/base.entity';
 import { User } from '@modules/users/entities/user.entity';
-import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
 @Entity({ tableName: 'permissions' })
 export class Permission extends BaseEntity implements PermissionEntity<User> {

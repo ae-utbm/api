@@ -1,12 +1,12 @@
-import type { PERMISSION_NAMES, RoleEntity } from '@types';
+import type { PERMISSION_NAMES, RoleEntity } from '#types/api';
 
 import { Collection, Entity, ManyToMany, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';
 
+import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
 import { BaseEntity } from '@modules/_mixin/entities/base.entity';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { User } from '@modules/users/entities/user.entity';
-import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
 
 /**
  * Entity used to store roles, which are a collection of permissions

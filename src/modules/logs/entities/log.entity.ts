@@ -1,4 +1,4 @@
-import type { LogEntity } from '@types';
+import type { LogEntity } from '#types/api';
 
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';

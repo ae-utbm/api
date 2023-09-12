@@ -1,4 +1,4 @@
-import type { I18nTranslations, PERMISSION_NAMES } from '@types';
+import type { I18nTranslations, PERMISSION_NAMES } from '#types/api';
 import type { Request } from 'express';
 
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';

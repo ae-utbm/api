@@ -1,4 +1,4 @@
-import type { email } from '@types';
+import type { email } from '#types';
 
 import request from 'supertest';
 

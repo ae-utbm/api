@@ -1,4 +1,4 @@
-import type { UserBannerEntity } from '@types';
+import type { UserBannerEntity } from '#types/api';
 
 import { Entity, OneToOne } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';

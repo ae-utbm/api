@@ -1,4 +1,5 @@
-import type { UserSignInDto, email } from '@types';
+import type { email } from '#types';
+import type { UserSignInDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';

@@ -1,4 +1,5 @@
-import type { UserPostDto, email } from '@types';
+import type { email } from '#types';
+import type { UserPostDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsEmail, IsString, IsStrongPassword } from 'class-validator';

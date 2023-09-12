@@ -1,4 +1,4 @@
-import type { MessageResponseDto } from '@types';
+import type { MessageResponseDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';

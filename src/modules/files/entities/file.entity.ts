@@ -1,4 +1,4 @@
-import type { FileEntity as FE } from '@types';
+import type { FileEntity as FE } from '#types/api';
 
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';

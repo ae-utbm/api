@@ -1,9 +1,9 @@
-import type { PERMISSION_NAMES, PermissionsPostDto } from '@types';
+import type { PERMISSION_NAMES, PermissionsPostDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsDate, IsInt, IsString } from 'class-validator';
 
-import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
+import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
 
 export class PermissionPostDTO implements PermissionsPostDto {
 	@ApiProperty()

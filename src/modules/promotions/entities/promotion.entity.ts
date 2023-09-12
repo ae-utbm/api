@@ -1,4 +1,4 @@
-import type { PromotionEntity } from '@types';
+import type { PromotionEntity } from '#types/api';
 
 import { Cascade, Collection, Entity, OneToMany, OneToOne, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';

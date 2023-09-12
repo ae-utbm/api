@@ -1,4 +1,5 @@
-import type { I18nTranslations, PERMISSION_NAMES, aspect_ratio, email } from '@types';
+import type { aspect_ratio, email } from '#types';
+import type { I18nTranslations, PERMISSION_NAMES } from '#types/api';
 
 import { Injectable } from '@nestjs/common';
 import { PathImpl2 } from '@nestjs/config';

@@ -1,4 +1,4 @@
-import type { SubscriptionEntity } from '@types';
+import type { SubscriptionEntity } from '#types/api';
 
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';

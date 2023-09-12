@@ -1,9 +1,9 @@
-import type { RolePostDto, PERMISSION_NAMES } from '@types';
+import type { RolePostDto, PERMISSION_NAMES } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsString } from 'class-validator';
 
-import { PERMISSIONS_NAMES } from 'src/types/api/permissions/perms';
+import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
 
 export class RolePostDTO implements RolePostDto {
 	@ApiProperty({ type: String, example: 'AE_ADMINS' })

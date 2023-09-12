@@ -1,4 +1,4 @@
-import type { UserVisibilityEntity } from '@types';
+import type { UserVisibilityEntity } from '#types/api';
 
 import { Entity, Property, OneToOne } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';

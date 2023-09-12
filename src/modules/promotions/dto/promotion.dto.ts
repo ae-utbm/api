@@ -1,4 +1,4 @@
-import type { PromotionResponseDto } from '@types';
+import type { PromotionResponseDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 

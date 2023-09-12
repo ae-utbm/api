@@ -1,4 +1,5 @@
-import type { JWTPayload, email } from '@types';
+import type { email } from '#types';
+import type { JWTPayload } from '#types/api';
 
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

@@ -1,4 +1,4 @@
-import type { aspect_ratio } from '@types';
+import type { aspect_ratio } from '#types';
 
 import sharp from 'sharp';
 

@@ -1,4 +1,5 @@
-import type { UserEntity, email } from '@types';
+import type { email } from '#types';
+import type { UserEntity } from '#types/api';
 
 import {
 	Cascade,

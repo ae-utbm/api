@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 // TODO: Find a way to test emails
 
-import type { email } from '@types';
+import type { email } from '#types';
 
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
