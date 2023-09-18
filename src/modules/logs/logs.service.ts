@@ -25,14 +25,14 @@ export class LogsService {
 	}
 
 	async getUserLogs(id: number): Promise<(Omit<Log, 'user'> & { user: number })[]> {
-		const user = await this.usersService.findOne({ id });
+		const user = await this.usersService.findOne(id, false);
 		const logs = (await user.logs.loadItems()).map((log) => ({ ...log, user: log.user.id }));
 
 		return logs;
 	}
 
 	async deleteUserLogs(id: number) {
-		const user = await this.usersService.findOne({ id });
+		const user = await this.usersService.findOne(id, false);
 		await user.logs.init();
 		user.logs.removeAll();
 

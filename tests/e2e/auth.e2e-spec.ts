@@ -3,6 +3,7 @@ import type { email } from '#types';
 import { hashSync } from 'bcrypt';
 import request from 'supertest';
 
+import { USER_GENDER } from '@exported/api/constants/genders';
 import { UserPostDTO } from '@modules/auth/dto/register.dto';
 import { User } from '@modules/users/entities/user.entity';
 import { generateRandomPassword } from '@utils/password';
@@ -234,7 +235,7 @@ describe('Auth (e2e)', () => {
 					first_name: 'John',
 					full_name: 'John Doe',
 					id: expect.any(Number),
-					gender: 'OTHER',
+					gender: USER_GENDER[0],
 					is_minor: false,
 					last_name: 'Doe',
 					logs: [],
@@ -314,7 +315,7 @@ describe('Auth (e2e)', () => {
 					email_verified: true,
 					first_name: 'unverified',
 					full_name: 'unverified user',
-					gender: 'OTHER',
+					gender: USER_GENDER[0],
 					id: user_id,
 					is_minor: false,
 					last_name: 'user',

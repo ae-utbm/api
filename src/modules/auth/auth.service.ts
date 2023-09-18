@@ -22,7 +22,7 @@ export class AuthService {
 	) {}
 
 	async signIn(email: email, pass: string): Promise<TokenDTO> {
-		const user: User = await this.usersService.findOne({ email: email }, false);
+		const user: User = await this.usersService.findOne(email, false);
 
 		if (user.password !== pass && !compareSync(pass, user.password)) {
 			throw new UnauthorizedException(this.t.Errors.Password.Mismatch());
@@ -41,7 +41,7 @@ export class AuthService {
 	 * @returns {User} The user if found and valid, throw otherwise (email not verified)
 	 */
 	async validateUser(payload: JWTPayload): Promise<User> {
-		const user = await this.usersService.findOne({ email: payload.email }, false);
+		const user = await this.usersService.findOne(payload.email, false);
 
 		// throw if user not verified
 		if (!user.email_verified) throw new UnauthorizedException(this.t.Errors.Email.NotVerified(User));

@@ -5,6 +5,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { z } from 'zod';
 
+import { USER_GENDER } from '@exported/api/constants/genders';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
@@ -64,7 +65,7 @@ export class UsersDataController {
 				first_name: z.string().optional(),
 				last_name: z.string().optional(),
 				nickname: z.string().optional(),
-				gender: z.enum(['MALE', 'FEMALE', 'OTHER']).optional(),
+				gender: z.enum(USER_GENDER).optional(),
 				pronouns: z.string().optional(),
 				secondary_email: z.string().email().optional(),
 				phone: z.string().optional(),
@@ -100,7 +101,7 @@ export class UsersDataController {
 	async getPrivate(@Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id);
 
-		return this.usersService.findOne({ id }, false);
+		return this.usersService.findOne(id, false);
 	}
 
 	@Get(':id/data/public')
@@ -112,7 +113,7 @@ export class UsersDataController {
 	async getPublic(@Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id);
 
-		return this.usersService.findOne({ id });
+		return this.usersService.findOne(id);
 	}
 
 	@Get(':id/visibility')

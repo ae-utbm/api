@@ -37,6 +37,11 @@
     "image": {
       "invalid_aspect_ratio": "The given image does not respect the expected '{aspect_ratio}' aspect ratio."
     },
+    "jwt": {
+      "invalid": "The JWT token is invalid.",
+      "expired": "The JWT token has expired.",
+      "unknown": "An unknown error occurred while verifying the JWT token."
+    },
     "password": {
       "mismatch": "Password mismatch",
       "weak": "Password is too weak. Please use a stronger password with at least 8 characters and a mix of letters, numbers and special characters."
@@ -52,10 +57,8 @@
     "role": {
       "name_used": "Role name '{name}' is already taken."
     },
-    "jwt": {
-      "invalid": "The JWT token is invalid.",
-      "expired": "The JWT token has expired.",
-      "unknown": "An unknown error occurred while verifying the JWT token."
+    "user": {
+      "cannot_update_birth_date_or_name": "You cannot update your own birth date/name, ask another user with the appropriate permission"
     }
   },
   "success": {

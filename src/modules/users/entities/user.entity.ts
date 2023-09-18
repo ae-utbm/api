@@ -1,19 +1,10 @@
 import type { email } from '#types';
 import type { UserEntity } from '#types/api';
 
-import {
-	Cascade,
-	Collection,
-	Entity,
-	// EntityDTO,
-	ManyToMany,
-	ManyToOne,
-	OneToMany,
-	OneToOne,
-	Property,
-} from '@mikro-orm/core';
+import { Cascade, Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';
 
+import { USER_GENDER } from '@exported/api/constants/genders';
 import { BaseEntity } from '@modules/_mixin/entities/base.entity';
 import { FileVisibilityGroup } from '@modules/files/entities/file-visibility.entity';
 import { Log } from '@modules/logs/entities/log.entity';
@@ -76,7 +67,7 @@ export class User
 	@Property({ persist: false })
 	@ApiProperty({ minimum: 13 })
 	get age(): number {
-		const diff = Date.now() - this.birth_date.getTime();
+		const diff = Date.now() - (this.birth_date instanceof Date ? this.birth_date : new Date(this.birth_date)).getTime();
 		const age = new Date(diff);
 		return Math.abs(age.getUTCFullYear() - 1970);
 	}
@@ -91,9 +82,9 @@ export class User
 	@ApiProperty()
 	nickname?: string;
 
-	@Property({ default: 'OTHER' })
-	@ApiProperty({ example: 'OTHER', enum: ['MALE', 'FEMALE', 'OTHER'] })
-	gender?: 'MALE' | 'FEMALE' | 'OTHER';
+	@Property({ default: USER_GENDER[0] })
+	@ApiProperty({ example: USER_GENDER[0], enum: USER_GENDER })
+	gender?: (typeof USER_GENDER)[number];
 
 	@Property({ nullable: true })
 	@ApiProperty({ example: null })

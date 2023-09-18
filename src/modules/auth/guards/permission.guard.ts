@@ -48,7 +48,7 @@ export class PermissionGuard implements CanActivate {
 
 		// Get the user from the database
 		// If no user found -> thrown within the service
-		const user = await this.userService.findOne({ id: decodedToken.sub });
+		const user = await this.userService.findOne(decodedToken.sub, false);
 
 		const perms = (await user.permissions.loadItems())
 			.filter((p) => p.expires > new Date() && p.revoked === false)

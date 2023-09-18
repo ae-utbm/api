@@ -94,6 +94,9 @@ export class TranslateService {
 		Role: {
 			NameAlreadyUsed: (name: string) => this.generic('responses.errors.role.name_used', { name }),
 		},
+		User: {
+			CannotUpdateBirthDateOrName: () => this.generic('responses.errors.user.cannot_update_birth_date_or_name', {}),
+		},
 	};
 
 	public readonly Success = {

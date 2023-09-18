@@ -2,9 +2,11 @@ import type { email } from '#types';
 
 import request from 'supertest';
 
+import { USER_GENDER } from '@exported/api/constants/genders';
 import { TokenDTO } from '@modules/auth/dto/token.dto';
+import { User } from '@modules/users/entities/user.entity';
 
-import { app, t } from '../..';
+import { orm, app, t } from '../..';
 
 describe('Users Data (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -181,7 +183,7 @@ describe('Users Data (e2e)', () => {
 					birth_date: '2001-01-01T00:00:00.000Z',
 					age: expect.any(Number),
 					is_minor: false,
-					gender: 'OTHER',
+					gender: USER_GENDER[0],
 					last_seen: expect.any(String),
 					logs: [],
 					permissions: [],
@@ -215,9 +217,135 @@ describe('Users Data (e2e)', () => {
 			});
 		});
 
-		describe('401 : Unauthorized', () => {});
-		describe('403 : Forbidden', () => {});
-		describe('404 : Not Found', () => {});
-		describe('200 : Ok', () => {});
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/users')
+					.send({
+						id: 1,
+					})
+					.expect(401);
+
+				expect(response.body).toEqual({
+					message: 'Unauthorized',
+					statusCode: 401,
+				});
+			});
+
+			it('when the user try to change its own birth date', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/users')
+					.set('Authorization', `Bearer ${tokenVerified}`)
+					.send({
+						id: 1,
+						birth_date: new Date('2001-01-01'),
+					})
+					.expect(401);
+
+				expect(response.body).toEqual({
+					error: 'Unauthorized',
+					statusCode: 401,
+					message: t.Errors.User.CannotUpdateBirthDateOrName(),
+				});
+			});
+
+			it('when the user try to change its own name', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/users')
+					.set('Authorization', `Bearer ${tokenVerified}`)
+					.send({
+						id: 1,
+						first_name: 'John',
+						last_name: 'Doe 2',
+					})
+					.expect(401);
+
+				expect(response.body).toEqual({
+					error: 'Unauthorized',
+					statusCode: 401,
+					message: t.Errors.User.CannotUpdateBirthDateOrName(),
+				});
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/users')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.send({
+						id: 1,
+					})
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					message: 'Forbidden resource',
+					statusCode: 403,
+				});
+			});
+		});
+
+		describe('404 : Not Found', () => {
+			it('when the user does not exist', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/users')
+					.set('Authorization', `Bearer ${tokenVerified}`)
+					.send({
+						id: 9999,
+					})
+					.expect(404);
+
+				expect(response.body).toEqual({
+					error: 'Not Found',
+					message: t.Errors.Id.NotFound(User, 9999),
+					statusCode: 404,
+				});
+			});
+		});
+
+		describe('200 : Ok', () => {
+			it('when the user is updated', async () => {
+				// get user before updating it to restore it after
+				const user = await orm.em.findOne(User, { email: fakeUserEmail });
+
+				// -> we are updating a user that is not the authenticated one => expect 200
+				const response = await request(app.getHttpServer())
+					.patch('/users')
+					.set('Authorization', `Bearer ${tokenVerified}`)
+					.send({
+						id: user.id,
+						birth_date: new Date('1990-01-01').toISOString(),
+					})
+					.expect(200);
+
+				expect(response.body).toEqual({
+					id: expect.any(Number),
+					created_at: expect.any(String),
+					updated_at: expect.any(String),
+					first_name: 'John',
+					last_name: 'Doe',
+					full_name: 'John Doe',
+					email: 'john.doe@example.fr',
+					email_verified: true,
+					gender: USER_GENDER[0],
+					birth_date: '1990-01-01T00:00:00.000Z',
+					age: expect.any(Number),
+					is_minor: false,
+					last_seen: expect.any(String),
+					nickname: null,
+					parent_contact: null,
+					phone: null,
+					banner: null,
+					picture: null,
+					promotion: null,
+					pronouns: null,
+					secondary_email: null,
+				});
+
+				// restore user
+				await orm.em.persistAndFlush(user);
+			});
+		});
 	});
 });

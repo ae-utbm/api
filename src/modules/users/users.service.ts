@@ -1,3 +1,4 @@
+import type { KeysOf, email } from '#types';
 import type { I18nTranslations } from '#types/api';
 
 import { join } from 'path';
@@ -8,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { compareSync, hashSync } from 'bcrypt';
 import { I18nContext, I18nService } from 'nestjs-i18n';
+import { z } from 'zod';
 
 import { UserPostByAdminDTO, UserPostDTO } from '@modules/auth/dto/register.dto';
 import { EmailsService } from '@modules/emails/emails.service';
@@ -67,9 +69,17 @@ export class UsersService {
 			const user = users.find((u) => u.id === v.user.id);
 
 			Object.entries(v).forEach(([key, value]) => {
-				// TODO - Find a better alternative (which should be type safe & easy to maintain)
+				// FIXME: Element implicitly has an 'any' type because expression of type 'string'
+				//        can't be used to index type 'User'.
+				// -> one solution is to use user[key as keyof User], but does not work because of
+				//    the getters of User
 				// @ts-ignore
 				if (value === false) user[key] = undefined;
+			});
+
+			const privateFields: KeysOf<User> = ['files_visibility_groups', 'logs', 'roles', 'permissions'];
+			privateFields.forEach((key) => {
+				if (user[key]) delete user[key];
 			});
 
 			res.push(user);
@@ -101,7 +111,7 @@ export class UsersService {
 
 	/**
 	 * Find a user by id or email and return it
-	 * @param {Partial<Pick<User, 'id' | 'email'>>} param0 The id or email of the user to find
+	 * @param {Partial<number | email>} id_or_email The id or email of the user to find
 	 * @param {boolean} filter Whether to filter the user or not (default: true)
 	 *
 	 * @returns {Promise<User | Partial<User>>} The user found (partial if filter is true)
@@ -114,20 +124,20 @@ export class UsersService {
 	 * const user2: Partial<User> = await this.usersService.findOne({ email: 'example@domain.com' });
 	 * ```
 	 */
-	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter: false): Promise<User>;
-	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>): Promise<Partial<User>>;
+	async findOne(id_or_email: number | email, filter: false): Promise<User>;
+	async findOne(id_or_email: number | email): Promise<Partial<User>>;
 
 	@UseRequestContext()
-	async findOne({ id, email }: Partial<Pick<User, 'id' | 'email'>>, filter = true): Promise<User | Partial<User>> {
+	async findOne(id_or_email: number | email, filter = true): Promise<User | Partial<User>> {
 		let user: User = null;
+		const parsed = z.union([z.coerce.number(), z.string().email()]).parse(id_or_email);
 
-		if (id) user = await this.orm.em.findOne(User, { id });
-		if (email) user = await this.orm.em.findOne(User, { email });
+		if (typeof parsed === 'number') user = await this.orm.em.findOne(User, { id: parsed });
+		else if (typeof parsed === 'string') user = await this.orm.em.findOne(User, { email: parsed as email });
 
-		if (!id && !email) throw new BadRequestException(this.t.Errors.Field.Missing(User, 'id/email'));
-
-		if (!user && id) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
-		if (!user && email) throw new NotFoundException(this.t.Errors.Email.NotFound(User, email));
+		if (!user && typeof parsed === 'number') throw new NotFoundException(this.t.Errors.Id.NotFound(User, parsed));
+		if (!user && typeof parsed === 'string')
+			throw new NotFoundException(this.t.Errors.Email.NotFound(User, parsed as email));
 
 		return filter ? (await this.removePrivateFields([user]))[0] : user;
 	}
@@ -262,20 +272,16 @@ export class UsersService {
 
 	@UseRequestContext()
 	async update(requestUserId: number, input: UserPatchDTO) {
-		const user = await this.findOne({ id: input.id }, false);
+		const user = await this.findOne(input.id, false);
 
-		if (!user) throw new NotFoundException(`User with id ${input.id} not found`);
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, input.id));
 
 		if (input.email) this.emailsService.validateEmail(input.email);
 
 		if (input.hasOwnProperty('birth_date') || input.hasOwnProperty('first_name') || input.hasOwnProperty('last_name')) {
-			const currentUser = await this.findOne({ id: requestUserId }, false);
+			const currentUser = await this.findOne(requestUserId, false);
 
-			if (currentUser.id === user.id)
-				//FIXME - No I18n here ?
-				throw new UnauthorizedException(
-					'You cannot update your own birth date / first (or last) name, ask another user with the appropriate permission',
-				);
+			if (currentUser.id === user.id) throw new UnauthorizedException(this.t.Errors.User.CannotUpdateBirthDateOrName());
 		}
 
 		Object.assign(user, input);
