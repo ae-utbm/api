@@ -404,6 +404,8 @@ export class UsersService {
 	async delete(id: number) {
 		const user = await this.orm.em.findOne(User, { id });
 		await this.orm.em.removeAndFlush(user);
+
+		return { message: this.t.Success.Entity.Deleted(User), statusCode: 200 };
 	}
 
 	@UseRequestContext()

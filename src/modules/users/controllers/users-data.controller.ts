@@ -6,6 +6,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedRes
 import { z } from 'zod';
 
 import { USER_GENDER } from '@exported/api/constants/genders';
+import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
@@ -84,7 +85,8 @@ export class UsersDataController {
 	@Delete(':id')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_DELETE_USER'])
-	@ApiOperation({ summary: 'Delete a user' })
+	@ApiOperation({ summary: 'Delete your account' })
+	@ApiOkResponse({ description: 'User deleted', type: MessageResponseDTO })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async delete(@Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id);
