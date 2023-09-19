@@ -1,4 +1,4 @@
-# Code de conduite - Sith 4
+# Code de conduite - API
 
 ## Nos engagements
 
