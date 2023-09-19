@@ -1,8 +1,6 @@
 {
-  "name": "api",
+  "name": "@ae_utbm/api",
   "version": "1.0.0",
-  "description": "",
-  "author": "",
   "private": true,
   "license": "GPL v3",
   "scripts": {
@@ -19,6 +17,7 @@
     "workflow:init_db": "pnpm ts-node tests/database.setup.ts"
   },
   "dependencies": {
+    "@ae_utbm/typings": "file:src/exported",
     "@mikro-orm/cli": "^5.8.0",
     "@mikro-orm/core": "^5.8.0",
     "@mikro-orm/migrations": "^5.8.0",

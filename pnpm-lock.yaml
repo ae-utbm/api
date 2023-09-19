@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@ae_utbm/typings':
+    specifier: file:src/exported
+    version: file:src/exported
   '@mikro-orm/cli':
     specifier: ^5.8.0
     version: 5.8.0(@mikro-orm/migrations@5.8.0)(@mikro-orm/postgresql@5.8.0)(@mikro-orm/seeder@5.8.0)(pg@8.11.3)
@@ -7027,4 +7030,11 @@ packages:
 
   /zod@3.22.2:
     resolution: {integrity: sha512-wvWkphh5WQsJbVk1tbx1l1Ly4yg+XecD+Mq280uBGt9wa5BKSWf4Mhp6GmrkPixhMxmabYY7RbzlwVP32pbGCg==}
+    dev: false
+
+  file:src/exported:
+    resolution: {directory: src/exported, type: directory}
+    name: '@ae_utbm/typings'
+    dependencies:
+      type-fest: 4.3.1
     dev: false
