@@ -60,6 +60,9 @@ export class LoggingInterceptor implements NestInterceptor {
 					};
 					const response = context.switchToHttp().getResponse<res>();
 
+					// Determine if user has been deleted while the observable was running
+					if ((await em.fork().findOne(User, { id: user.id })) === null) return;
+
 					// Update the log entity after the observable is ended
 					log.response = response.body as unknown as string; // TODO: Get the actual response body (actually null)
 					log.status_code = response.statusCode;
