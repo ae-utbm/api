@@ -13,6 +13,7 @@ export function validate<T extends ZodRawShape>(
 	try {
 		schema.parse(input);
 	} catch (err) {
+		/* istanbul ignore next-line */
 		if (!(err instanceof ZodError)) throw err;
 
 		throw new BadRequestException({

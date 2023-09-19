@@ -11,10 +11,10 @@ import { fromBuffer, MimeType } from 'file-type';
 
 import { TranslateService } from '@modules/translate/translate.service';
 import { User } from '@modules/users/entities/user.entity';
-import { convertToWebp, hasAspectRatio } from '@utils/images';
 
 import { FileVisibilityGroup } from './entities/file-visibility.entity';
 import { File } from './entities/file.entity';
+import { ImagesService } from './images.service';
 
 type WriteFileOptions = {
 	directory: string;
@@ -27,7 +27,11 @@ type WriteImageOptions = WriteFileOptions & {
 
 @Injectable()
 export class FilesService {
-	constructor(private readonly orm: MikroORM, private readonly t: TranslateService) {}
+	constructor(
+		private readonly orm: MikroORM,
+		private readonly t: TranslateService,
+		private readonly imagesService: ImagesService,
+	) {}
 
 	/**
 	 * Determine if the given user can read the given file.
@@ -89,6 +93,7 @@ export class FilesService {
 	/**
 	 * Upload file on disk, but convert it to webp first
 	 * (unless it's a GIF or webp already)
+	 * TODO: move this function to the images.service.ts file ?
 	 */
 	async writeOnDiskAsImage(file: Express.Multer.File, options: WriteImageOptions) {
 		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
@@ -99,11 +104,11 @@ export class FilesService {
 			throw new BadRequestException(this.t.Errors.File.InvalidMimeType(['image/*']));
 
 		// Check if the file respect the aspect ratio
-		if (!(await hasAspectRatio(buffer, options.aspectRatio)))
+		if (!(await this.imagesService.validateAspectRatio(buffer, options.aspectRatio)))
 			throw new BadRequestException(this.t.Errors.Image.InvalidAspectRatio(options.aspectRatio));
 
 		// Convert the file to webp (unless it's a GIF or already a webp)
-		buffer = await convertToWebp(buffer);
+		buffer = await this.imagesService.convertToWebp(buffer);
 
 		return this.writeOnDisk(buffer, options, ['image/webp', 'image/gif']);
 	}
