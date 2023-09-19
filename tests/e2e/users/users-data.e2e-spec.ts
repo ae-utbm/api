@@ -13,10 +13,9 @@ describe('Users Data (e2e)', () => {
 	let tokenVerified: string;
 
 	const fakeUserEmail: email = 'john.doe@example.fr';
+	type res = Omit<request.Response, 'body'> & { body: TokenDTO };
 
 	beforeAll(async () => {
-		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
-
 		const responseA: res = await request(app.getHttpServer()).post('/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
@@ -345,6 +344,69 @@ describe('Users Data (e2e)', () => {
 
 				// restore user
 				await orm.em.persistAndFlush(user);
+			});
+		});
+	});
+
+	describe('(DELETE) /users', () => {
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).delete('/users/1').expect(401);
+
+				expect(response.body).toEqual({
+					message: 'Unauthorized',
+					statusCode: 401,
+				});
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.delete('/users/1')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					message: 'Forbidden resource',
+					statusCode: 403,
+				});
+			});
+
+			it('when the user is authorized but try to delete another user', async () => {
+				const response = await request(app.getHttpServer())
+					.delete('/users/9999')
+					.set('Authorization', `Bearer ${tokenVerified}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					message: 'Forbidden resource',
+					statusCode: 403,
+				});
+			});
+		});
+
+		describe('200 : Ok', () => {
+			it('when the use delete itself', async () => {
+				const user = await orm.em.fork().findOne(User, { email: fakeUserEmail });
+
+				const auth: res = await request(app.getHttpServer()).post('/auth/login').send({
+					email: user.email,
+					password: user.password,
+				});
+
+				const token = auth.body.token;
+				const response = await request(app.getHttpServer())
+					.delete(`/users/${user.id}`)
+					.set('Authorization', `Bearer ${token}`)
+					.expect(200);
+
+				expect(response.body).toEqual({
+					statusCode: 200,
+					message: t.Success.Entity.Deleted(User),
+				});
 			});
 		});
 	});
