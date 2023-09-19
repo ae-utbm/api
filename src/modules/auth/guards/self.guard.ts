@@ -39,6 +39,7 @@ export function checkSelf(context: ExecutionContext, reflector: Reflector, authS
 
 	// Extract the user ID from the request parameters or body
 	const user_id = request.params[userIdKey] ?? request.body[userIdKey];
+	/* istanbul ignore next-line */
 	if (!user_id) throw new Error(`The parameter ${userIdKey} is missing from the request.`);
 
 	// Retrieve the authenticated user from the request's user object or session

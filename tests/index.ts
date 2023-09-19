@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 
 import 'tsconfig-paths/register';
-import '@utils/index';
+import '@exported/global/utils';
 
 import { MikroORM } from '@mikro-orm/core';
 import { ConfigService } from '@nestjs/config';

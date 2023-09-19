@@ -4,11 +4,10 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import env from '@env';
+import '@exported/global/utils';
 
 import { AppModule } from './app.module';
 import pkg from '../package.json';
-
-import './utils';
 
 /**
  * Base server bootstrap
