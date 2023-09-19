@@ -50,7 +50,7 @@ brew services start postgresql@13 # start postgresql service
 Then you can use [pgAdmin](https://www.pgadmin.org/) to create a server with the following parameters:
 
 |      pgAdmin 4       | `.env` variable name | value                                                                                     |
-|:--------------------:|:--------------------:|:------------------------------------------------------------------------------------------|
+| :------------------: | :------------------: | :---------------------------------------------------------------------------------------- |
 |         Host         |      `DB_HOST`       | `127.0.0.1`                                                                               |
 |         Port         |      `DB_PORT`       | `5432`                                                                                    |
 |       Username       |    `DB_USERNAME`     | Should be the username you used to install postgresql or any user you have created for it |

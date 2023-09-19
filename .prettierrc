@@ -1,11 +1,19 @@
 {
-  "singleQuote": true,
+	"singleQuote": true,
 	"trailingComma": "all",
 	"semi": true,
 	"printWidth": 120,
 	"useTabs": true,
 	"bracketSpacing": true,
 	"arrowParens": "always",
-	"parser": "typescript",
-	"endOfLine": "lf"
+	"endOfLine": "lf",
+	"overrides": [
+		{
+			"files": "*.json",
+			"options": {
+				"printWidth": 10,
+				"useTabs": false
+			}
+		}
+	]
 }
