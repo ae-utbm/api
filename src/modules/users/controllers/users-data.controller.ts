@@ -9,9 +9,11 @@ import { USER_GENDER } from '@exported/api/constants/genders';
 import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
+import { GuardSelfParam } from '@modules/auth/decorators/self.decorator';
 import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
+import { SelfGuard } from '@modules/auth/guards/self.guard';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { Role } from '@modules/roles/entities/role.entity';
 import { TranslateService } from '@modules/translate/translate.service';
@@ -83,8 +85,8 @@ export class UsersDataController {
 	}
 
 	@Delete(':id')
-	@UseGuards(SelfOrPermissionGuard)
-	@GuardSelfOrPermissions('id', ['CAN_DELETE_USER'])
+	@UseGuards(SelfGuard)
+	@GuardSelfParam('id')
 	@ApiOperation({ summary: 'Delete your account' })
 	@ApiOkResponse({ description: 'User deleted', type: MessageResponseDTO })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
