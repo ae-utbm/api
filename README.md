@@ -1,4 +1,4 @@
-<!-- <img align="left" src="https://user-images.githubusercontent.com/49886317/167401362-923cd69b-3beb-4e02-856e-d32872eaa5f4.png" height="128"> -->
+<img align="left" src="https://github.com/ae-utbm/api/assets/49886317/aa7a4e72-e6e4-4a70-bf70-3bb209553214" height="128">
 
 # AE UTBM - API
 
@@ -24,21 +24,31 @@ pnpm install
 
 ### Database
 
-We are using [PostgreSQL](https://www.postgresql.org/) as our database ecosystem. You can install it on your machine or use a docker container.
+We are using [PostgreSQL](https://www.postgresql.org/) as our database ecosystem. You can install it on your machine or use a docker container:
 
-#### 🐳 Docker
+<details>
+	<summary>Docker</summary>
 
-> TODO
+WIP
 
-#### 🐧 Linux
+</details>
 
-> TODO
+<details>
+	<summary>Linux</summary>
 
-#### 🪟 Windows
+WIP
 
-> TODO
+</details>
 
-####  MacOS
+<details>
+	<summary>Windows</summary>
+
+WIP
+
+</details>
+
+<details>
+	<summary>MacOS</summary>
 
 The easiest way to install PostgreSQL is to use [Homebrew](https://brew.sh/).
 
@@ -57,9 +67,14 @@ Then you can use [pgAdmin](https://www.pgadmin.org/) to create a server with the
 |       Password       |    `DB_PASSWORD`     | leave it empty, unless you have set a password for your postgresql user                   |
 | Maintenance database |    `DB_DATABASE`     | `postgres`                                                                                |
 
-**Once you have setup the server, create a database with the name you have set in the `.env` file for the `DB_DATABASE` variable.**
+</details>
 
-## First time setup of the database
+<br>
+
+> **Warning**  
+> Once you have setup the server, create a database with the name you have set in the `.env` file for the `DB_DATABASE` variable.
+
+#### First setup of the database
 
 ```bash
 # create the database (will drop if already exists and create it again)
@@ -69,13 +84,13 @@ pnpm run db:create
 pnpm run db:seed
 ```
 
-## Running the app
+## Start the API
 
-As we are using GraphQL, while in development, you can access the GraphQL playground at `http://localhost:3000/graphql`.
+The app is built with [NestJS](https://nestjs.com/) and uses [TypeScript](https://www.typescriptlang.org/). You can run it with the following commands:
 
 ```bash
-# development
-pnpm run start
+# debug mode
+pnpm run start:debug
 
 # watch mode
 pnpm run start:dev
@@ -84,19 +99,11 @@ pnpm run start:dev
 pnpm run start:prod
 ```
 
-## Test
+## Run tests
+
+Both unit and e2e tests are available and run with [Jest](https://jestjs.io/). You can run them with the following command:
 
 ```bash
 # unit tests
 pnpm run test
-
-# e2e tests
-pnpm run test:e2e
-
-# test coverage
-pnpm run test:cov
 ```
-
-## License
-
-This API is [MIT licensed](LICENSE).
