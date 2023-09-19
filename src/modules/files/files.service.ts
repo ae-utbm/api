@@ -39,8 +39,9 @@ export class FilesService {
 	 * @param {User} user - The user to check the visibility for.
 	 */
 	async canReadFile(file: File, user: User): Promise<boolean> {
-		if (file.is_public) return true;
-		if (file.is_hidden) return false;
+		// If the file has no visibility group, it's public
+		await file.visibility.init();
+		if (!file.visibility) return true;
 
 		// If user is ROOT / CAN_READ_FILE, he can read the file no matter what
 		await user.permissions.init();

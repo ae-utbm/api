@@ -36,19 +36,6 @@ export class File extends BaseEntity implements FE<FileVisibilityGroup> {
 	@ApiProperty({ type: Number, minimum: 1 })
 	visibility?: FileVisibilityGroup;
 
-	@Property({ persist: false })
-	@ApiProperty()
-	get is_public(): boolean {
-		return !this.visibility;
-	}
-
-	@Property({ persist: false })
-	@ApiProperty()
-	get is_hidden(): boolean {
-		if (this.is_public) return false;
-		return this.visibility.users && this.visibility.users.length === 0 ? true : false;
-	}
-
 	@Property()
 	@ApiProperty()
 	description: string;

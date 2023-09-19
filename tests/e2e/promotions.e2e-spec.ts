@@ -542,8 +542,6 @@ describe('Promotions (e2e)', () => {
 						description: 'Promotion logo of the promotion 21',
 						mimetype: 'image/webp',
 						size: 117280,
-						is_public: true,
-						is_hidden: false,
 					},
 				});
 
@@ -581,8 +579,6 @@ describe('Promotions (e2e)', () => {
 						mimetype: 'image/webp',
 						size: 117280,
 						visibility: null,
-						is_public: true,
-						is_hidden: false,
 					},
 				});
 
