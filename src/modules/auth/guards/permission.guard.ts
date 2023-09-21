@@ -38,32 +38,32 @@ export class PermissionGuard implements CanActivate {
 		const request = context.switchToHttp().getRequest<req>();
 
 		// Access the permissions required to access the route
-		const permsToValidate = this.reflector.get<Array<PERMISSION_NAMES>>('guard_permissions', context.getHandler());
+		const perms_to_validate = this.reflector.get<Array<PERMISSION_NAMES>>('guard_permissions', context.getHandler());
 
 		// Retrieve the authenticated user from the request's user object or session
-		const bearerToken = request.headers.authorization;
+		const bearer_token = request.headers.authorization;
 
 		// Verify and decode the JWT token to extract the user ID
-		const decodedToken = this.authService.verifyJWT(bearerToken);
+		const payload = this.authService.verifyJWT(bearer_token);
 
 		// Get the user from the database
 		// If no user found -> thrown within the service
-		const user = await this.userService.findOne(decodedToken.sub, false);
+		const user = await this.userService.findOne(payload.sub, false);
 
-		const perms = (await user.permissions.loadItems())
-			.filter((p) => p.expires > new Date() && p.revoked === false)
-			.map((p) => p.name);
+		const user_perms = await this.userService.getUserPermissions(user.id, { show_expired: false, show_revoked: false });
+		const perms = user_perms.map((p) => p.name);
 
-		const rolesPerms = (await user.roles.loadItems())
-			.filter((p) => p.expires > new Date() && p.revoked === false)
-			.map((p) => p.permissions)
+		const user_roles = await this.userService.getUserRoles(user.id, { show_expired: false, show_revoked: false });
+		const roles = user_roles
+			.filter((r) => r.expires > new Date() && r.revoked === false)
+			.map((r) => r.permissions)
 			.flat();
 
-		const acquiredPerms = [...perms, ...rolesPerms];
+		const acquired_perms = [...perms, ...roles];
 
 		// If the user has the ROOT permission, they have all permissions.
 		// If the user has any of the required permissions, they have permission.
-		if (acquiredPerms.includes('ROOT') || acquiredPerms.some((p) => permsToValidate.includes(p))) return true;
+		if (acquired_perms.includes('ROOT') || acquired_perms.some((p) => perms_to_validate.includes(p))) return true;
 
 		// Otherwise, they don't have permission.
 		return false;

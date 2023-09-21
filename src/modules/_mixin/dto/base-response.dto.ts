@@ -7,8 +7,8 @@ export class BaseResponseDTO implements BaseResponseDto {
 	id: number;
 
 	@ApiProperty()
-	updated_at: Date;
+	updated: Date;
 
 	@ApiProperty()
-	created_at: Date;
+	created: Date;
 }

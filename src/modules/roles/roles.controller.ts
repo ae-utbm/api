@@ -14,11 +14,11 @@ import { z } from 'zod';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { TranslateService } from '@modules/translate/translate.service';
-import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
 import { validate } from '@utils/validate';
 
-import { RoleEditUsersDTO, RolePatchDTO } from './dto/patch.dto';
+import { RoleEditUserDTO, RolePatchDTO } from './dto/patch.dto';
 import { RolePostDTO } from './dto/post.dto';
+import { RoleUsersResponseDTO } from './dto/users.dto';
 import { Role } from './entities/role.entity';
 import { RolesService } from './roles.service';
 
@@ -41,12 +41,11 @@ export class RolesController {
 			.object({
 				name: z.string().refine((name) => name === name.toUpperCase(), {}),
 				permissions: z.array(z.string()),
-				expires: z.string().datetime(),
 			})
 			.strict();
 		validate(schema, body);
 
-		return this.rolesService.createRole(body.name, body.permissions, body.expires);
+		return this.rolesService.createRole(body.name, body.permissions);
 	}
 
 	@Patch()
@@ -66,7 +65,6 @@ export class RolesController {
 					.refine((name) => name === name.toUpperCase(), {})
 					.optional(),
 				permissions: z.array(z.string()).optional(),
-				expires: z.string().datetime().optional(),
 			})
 			.strict();
 		validate(schema, body);
@@ -101,7 +99,7 @@ export class RolesController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_ROLE')
 	@ApiOperation({ summary: 'Get user(s) of the specified role' })
-	@ApiOkResponse({ type: [BaseUserResponseDTO] })
+	@ApiOkResponse({ type: [RoleUsersResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async getRoleUsers(@Param('role_id') id: number) {
@@ -114,39 +112,36 @@ export class RolesController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_ROLE')
 	@ApiOperation({ summary: 'Add user(s) to the role' })
-	@ApiOkResponse({ type: [BaseUserResponseDTO] })
+	@ApiOkResponse({ type: [RoleUsersResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
-	async addUsersToRole(@Param('role_id') role_id: number, @Body() body: RoleEditUsersDTO) {
+	async addUsersToRole(@Param('role_id') role_id: number, @Body() body: Array<RoleEditUserDTO>) {
 		validate(z.coerce.number().int().min(1), role_id);
 
 		const schema = z
 			.object({
-				users: z.array(z.number().int().min(1).positive()).min(1),
+				id: z.number().int().min(1).positive(),
+				expires: z.string().datetime(),
 			})
 			.strict();
-		validate(schema, body);
+		validate(z.array(schema).min(1), body);
 
-		return this.rolesService.addUsers(role_id, body.users);
+		return this.rolesService.addUsers(role_id, body);
 	}
 
 	@Delete(':role_id/users')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_ROLE')
 	@ApiOperation({ summary: 'Remove user(s) from the role' })
-	@ApiOkResponse({ type: [BaseUserResponseDTO] })
+	@ApiOkResponse({ type: [RoleUsersResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
-	async removeUsersToRole(@Param('role_id') role_id: number, @Body('') body: RoleEditUsersDTO) {
+	async removeUsersToRole(@Param('role_id') role_id: number, @Body('') body: number[]) {
 		validate(z.coerce.number().int().min(1), role_id);
 
-		const schema = z
-			.object({
-				users: z.array(z.number().int().min(1).positive()).min(1),
-			})
-			.strict();
+		const schema = z.array(z.number().min(1)).min(1);
 		validate(schema, body);
 
-		return this.rolesService.removeUsers(role_id, body.users);
+		return this.rolesService.removeUsers(role_id, body);
 	}
 }

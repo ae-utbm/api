@@ -21,7 +21,7 @@ export class LogsService {
 	@Cron('0 0 7 * * *')
 	@UseRequestContext()
 	async deleteOldLogs() {
-		await this.orm.em.nativeDelete(Log, { created_at: { $lt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60) } });
+		await this.orm.em.nativeDelete(Log, { created: { $lt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60) } });
 	}
 
 	async getUserLogs(id: number): Promise<(Omit<Log, 'user'> & { user: number })[]> {

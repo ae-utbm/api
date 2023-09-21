@@ -95,8 +95,8 @@ export class PromotionsService {
 		for (const user of promotion.users.getItems()) {
 			res.push({
 				id: user.id,
-				updated_at: user.updated_at,
-				created_at: user.created_at,
+				updated: user.updated,
+				created: user.created,
 				first_name: user.first_name,
 				last_name: user.last_name,
 				nickname: user.nickname,

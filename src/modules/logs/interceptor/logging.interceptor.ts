@@ -42,10 +42,10 @@ export class LoggingInterceptor implements NestInterceptor {
 			user_agent: request.headers['user-agent'] ?? 'Unknown',
 			route: request.route.path,
 			method: request.method,
-			body: request.body as unknown as string,
-			query: request.query as unknown as string,
-			params: request.params as unknown as string,
-			updated_at: undefined,
+			body: JSON.stringify(request.body),
+			query: JSON.stringify(request.query),
+			params: JSON.stringify(request.params),
+			updated: undefined,
 		});
 
 		return next.handle().pipe(
@@ -64,12 +64,12 @@ export class LoggingInterceptor implements NestInterceptor {
 					if ((await em.fork().findOne(User, { id: user.id })) === null) return;
 
 					// Update the log entity after the observable is ended
-					log.response = response.body as unknown as string; // TODO: Get the actual response body (actually null)
+					log.response = JSON.stringify(response.body); // TODO: Get the actual response body (actually null)
 					log.status_code = response.statusCode;
 					log.error = response.error;
 					log.error_stack = response.error_stack;
 					log.error_message = response.error_message;
-					log.updated_at = new Date();
+					log.updated = new Date();
 
 					user.last_seen = new Date();
 					await em.flush();

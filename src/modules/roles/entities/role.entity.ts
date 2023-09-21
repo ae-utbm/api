@@ -23,11 +23,6 @@ export class Role extends BaseEntity implements RoleEntity<Permission, User> {
 	@ApiProperty({ type: Boolean, default: false })
 	revoked: boolean;
 
-	/** Specify when the role should expires */
-	@Property({ name: 'expires_at' })
-	@ApiProperty()
-	expires: Date;
-
 	/** Specify what permissions the role has */
 	@Property({ name: 'permissions' })
 	@ApiProperty({ enum: PERMISSIONS_NAMES, isArray: true })

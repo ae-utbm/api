@@ -69,13 +69,12 @@ describe('Roles (e2e)', () => {
 				expect(body.haveEqualObjects()).toBe(true);
 
 				expect(body[0]).toEqual({
-					created_at: expect.any(String),
-					expires: expect.any(String),
+					created: expect.any(String),
 					id: expect.any(Number),
 					name: expect.any(String),
 					permissions: expect.any(Array),
 					revoked: false,
-					updated_at: expect.any(String),
+					updated: expect.any(String),
 					users: expect.any(Number),
 				});
 			});
@@ -89,7 +88,6 @@ describe('Roles (e2e)', () => {
 					.post('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
-						name: 'TEST',
 						permissions: ['test'],
 					})
 					.expect(400);
@@ -99,7 +97,7 @@ describe('Roles (e2e)', () => {
 					error: 'Bad Request',
 					message: {
 						_errors: [],
-						expires: {
+						name: {
 							_errors: ['Required'],
 						},
 					},
@@ -113,7 +111,6 @@ describe('Roles (e2e)', () => {
 					.send({
 						name: 'TEST',
 						permissions: ['TEST'],
-						expires: new Date('2021-01-01').toISOString(),
 					})
 					.expect(400);
 
@@ -131,7 +128,6 @@ describe('Roles (e2e)', () => {
 					.send({
 						name: 'PERMISSIONS_MODERATOR',
 						permissions: ['ROOT'],
-						expires: new Date('2021-01-01').toISOString(),
 					})
 					.expect(400);
 
@@ -177,17 +173,15 @@ describe('Roles (e2e)', () => {
 					.send({
 						name: 'TEST_ROLE',
 						permissions: ['ROOT'],
-						expires: new Date('2999-01-01').toISOString(),
 					})
 					.expect(201);
 
 				expect(response.body).toEqual({
 					id: expect.any(Number),
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					name: 'TEST_ROLE',
 					revoked: false,
-					expires: '2999-01-01T00:00:00.000Z',
 					permissions: ['ROOT'],
 				});
 			});
@@ -278,17 +272,15 @@ describe('Roles (e2e)', () => {
 						id: role_id,
 						name: 'TEST_TEST_ROLE',
 						permissions: ['ROOT', 'CAN_READ_ROLE', 'CAN_EDIT_ROLE'],
-						expires: new Date('2998-01-01').toISOString(),
 					})
 					.expect(200);
 
 				expect(response.body).toEqual({
 					id: role_id,
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					name: 'TEST_TEST_ROLE',
 					revoked: false,
-					expires: '2998-01-01T00:00:00.000Z',
 					permissions: ['ROOT', 'CAN_READ_ROLE', 'CAN_EDIT_ROLE'],
 					users: 0,
 				});
@@ -364,11 +356,10 @@ describe('Roles (e2e)', () => {
 
 				expect(response.body).toEqual({
 					id: 1,
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					name: 'PERMISSIONS_MODERATOR',
 					revoked: false,
-					expires: '9999-12-31T00:00:00.000Z',
 					permissions: [
 						'CAN_READ_PERMISSIONS_OF_USER',
 						'CAN_EDIT_PERMISSIONS_OF_USER',
@@ -453,8 +444,9 @@ describe('Roles (e2e)', () => {
 						nickname: null,
 						first_name: 'perms',
 						last_name: 'moderator',
-						created_at: expect.any(String),
-						updated_at: expect.any(String),
+						created: expect.any(String),
+						updated: expect.any(String),
+						role_expires: expect.any(String),
 					},
 				]);
 			});
@@ -463,13 +455,24 @@ describe('Roles (e2e)', () => {
 
 	describe('(POST) /roles/:roles_id/users', () => {
 		describe('400 : Bad Request', () => {
-			it('when the id is invalid', async () => {
+			it('when the role id is invalid', async () => {
 				const response = await request(app.getHttpServer())
 					.post('/roles/invalid/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send({
-						users: [1, 2, 3],
-					})
+					.send([
+						{
+							id: 1,
+							expires: new Date('9021-01-01').toISOString(),
+						},
+						{
+							id: 2,
+							expires: new Date('9022-01-01').toISOString(),
+						},
+						{
+							id: 3,
+							expires: new Date('9023-01-01').toISOString(),
+						},
+					])
 					.expect(400);
 
 				expect(response.body).toEqual({
@@ -481,13 +484,16 @@ describe('Roles (e2e)', () => {
 				});
 			});
 
-			it('when the user id is invalid', async () => {
+			it('when one of the user id is invalid', async () => {
 				const response = await request(app.getHttpServer())
 					.post('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send({
-						users: ['invalid'],
-					})
+					.send([
+						{
+							id: 'invalid',
+							expires: new Date('9021-01-01').toISOString(),
+						},
+					])
 					.expect(400);
 
 				expect(response.body).toEqual({
@@ -495,9 +501,9 @@ describe('Roles (e2e)', () => {
 					error: 'Bad Request',
 					message: {
 						_errors: [],
-						users: {
+						0: {
 							_errors: [],
-							0: {
+							id: {
 								_errors: ['Expected number, received string'],
 							},
 						},
@@ -505,23 +511,18 @@ describe('Roles (e2e)', () => {
 				});
 			});
 
-			it('when no user ids are given', async () => {
+			it('when no users info are given', async () => {
 				const response = await request(app.getHttpServer())
 					.post('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send({
-						users: [],
-					})
+					.send([])
 					.expect(400);
 
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
 					message: {
-						_errors: [],
-						users: {
-							_errors: ['Array must contain at least 1 element(s)'],
-						},
+						_errors: ['Array must contain at least 1 element(s)'],
 					},
 				});
 			});
@@ -558,9 +559,7 @@ describe('Roles (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.post('/roles/9999/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send({
-						users: [1, 2, 3],
-					})
+					.send([{ id: 1, expires: new Date('9021-01-01').toISOString() }])
 					.expect(404);
 
 				expect(response.body).toEqual({
@@ -574,9 +573,7 @@ describe('Roles (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.post('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send({
-						users: [9999],
-					})
+					.send([{ id: 9999, expires: new Date('9021-01-01').toISOString() }])
 					.expect(404);
 
 				expect(response.body).toEqual({
@@ -593,9 +590,11 @@ describe('Roles (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.post(`/roles/${role_id}/users`)
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send({
-						users: [1, 2, 5],
-					})
+					.send([
+						{ id: 1, expires: new Date('9021-01-01').toISOString() },
+						{ id: 2, expires: new Date('9022-01-01').toISOString() },
+						{ id: 5, expires: new Date('9023-01-01').toISOString() },
+					])
 					.expect(201);
 
 				const body = response.body as Array<unknown>;
@@ -606,8 +605,9 @@ describe('Roles (e2e)', () => {
 
 				expect(body[0]).toEqual({
 					id: 1,
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
+					role_expires: '9021-01-01T00:00:00.000Z',
 					first_name: 'root',
 					last_name: 'root',
 					nickname: 'noot noot',
@@ -615,8 +615,9 @@ describe('Roles (e2e)', () => {
 
 				expect(body[1]).toEqual({
 					id: 2,
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
+					role_expires: '9022-01-01T00:00:00.000Z',
 					first_name: 'unverified',
 					last_name: 'user',
 					nickname: null,
@@ -624,8 +625,9 @@ describe('Roles (e2e)', () => {
 
 				expect(body[2]).toEqual({
 					id: 5,
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
+					role_expires: '9023-01-01T00:00:00.000Z',
 					first_name: 'perms',
 					last_name: 'moderator',
 					nickname: null,
@@ -640,9 +642,7 @@ describe('Roles (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.delete('/roles/invalid/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send({
-						users: [1, 2, 3],
-					})
+					.send([1, 2, 3])
 					.expect(400);
 
 				expect(response.body).toEqual({
@@ -658,22 +658,17 @@ describe('Roles (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.delete('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send({
-						users: ['invalid'],
-					})
+					.send(['invalid'])
 					.expect(400);
 
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
 					message: {
-						_errors: [],
-						users: {
-							0: {
-								_errors: ['Expected number, received string'],
-							},
-							_errors: [],
+						0: {
+							_errors: ['Expected number, received string'],
 						},
+						_errors: [],
 					},
 				});
 			});
@@ -682,19 +677,14 @@ describe('Roles (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.delete('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send({
-						users: [],
-					})
+					.send([])
 					.expect(400);
 
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
 					message: {
-						_errors: [],
-						users: {
-							_errors: ['Array must contain at least 1 element(s)'],
-						},
+						_errors: ['Array must contain at least 1 element(s)'],
 					},
 				});
 			});
@@ -731,9 +721,7 @@ describe('Roles (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.delete('/roles/9999/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send({
-						users: [1, 2, 3],
-					})
+					.send([1, 2, 3])
 					.expect(404);
 
 				expect(response.body).toEqual({
@@ -747,9 +735,7 @@ describe('Roles (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.delete('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send({
-						users: [9999],
-					})
+					.send([9999])
 					.expect(404);
 
 				expect(response.body).toEqual({
@@ -766,9 +752,7 @@ describe('Roles (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.delete(`/roles/${role_id}/users`)
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send({
-						users: [2],
-					})
+					.send([2])
 					.expect(200);
 
 				const body = response.body as Array<unknown>;
@@ -779,20 +763,22 @@ describe('Roles (e2e)', () => {
 
 				expect(body[0]).toEqual({
 					id: 1,
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					first_name: 'root',
 					last_name: 'root',
 					nickname: 'noot noot',
+					role_expires: expect.any(String),
 				});
 
 				expect(body[1]).toEqual({
 					id: 5,
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					first_name: 'perms',
 					last_name: 'moderator',
 					nickname: null,
+					role_expires: expect.any(String),
 				});
 			});
 		});

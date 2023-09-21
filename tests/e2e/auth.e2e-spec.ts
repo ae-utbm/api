@@ -227,7 +227,7 @@ describe('Auth (e2e)', () => {
 						return Math.abs(age.getUTCFullYear() - 1970);
 					})(),
 					birth_date: '2000-01-01T00:00:00.000Z',
-					created_at: expect.any(String),
+					created: expect.any(String),
 					last_seen: expect.any(String),
 					email: 'johndoe@domain.com',
 					email_verified: false,
@@ -241,7 +241,7 @@ describe('Auth (e2e)', () => {
 					logs: [],
 					permissions: [],
 					roles: [],
-					updated_at: expect.any(String),
+					updated: expect.any(String),
 				});
 			});
 		});
@@ -310,7 +310,7 @@ describe('Auth (e2e)', () => {
 					age: expect.any(Number),
 					banner: null,
 					birth_date: '2000-01-01T00:00:00.000Z',
-					created_at: expect.any(String),
+					created: expect.any(String),
 					email: 'unverified@email.com',
 					email_verified: true,
 					first_name: 'unverified',
@@ -327,7 +327,7 @@ describe('Auth (e2e)', () => {
 					promotion: null,
 					pronouns: null,
 					secondary_email: null,
-					updated_at: expect.any(String),
+					updated: expect.any(String),
 				});
 
 				// Reset user email_verified to false (for other tests)

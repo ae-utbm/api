@@ -163,8 +163,8 @@ describe('Logs (e2e)', () => {
 
 				expect(body[0]).toEqual({
 					id: expect.any(Number),
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					user: userIdUnauthorized,
 					action: expect.any(String),
 					ip: expect.any(String),

@@ -130,11 +130,11 @@ describe('Permissions (e2e)', () => {
 
 				expect(response.body).toEqual({
 					id: expect.any(Number),
-					created_at: expect.any(String),
+					created: expect.any(String),
 					expires: expect.any(String),
 					name: 'CAN_EDIT_PROMOTION',
 					revoked: false,
-					updated_at: expect.any(String),
+					updated: expect.any(String),
 					user: 1,
 				});
 
@@ -214,11 +214,11 @@ describe('Permissions (e2e)', () => {
 
 				expect(response.body).toEqual({
 					id: 1,
-					created_at: expect.any(String),
+					created: expect.any(String),
 					expires: expect.any(String),
 					name: 'ROOT',
 					revoked: false,
-					updated_at: expect.any(String),
+					updated: expect.any(String),
 					user: 1,
 				});
 			});
@@ -293,12 +293,12 @@ describe('Permissions (e2e)', () => {
 
 				expect(response.body).toEqual([
 					{
-						created_at: expect.any(String),
+						created: expect.any(String),
 						expires: expect.any(String),
 						id: 1,
 						name: 'ROOT',
 						revoked: false,
-						updated_at: expect.any(String),
+						updated: expect.any(String),
 						user: 1,
 					},
 				]);

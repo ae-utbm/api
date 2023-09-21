@@ -6,6 +6,7 @@ import { hashSync } from 'bcrypt';
 import { FileVisibilityGroup } from '@modules/files/entities/file-visibility.entity';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
+import { RoleExpiration } from '@modules/roles/entities/role-expiration.entity';
 import { Role } from '@modules/roles/entities/role.entity';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
 import { User } from '@modules/users/entities/user.entity';
@@ -54,13 +55,31 @@ export class DatabaseSeeder extends Seeder {
 		promosUser.roles.add(roles.find((r) => r.name === 'PROMOTIONS_MODERATOR'));
 		rolesUser.roles.add(roles.find((r) => r.name === 'ROLES_MODERATOR'));
 
+		const role_expirations = [
+			em.create(RoleExpiration, {
+				user: permUser,
+				role: roles.find((r) => r.name === 'PERMISSIONS_MODERATOR'),
+				expires: new Date('9999-12-31'),
+			}),
+			em.create(RoleExpiration, {
+				user: promosUser,
+				role: roles.find((r) => r.name === 'PROMOTIONS_MODERATOR'),
+				expires: new Date('9999-12-31'),
+			}),
+			em.create(RoleExpiration, {
+				user: rolesUser,
+				role: roles.find((r) => r.name === 'ROLES_MODERATOR'),
+				expires: new Date('9999-12-31'),
+			}),
+		];
+
 		// Assign promotion to users
 		rootUser.promotion = promotions.find((p) => p.number === 21);
 
 		// Assign visibility groups to users
 		subscribedUser.files_visibility_groups.add(visibility_groups.find((v) => v.name === 'SUBSCRIBER'));
 
-		await em.persistAndFlush([...users, ...perms, ...promotions, ...roles, ...visibility_groups]);
+		await em.persistAndFlush([...users, ...perms, ...promotions, ...roles, ...role_expirations, ...visibility_groups]);
 	}
 
 	create_promotions(em: EntityManager): Promotion[] {
@@ -86,17 +105,14 @@ export class DatabaseSeeder extends Seeder {
 					'CAN_READ_PERMISSIONS_OF_ROLE',
 					'CAN_EDIT_PERMISSIONS_OF_ROLE',
 				],
-				expires: new Date('9999-12-31'),
 			},
 			{
 				name: 'PROMOTIONS_MODERATOR',
 				permissions: ['CAN_READ_PROMOTION', 'CAN_EDIT_PROMOTION'],
-				expires: new Date('9999-12-31'),
 			},
 			{
 				name: 'ROLES_MODERATOR',
 				permissions: ['CAN_READ_ROLE', 'CAN_EDIT_ROLE'],
-				expires: new Date('9999-12-31'),
 			},
 		];
 

@@ -1,7 +1,7 @@
-import type { RolePatchDto } from '#types/api';
+import type { RolePatchDto, RoleEditUserDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber } from 'class-validator';
+import { IsDate, IsNumber } from 'class-validator';
 
 import { RolePostDTO } from './post.dto';
 
@@ -11,8 +11,12 @@ export class RolePatchDTO extends RolePostDTO implements RolePatchDto {
 	id: number;
 }
 
-export class RoleEditUsersDTO {
-	@ApiProperty({ required: true, type: [Number], example: [1, 2, 3] })
-	@IsNumber({}, { each: true })
-	users: number[];
+export class RoleEditUserDTO implements RoleEditUserDto {
+	@ApiProperty({ required: true, type: Number, minimum: 1 })
+	@IsNumber()
+	id: number;
+
+	@ApiProperty({ required: true, type: Date })
+	@IsDate()
+	expires: Date;
 }

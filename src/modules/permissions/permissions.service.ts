@@ -27,7 +27,7 @@ export class PermissionsService {
 
 		permissions.map((p) => {
 			p.revoked = true;
-			p.updated_at = new Date();
+			p.updated = new Date();
 
 			return p;
 		});

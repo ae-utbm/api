@@ -171,8 +171,8 @@ describe('Users Data (e2e)', () => {
 
 				expect(response.body).toEqual({
 					id: expect.any(Number),
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					first_name: 'John',
 					last_name: 'Doe',
 					email_verified: true,
@@ -320,8 +320,8 @@ describe('Users Data (e2e)', () => {
 
 				expect(response.body).toEqual({
 					id: expect.any(Number),
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					first_name: 'John',
 					last_name: 'Doe',
 					full_name: 'John Doe',

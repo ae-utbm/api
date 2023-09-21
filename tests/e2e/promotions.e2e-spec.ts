@@ -72,8 +72,8 @@ describe('Promotions (e2e)', () => {
 
 				expect(body[0]).toEqual({
 					id: 1,
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					number: 1,
 					picture: null,
 					users: 0,
@@ -122,8 +122,8 @@ describe('Promotions (e2e)', () => {
 
 				expect(body[0]).toEqual({
 					id: expect.any(Number),
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					number: expect.any(Number),
 					picture: null,
 					users: expect.any(Number),
@@ -166,8 +166,8 @@ describe('Promotions (e2e)', () => {
 
 				expect(response.body).toEqual({
 					id: expect.any(Number),
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					number: expect.any(Number),
 					picture: null,
 					users: expect.any(Number),
@@ -240,8 +240,8 @@ describe('Promotions (e2e)', () => {
 
 				expect(response.body).toEqual({
 					id: 21,
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					number: 21,
 					picture: null,
 					users: 1,
@@ -315,8 +315,8 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toEqual([
 					{
 						id: 1,
-						created_at: expect.any(String),
-						updated_at: expect.any(String),
+						created: expect.any(String),
+						updated: expect.any(String),
 						first_name: 'root',
 						last_name: 'root',
 						nickname: 'noot noot',
@@ -531,13 +531,13 @@ describe('Promotions (e2e)', () => {
 				// expect registered data to be returned
 				expect(response.body).toEqual({
 					id: 21,
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					number: 21,
 					picture: {
 						id: expect.any(Number),
-						created_at: expect.any(String),
-						updated_at: expect.any(String),
+						created: expect.any(String),
+						updated: expect.any(String),
 						filename: expect.any(String),
 						description: 'Promotion logo of the promotion 21',
 						mimetype: 'image/webp',
@@ -567,13 +567,13 @@ describe('Promotions (e2e)', () => {
 				// expect registered data to be returned
 				expect(response.body).toEqual({
 					id: 21,
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					number: 21,
 					picture: {
 						id: expect.any(Number),
-						created_at: expect.any(String),
-						updated_at: expect.any(String),
+						created: expect.any(String),
+						updated: expect.any(String),
 						filename: expect.any(String),
 						description: 'Promotion logo of the promotion 21',
 						mimetype: 'image/webp',
@@ -674,8 +674,8 @@ describe('Promotions (e2e)', () => {
 
 				expect(response.body).toEqual({
 					id: 21,
-					created_at: expect.any(String),
-					updated_at: expect.any(String),
+					created: expect.any(String),
+					updated: expect.any(String),
 					number: 21,
 					picture: undefined,
 				});

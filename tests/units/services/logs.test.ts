@@ -27,7 +27,7 @@ describe('LogsService (unit)', () => {
 				params: '',
 			});
 
-			log.created_at = new Date(Date.now() - 1000 * 60 * 60 * 24 * 61);
+			log.created = new Date(Date.now() - 1000 * 60 * 60 * 24 * 61);
 			await orm.em.persistAndFlush(log);
 			// ------------------------------
 

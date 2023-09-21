@@ -11,6 +11,8 @@ import { User } from '@modules/users/entities/user.entity';
 import { UsersService } from '@modules/users/users.service';
 
 import { RolePatchDTO } from './dto/patch.dto';
+import { RoleUsersResponseDTO } from './dto/users.dto';
+import { RoleExpiration } from './entities/role-expiration.entity';
 import { Role } from './entities/role.entity';
 
 @Injectable()
@@ -28,11 +30,11 @@ export class RolesService {
 	@Cron('0 */10 * * * *')
 	@UseRequestContext()
 	async revokeExpiredRoles(): Promise<void> {
-		const roles = await this.orm.em.find(Role, { expires: { $lte: new Date() }, revoked: false });
+		const roles = await this.orm.em.find(RoleExpiration, { expires: { $lte: new Date() } });
 
 		roles.map((r) => {
 			r.revoked = true;
-			r.updated_at = new Date();
+			r.updated = new Date();
 
 			return r;
 		});
@@ -59,7 +61,7 @@ export class RolesService {
 	}
 
 	@UseRequestContext()
-	async createRole(name: string, permissions: PERMISSION_NAMES[], expires: Date): Promise<Omit<Role, 'users'>> {
+	async createRole(name: string, permissions: PERMISSION_NAMES[]): Promise<Omit<Role, 'users'>> {
 		const roleName = name.toUpperCase();
 
 		if (await this.orm.em.findOne(Role, { name: roleName }))
@@ -72,7 +74,7 @@ export class RolesService {
 			if (!PERMISSIONS_NAMES.includes(p)) throw new BadRequestException(this.t.Errors.Permission.Invalid(p));
 		});
 
-		const role = this.orm.em.create(Role, { name: roleName, permissions, expires });
+		const role = this.orm.em.create(Role, { name: roleName, permissions });
 		await this.orm.em.persistAndFlush(role);
 
 		delete role.users;
@@ -86,32 +88,45 @@ export class RolesService {
 
 		role.name = input.name.toUpperCase();
 		role.permissions = input.permissions.unique();
-		role.expires = input.expires;
 		await this.orm.em.persistAndFlush(role);
 
 		return { ...role, users: role.users.count() };
 	}
 
 	@UseRequestContext()
-	async getUsers(id: number): Promise<BaseUserResponseDTO[]> {
+	async getUsers(id: number): Promise<Array<RoleUsersResponseDTO>> {
 		const role = await this.orm.em.findOne(Role, { id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(this.t.Errors.Id.NotFound(Role, id));
 
-		return this.usersService.asBaseUsers(role.users.getItems());
+		const role_expirations = await this.orm.em.find(RoleExpiration, { role: { id } });
+
+		const users = this.usersService.asBaseUsers(role.users.getItems());
+		return users.map((u) => ({ ...u, role_expires: role_expirations.find((r) => r.user.id === u.id).expires }));
 	}
 
 	@UseRequestContext()
-	async addUsers(role_id: number, users_id: number[]): Promise<BaseUserResponseDTO[]> {
+	async addUsers(role_id: number, users_specs: Array<{ id: number; expires: Date }>) {
 		const role = await this.orm.em.findOne(Role, { id: role_id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(this.t.Errors.Id.NotFound(Role, role_id));
 
-		const users = await this.orm.em.find(User, { id: { $in: users_id } });
-		if (!users.length) throw new NotFoundException(this.t.Errors.Id.NotFound(User, users_id.join(', ')));
+		const users_ids = users_specs.map((u) => u.id);
+		const users = await this.orm.em.find(User, { id: { $in: users_ids } });
+
+		// If one user is not found, throw an error
+		if (users.length !== users_ids.length)
+			throw new NotFoundException(this.t.Errors.Id.NotFound(User, users_ids.join(', ')));
 
 		role.users.add(users);
 
-		await this.orm.em.persistAndFlush([role, ...users]);
-		return this.usersService.asBaseUsers(role.users.getItems());
+		const roles_expirations: RoleExpiration[] = [];
+		for (const u of users_specs) {
+			roles_expirations.push(
+				this.orm.em.create(RoleExpiration, { user: users.find((user) => user.id === u.id), role, expires: u.expires }),
+			);
+		}
+
+		await this.orm.em.persistAndFlush([role, ...users, ...roles_expirations]);
+		return this.getUsers(role_id);
 	}
 
 	@UseRequestContext()
@@ -125,6 +140,6 @@ export class RolesService {
 		role.users.remove(users);
 
 		await this.orm.em.persistAndFlush([role, ...users]);
-		return this.usersService.asBaseUsers(role.users.getItems());
+		return this.getUsers(role_id);
 	}
 }

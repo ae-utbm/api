@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { UserPostByAdminDTO, UserPostDTO } from '@modules/auth/dto/register.dto';
 import { EmailsService } from '@modules/emails/emails.service';
 import { FilesService } from '@modules/files/files.service';
+import { RoleExpiration } from '@modules/roles/entities/role-expiration.entity';
 import { TranslateService } from '@modules/translate/translate.service';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';
@@ -47,7 +48,7 @@ export class UsersService {
 	async deleteUnverifiedUsers() {
 		const users = await this.orm.em.find(User, {
 			email_verified: false,
-			created_at: { $lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+			created: { $lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
 		});
 
 		for (const user of users) {
@@ -98,8 +99,8 @@ export class UsersService {
 		for (const user of users.sort((a, b) => a.id - b.id)) {
 			res.push({
 				id: user.id,
-				updated_at: user.updated_at,
-				created_at: user.created_at,
+				updated: user.updated,
+				created: user.created,
 				first_name: user.first_name,
 				last_name: user.last_name,
 				nickname: user.nickname,
@@ -411,7 +412,14 @@ export class UsersService {
 	@UseRequestContext()
 	async getUserRoles(id: number, input: { show_expired: boolean; show_revoked: boolean }) {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['roles'] });
-		const roles = user.roles.getItems();
+		const roles_base = user.roles.getItems();
+		const roles_data = await this.orm.em.find(RoleExpiration, { user: { $in: [user] } });
+
+		const roles = roles_base.map((r) => ({
+			...r,
+			users: undefined,
+			expires: roles_data.find((d) => d.role.id === r.id).expires,
+		}));
 
 		if (!input.show_expired) roles.filter((p) => p.expires > new Date());
 		if (!input.show_revoked) roles.filter((p) => p.revoked === false);
