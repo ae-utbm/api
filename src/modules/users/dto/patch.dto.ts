@@ -5,64 +5,64 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsEmail, IsNumber, IsString } from 'class-validator';
 
 export class UserPatchDTO implements UserPatchDto {
-	@ApiProperty({ required: true })
+	@ApiProperty({ required: true, minimum: 1 })
 	@IsNumber()
 	id: number;
 
-	@ApiProperty()
+	@ApiProperty({ required: false })
 	@IsEmail()
-	email: email;
+	email?: email;
 
-	@ApiProperty()
+	@ApiProperty({ required: false })
 	@IsString()
-	password: string;
+	password?: string;
 
-	@ApiProperty()
+	@ApiProperty({ required: false })
 	@IsDate()
-	birth_date: Date;
+	birth_date?: Date;
 
-	@ApiProperty()
+	@ApiProperty({ required: false })
 	@IsString()
-	first_name: string;
+	first_name?: string;
 
-	@ApiProperty()
+	@ApiProperty({ required: false })
 	@IsString()
-	last_name: string;
+	last_name?: string;
 
-	@ApiProperty()
+	@ApiProperty({ required: false })
 	@IsString()
 	nickname?: string;
 
-	@ApiProperty()
+	@ApiProperty({ required: false })
 	@IsString()
 	gender?: string;
 
-	@ApiProperty()
+	@ApiProperty({ required: false })
 	@IsString()
 	pronouns?: string;
 
-	@ApiProperty()
+	@ApiProperty({ required: false })
 	@IsString()
 	secondary_email?: string;
 
-	@ApiProperty()
+	@ApiProperty({ required: false })
 	@IsString()
 	phone?: string;
 
-	@ApiProperty()
+	@ApiProperty({ required: false })
 	@IsString()
 	parent_contact?: string;
 
 	// TODO: to implement in an upcoming PR (see the user entity)
-	// @ApiProperty()
+	// @ApiProperty({ required: false })
 	// @IsString()
 	// cursus?: string;
 
-	// @ApiProperty()
+	// @ApiProperty({ required: false })
 	// @IsString()
 	// specialty?: string;
 
-	@ApiProperty()
+	@ApiProperty({ required: false, minimum: 1 })
 	@IsNumber()
 	promotion?: number;
 }

@@ -175,7 +175,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Email.AlreadyUsed(email),
+					message: t.Errors.Email.IsAlreadyUsed(email),
 				});
 			});
 

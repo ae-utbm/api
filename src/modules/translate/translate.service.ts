@@ -31,7 +31,9 @@ export class TranslateService {
 				}),
 		},
 		Email: {
-			AlreadyUsed: (email: email) => this.generic('responses.errors.email.used', { email }),
+			AreAlreadyUsed: (emails: email[]) =>
+				this.generic('responses.errors.email.are_used', { emails: emails.join(', ') }),
+			IsAlreadyUsed: (email: email) => this.generic('responses.errors.email.used', { email }),
 			AlreadyVerified: <T>(type: Class<T> | string) => this.generic('responses.errors.email.verified', { type }),
 			Blacklisted: (email: email) => this.generic('responses.errors.email.blacklisted', { email }),
 			Invalid: (email: email) => this.generic('responses.errors.email.invalid', { email }),

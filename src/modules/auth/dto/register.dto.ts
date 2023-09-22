@@ -9,7 +9,7 @@ export class UserPostByAdminDTO implements Omit<UserPostDto, 'password'> {
 	@IsEmail()
 	email: email;
 
-	@ApiProperty({ example: '1999-12-31' })
+	@ApiProperty({ example: new Date('2001-01-01').toISOString() })
 	@IsDate()
 	birth_date: Date;
 

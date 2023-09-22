@@ -37,21 +37,26 @@ describe('Users Data (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenVerified}`)
-					.send({
-						first_name: 'John',
-						last_name: 'Doe',
-						birth_date: new Date('1990-01-01'),
-					})
+					.send([
+						{
+							first_name: 'John',
+							last_name: 'Doe',
+							birth_date: new Date('1990-01-01'),
+						},
+					])
 					.expect(400);
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
 					message: {
-						_errors: [],
-						email: {
-							_errors: ['Required'],
+						0: {
+							_errors: [],
+							email: {
+								_errors: ['Required'],
+							},
 						},
+						_errors: [],
 					},
 				});
 			});
@@ -60,18 +65,20 @@ describe('Users Data (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenVerified}`)
-					.send({
-						email: 'ae.info@utbm.fr',
-						first_name: 'John',
-						last_name: 'Doe',
-						birth_date: new Date('1990-01-01'),
-					})
+					.send([
+						{
+							email: 'ae.info@utbm.fr',
+							first_name: 'John',
+							last_name: 'Doe',
+							birth_date: new Date('1990-01-01'),
+						},
+					])
 					.expect(400);
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Email.AlreadyUsed('ae.info@utbm.fr'),
+					message: t.Errors.Email.IsAlreadyUsed('ae.info@utbm.fr'),
 				});
 			});
 
@@ -79,12 +86,14 @@ describe('Users Data (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenVerified}`)
-					.send({
-						email: 'any@utbm.fr',
-						first_name: 'John',
-						last_name: 'Doe',
-						birth_date: new Date('1990-01-01'),
-					})
+					.send([
+						{
+							email: 'any@utbm.fr',
+							first_name: 'John',
+							last_name: 'Doe',
+							birth_date: new Date('1990-01-01'),
+						},
+					])
 					.expect(400);
 
 				expect(response.body).toEqual({
@@ -100,12 +109,14 @@ describe('Users Data (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenVerified}`)
-					.send({
-						email: 'example123@domain.com',
-						first_name: 'John',
-						last_name: 'Doe',
-						birth_date: date,
-					})
+					.send([
+						{
+							email: 'example123@domain.com',
+							first_name: 'John',
+							last_name: 'Doe',
+							birth_date: date,
+						},
+					])
 					.expect(400);
 
 				expect(response.body).toEqual({
@@ -120,12 +131,14 @@ describe('Users Data (e2e)', () => {
 			it('when the user is not authenticated', async () => {
 				const response = await request(app.getHttpServer())
 					.post('/users')
-					.send({
-						email: 'any@example.com',
-						first_name: 'John',
-						last_name: 'Doe',
-						birth_date: new Date('1990-01-01'),
-					})
+					.send([
+						{
+							email: 'any@example.com',
+							first_name: 'John',
+							last_name: 'Doe',
+							birth_date: new Date('1990-01-01'),
+						},
+					])
 					.expect(401);
 
 				expect(response.body).toEqual({
@@ -140,12 +153,14 @@ describe('Users Data (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
-					.send({
-						email: 'any@example.com',
-						first_name: 'John',
-						last_name: 'Doe',
-						birth_date: new Date('1990-01-01'),
-					})
+					.send([
+						{
+							email: 'any@example.com',
+							first_name: 'John',
+							last_name: 'Doe',
+							birth_date: new Date('1990-01-01'),
+						},
+					])
 					.expect(403);
 
 				expect(response.body).toEqual({
@@ -161,33 +176,37 @@ describe('Users Data (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenVerified}`)
-					.send({
-						email: fakeUserEmail,
-						birth_date: new Date('2001-01-01'),
-						first_name: 'John',
-						last_name: 'Doe',
-					})
+					.send([
+						{
+							email: fakeUserEmail,
+							birth_date: new Date('2001-01-01'),
+							first_name: 'John',
+							last_name: 'Doe',
+						},
+					])
 					.expect(201);
 
-				expect(response.body).toEqual({
-					id: expect.any(Number),
-					created: expect.any(String),
-					updated: expect.any(String),
-					first_name: 'John',
-					last_name: 'Doe',
-					email_verified: true,
-					files_visibility_groups: [],
-					full_name: 'John Doe',
-					email: fakeUserEmail,
-					birth_date: '2001-01-01T00:00:00.000Z',
-					age: expect.any(Number),
-					is_minor: false,
-					gender: USER_GENDER[0],
-					last_seen: expect.any(String),
-					logs: [],
-					permissions: [],
-					roles: [],
-				});
+				expect(response.body).toEqual([
+					{
+						id: expect.any(Number),
+						created: expect.any(String),
+						updated: expect.any(String),
+						first_name: 'John',
+						last_name: 'Doe',
+						email_verified: true,
+						files_visibility_groups: [],
+						full_name: 'John Doe',
+						email: fakeUserEmail,
+						birth_date: '2001-01-01T00:00:00.000Z',
+						age: expect.any(Number),
+						is_minor: false,
+						gender: USER_GENDER[0],
+						last_seen: expect.any(String),
+						logs: [],
+						permissions: [],
+						roles: [],
+					},
+				]);
 			});
 		});
 	});
@@ -198,19 +217,24 @@ describe('Users Data (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenVerified}`)
-					.send({
-						id: 'abc',
-					})
+					.send([
+						{
+							id: 'abc',
+						},
+					])
 					.expect(400);
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
 					message: {
-						_errors: [],
-						id: {
-							_errors: ['Expected number, received nan'],
+						0: {
+							_errors: [],
+							id: {
+								_errors: ['Expected number, received nan'],
+							},
 						},
+						_errors: [],
 					},
 				});
 			});
@@ -220,9 +244,11 @@ describe('Users Data (e2e)', () => {
 			it('when the user is not authenticated', async () => {
 				const response = await request(app.getHttpServer())
 					.patch('/users')
-					.send({
-						id: 1,
-					})
+					.send([
+						{
+							id: 1,
+						},
+					])
 					.expect(401);
 
 				expect(response.body).toEqual({
@@ -235,10 +261,12 @@ describe('Users Data (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenVerified}`)
-					.send({
-						id: 1,
-						birth_date: new Date('2001-01-01'),
-					})
+					.send([
+						{
+							id: 1,
+							birth_date: new Date('2001-01-01'),
+						},
+					])
 					.expect(401);
 
 				expect(response.body).toEqual({
@@ -252,11 +280,13 @@ describe('Users Data (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenVerified}`)
-					.send({
-						id: 1,
-						first_name: 'John',
-						last_name: 'Doe 2',
-					})
+					.send([
+						{
+							id: 1,
+							first_name: 'John',
+							last_name: 'Doe 2',
+						},
+					])
 					.expect(401);
 
 				expect(response.body).toEqual({
@@ -272,9 +302,11 @@ describe('Users Data (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
-					.send({
-						id: 1,
-					})
+					.send([
+						{
+							id: 1,
+						},
+					])
 					.expect(403);
 
 				expect(response.body).toEqual({
@@ -290,9 +322,11 @@ describe('Users Data (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenVerified}`)
-					.send({
-						id: 9999,
-					})
+					.send([
+						{
+							id: 9999,
+						},
+					])
 					.expect(404);
 
 				expect(response.body).toEqual({
@@ -312,35 +346,39 @@ describe('Users Data (e2e)', () => {
 				const response = await request(app.getHttpServer())
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenVerified}`)
-					.send({
-						id: user.id,
-						birth_date: new Date('1990-01-01').toISOString(),
-					})
+					.send([
+						{
+							id: user.id,
+							birth_date: new Date('1990-01-01').toISOString(),
+						},
+					])
 					.expect(200);
 
-				expect(response.body).toEqual({
-					id: expect.any(Number),
-					created: expect.any(String),
-					updated: expect.any(String),
-					first_name: 'John',
-					last_name: 'Doe',
-					full_name: 'John Doe',
-					email: 'john.doe@example.fr',
-					email_verified: true,
-					gender: USER_GENDER[0],
-					birth_date: '1990-01-01T00:00:00.000Z',
-					age: expect.any(Number),
-					is_minor: false,
-					last_seen: expect.any(String),
-					nickname: null,
-					parent_contact: null,
-					phone: null,
-					banner: null,
-					picture: null,
-					promotion: null,
-					pronouns: null,
-					secondary_email: null,
-				});
+				expect(response.body).toEqual([
+					{
+						id: expect.any(Number),
+						created: expect.any(String),
+						updated: expect.any(String),
+						first_name: 'John',
+						last_name: 'Doe',
+						full_name: 'John Doe',
+						email: 'john.doe@example.fr',
+						email_verified: true,
+						gender: USER_GENDER[0],
+						birth_date: '1990-01-01T00:00:00.000Z',
+						age: expect.any(Number),
+						is_minor: false,
+						last_seen: expect.any(String),
+						nickname: null,
+						parent_contact: null,
+						phone: null,
+						banner: null,
+						picture: null,
+						promotion: null,
+						pronouns: null,
+						secondary_email: null,
+					},
+				]);
 
 				// restore user
 				await orm.em.persistAndFlush(user);
@@ -348,7 +386,7 @@ describe('Users Data (e2e)', () => {
 		});
 	});
 
-	describe('(DELETE) /users', () => {
+	describe('(DELETE) /users/:id', () => {
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
 				const response = await request(app.getHttpServer()).delete('/users/1').expect(401);
@@ -410,4 +448,6 @@ describe('Users Data (e2e)', () => {
 			});
 		});
 	});
+
+	describe('(GET) /:id/data', () => {});
 });

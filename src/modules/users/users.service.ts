@@ -181,7 +181,7 @@ export class UsersService {
 		this.emailsService.validateEmail(input.email);
 
 		if (await this.orm.em.findOne(User, { email: input.email }))
-			throw new BadRequestException(this.t.Errors.Email.AlreadyUsed(input.email));
+			throw new BadRequestException(this.t.Errors.Email.IsAlreadyUsed(input.email));
 
 		if (!checkBirthDate(input.birth_date))
 			throw new BadRequestException(this.t.Errors.BirthDate.Invalid(input.birth_date));
@@ -225,31 +225,40 @@ export class UsersService {
 	}
 
 	@UseRequestContext()
-	async registerByAdmin(input: UserPostByAdminDTO): Promise<User> {
-		if (await this.orm.em.findOne(User, { email: input.email }))
-			throw new BadRequestException(this.t.Errors.Email.AlreadyUsed(input.email));
+	async registerByAdmin(inputs: UserPostByAdminDTO[]): Promise<User[]> {
+		const existing_users = await this.orm.em.find(User, { email: { $in: inputs.map((i) => i.email) } });
+		if (existing_users.length > 0)
+			throw new BadRequestException(
+				existing_users.length === 1
+					? this.t.Errors.Email.IsAlreadyUsed(existing_users[0].email)
+					: this.t.Errors.Email.AreAlreadyUsed(existing_users.map((u) => u.email)),
+			);
 
-		this.emailsService.validateEmail(input.email);
+		const users: User[] = [];
+		for (const input of inputs) {
+			this.emailsService.validateEmail(input.email);
+			if (!checkBirthDate(input.birth_date))
+				throw new BadRequestException(this.t.Errors.BirthDate.Invalid(input.birth_date));
 
-		if (!checkBirthDate(input.birth_date))
-			throw new BadRequestException(this.t.Errors.BirthDate.Invalid(input.birth_date));
+			// Generate a random password & hash it
+			const password = generateRandomPassword(12);
+			const user = this.orm.em.create(User, { ...input, password: hashSync(password, 10), email_verified: true });
+			this.orm.em.create(UserVisibility, { user });
+			users.push(user);
 
-		// Generate a random password & hash it
-		const password = generateRandomPassword(12);
-		const user = this.orm.em.create(User, { ...input, password: hashSync(password, 10), email_verified: true });
-		this.orm.em.create(UserVisibility, { user });
+			await this.emailsService.sendEmail({
+				to: [user.email],
+				subject: this.i18n.t('templates.register_common.subject', { lang: I18nContext.current().lang }),
+				html: getTemplate('emails/register_user_by_admin', this.i18n, {
+					username: user.full_name,
+					password,
+				}),
+			});
 
-		await this.emailsService.sendEmail({
-			to: [user.email],
-			subject: this.i18n.t('templates.register_common.subject', { lang: I18nContext.current().lang }),
-			html: getTemplate('emails/register_user_by_admin', this.i18n, {
-				username: user.full_name,
-				password,
-			}),
-		});
+			await this.orm.em.persistAndFlush(user);
+		}
 
-		await this.orm.em.persistAndFlush(user);
-		return user;
+		return users;
 	}
 
 	@UseRequestContext()
@@ -272,23 +281,32 @@ export class UsersService {
 	}
 
 	@UseRequestContext()
-	async update(requestUserId: number, input: UserPatchDTO) {
-		const user = await this.findOne(input.id, false);
+	async update(requestUserId: number, inputs: UserPatchDTO[]) {
+		const users: User[] = [];
 
-		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, input.id));
+		for (const input of inputs) {
+			const user = await this.findOne(input.id, false);
+			if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, input.id));
 
-		if (input.email) this.emailsService.validateEmail(input.email);
+			if (input.email) this.emailsService.validateEmail(input.email);
+			if (
+				input.hasOwnProperty('birth_date') ||
+				input.hasOwnProperty('first_name') ||
+				input.hasOwnProperty('last_name')
+			) {
+				const currentUser = await this.findOne(requestUserId, false);
 
-		if (input.hasOwnProperty('birth_date') || input.hasOwnProperty('first_name') || input.hasOwnProperty('last_name')) {
-			const currentUser = await this.findOne(requestUserId, false);
+				if (currentUser.id === user.id)
+					throw new UnauthorizedException(this.t.Errors.User.CannotUpdateBirthDateOrName());
+			}
 
-			if (currentUser.id === user.id) throw new UnauthorizedException(this.t.Errors.User.CannotUpdateBirthDateOrName());
+			Object.assign(user, input);
+
+			await this.orm.em.persistAndFlush(user);
+			users.push(user);
 		}
 
-		Object.assign(user, input);
-
-		await this.orm.em.persistAndFlush(user);
-		return user;
+		return users;
 	}
 
 	@UseRequestContext()

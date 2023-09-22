@@ -1,8 +1,8 @@
-import type { Request } from 'express';
+import type { RequestWithUser } from '#types/api';
 
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { z } from 'zod';
 
 import { USER_GENDER } from '@exported/api/constants/genders';
@@ -34,10 +34,11 @@ export class UsersDataController {
 	@Post()
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_USER')
-	@ApiOperation({ summary: 'Create a new user' })
-	@ApiOkResponse({ description: 'The created user', type: User })
+	@ApiOperation({ summary: 'Creates new users' })
+	@ApiOkResponse({ description: 'The created user', type: [User] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async create(@Body() input: UserPostByAdminDTO) {
+	@ApiBody({ type: [UserPostByAdminDTO] })
+	async create(@Body() input: UserPostByAdminDTO[]) {
 		const schema = z
 			.object({
 				email: z.string().email(),
@@ -47,7 +48,7 @@ export class UsersDataController {
 			})
 			.strict();
 
-		validate(schema, input);
+		validate(z.array(schema).min(1), input);
 
 		return this.usersService.registerByAdmin(input);
 	}
@@ -55,10 +56,11 @@ export class UsersDataController {
 	@Patch()
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
-	@ApiOperation({ summary: 'Update an existing user' })
-	@ApiOkResponse({ description: 'The updated user', type: User })
+	@ApiOperation({ summary: 'Update users data' })
+	@ApiOkResponse({ description: 'The updated users', type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async update(@Req() req: Request & { user: User }, @Body() input: UserPatchDTO) {
+	@ApiBody({ type: [UserPatchDTO] })
+	async update(@Req() req: RequestWithUser, @Body() input: UserPatchDTO[]) {
 		const schema = z
 			.object({
 				id: z.coerce.number(),
@@ -80,7 +82,7 @@ export class UsersDataController {
 			})
 			.strict();
 
-		validate(schema, input);
+		validate(z.array(schema).min(1), input);
 		return this.usersService.update(req.user.id, input);
 	}
 

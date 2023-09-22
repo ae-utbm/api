@@ -8,6 +8,7 @@ import {
 	ApiOperation,
 	ApiBadRequestResponse,
 	ApiNotFoundResponse,
+	ApiBody,
 } from '@nestjs/swagger';
 import { z } from 'zod';
 
@@ -115,7 +116,8 @@ export class RolesController {
 	@ApiOkResponse({ type: [RoleUsersResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
-	async addUsersToRole(@Param('role_id') role_id: number, @Body() body: Array<RoleEditUserDTO>) {
+	@ApiBody({ type: [RoleEditUserDTO] })
+	async addUsersToRole(@Param('role_id') role_id: number, @Body() body: RoleEditUserDTO[]) {
 		validate(z.coerce.number().int().min(1), role_id);
 
 		const schema = z
@@ -136,6 +138,7 @@ export class RolesController {
 	@ApiOkResponse({ type: [RoleUsersResponseDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
+	@ApiBody({ type: [Number] })
 	async removeUsersToRole(@Param('role_id') role_id: number, @Body('') body: number[]) {
 		validate(z.coerce.number().int().min(1), role_id);
 

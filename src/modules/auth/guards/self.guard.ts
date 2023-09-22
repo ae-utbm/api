@@ -25,9 +25,9 @@ export class SelfGuard implements CanActivate {
 }
 
 export function checkSelf(context: ExecutionContext, reflector: Reflector, authService: AuthService): boolean {
-	type req = Request & {
-		params: { [key: string]: string };
-		body: { [key: string]: string };
+	type req = Omit<Request, 'params' | 'body' | 'headers'> & {
+		params: Record<string, string>;
+		body: Record<string, string> | Array<Record<string, string>>;
 		headers: { authorization: string };
 	};
 
@@ -35,19 +35,26 @@ export function checkSelf(context: ExecutionContext, reflector: Reflector, authS
 	const request = context.switchToHttp().getRequest<req>();
 
 	// Access the name of the parameter that contains the user ID
-	const userIdKey = reflector.get<string>('guard_self_param_key', context.getHandler());
+	const id_key = reflector.get<string>('guard_self_param_key', context.getHandler());
 
-	// Extract the user ID from the request parameters or body
-	const user_id = request.params[userIdKey] ?? request.body[userIdKey];
+	// Ids values find in the data sent with the request, the sender id should be in this list
+	const id_key_values: string[] = [];
+
+	if (request.params[id_key]) id_key_values.push(request.params[id_key]);
+	else {
+		if (Array.isArray(request.body)) request.body.forEach((data) => id_key_values.push(data[id_key]));
+		else id_key_values.push(request.body[id_key]);
+	}
+
 	/* istanbul ignore next-line */
-	if (!user_id) throw new Error(`The parameter ${userIdKey} is missing from the request.`);
+	if (!id_key_values.length) return false;
 
 	// Retrieve the authenticated user from the request's user object or session
-	const bearerToken = request.headers.authorization;
+	const token = request.headers.authorization;
 
 	// Verify and decode the JWT token to extract the user ID
-	const decodedToken = authService.verifyJWT(bearerToken);
+	const payload = authService.verifyJWT(token);
 
-	// Compare the authenticated user's ID with the ID from the request
-	return decodedToken.sub === parseInt(user_id, 10);
+	// Compare the authenticated user's ID with the ID(s) from the request
+	return id_key_values.find((id) => payload.sub === parseInt(id, 10)) !== undefined;
 }
