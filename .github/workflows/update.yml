@@ -15,3 +15,8 @@ jobs:
     needs: linting
     if: ${{ needs.linting.result == 'success' }}
     uses: ./.github/workflows/testing.yml
+
+  analyze:
+    needs: linting
+    if: ${{ needs.linting.result == 'success' }}
+    uses: ./.github/workflows/analyze.yml
