@@ -10,7 +10,8 @@ import { orm, app, t } from '../..';
 
 describe('Users Data (e2e)', () => {
 	let tokenUnauthorized: string;
-	let tokenVerified: string;
+	let tokenRoot: string;
+	let tokenSubscriber: string;
 
 	const fakeUserEmail: email = 'john.doe@example.fr';
 	type res = Omit<request.Response, 'body'> & { body: TokenDTO };
@@ -28,7 +29,14 @@ describe('Users Data (e2e)', () => {
 			password: 'root',
 		});
 
-		tokenVerified = responseB.body.token;
+		tokenRoot = responseB.body.token;
+
+		const responseC: res = await request(app.getHttpServer()).post('/auth/login').send({
+			email: 'subscriber@email.com',
+			password: 'root',
+		});
+
+		tokenSubscriber = responseC.body.token;
 	});
 
 	describe('(POST) /users', () => {
@@ -36,7 +44,7 @@ describe('Users Data (e2e)', () => {
 			it('when a field is missing', async () => {
 				const response = await request(app.getHttpServer())
 					.post('/users')
-					.set('Authorization', `Bearer ${tokenVerified}`)
+					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
 						{
 							first_name: 'John',
@@ -64,7 +72,7 @@ describe('Users Data (e2e)', () => {
 			it('when the email is already used', async () => {
 				const response = await request(app.getHttpServer())
 					.post('/users')
-					.set('Authorization', `Bearer ${tokenVerified}`)
+					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
 						{
 							email: 'ae.info@utbm.fr',
@@ -85,7 +93,7 @@ describe('Users Data (e2e)', () => {
 			it('when the email is blacklisted', async () => {
 				const response = await request(app.getHttpServer())
 					.post('/users')
-					.set('Authorization', `Bearer ${tokenVerified}`)
+					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
 						{
 							email: 'any@utbm.fr',
@@ -108,7 +116,7 @@ describe('Users Data (e2e)', () => {
 
 				const response = await request(app.getHttpServer())
 					.post('/users')
-					.set('Authorization', `Bearer ${tokenVerified}`)
+					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
 						{
 							email: 'example123@domain.com',
@@ -175,7 +183,7 @@ describe('Users Data (e2e)', () => {
 			it('when the user is created', async () => {
 				const response = await request(app.getHttpServer())
 					.post('/users')
-					.set('Authorization', `Bearer ${tokenVerified}`)
+					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
 						{
 							email: fakeUserEmail,
@@ -216,7 +224,7 @@ describe('Users Data (e2e)', () => {
 			it('when the user id is not a number', async () => {
 				const response = await request(app.getHttpServer())
 					.patch('/users')
-					.set('Authorization', `Bearer ${tokenVerified}`)
+					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
 						{
 							id: 'abc',
@@ -260,7 +268,7 @@ describe('Users Data (e2e)', () => {
 			it('when the user try to change its own birth date', async () => {
 				const response = await request(app.getHttpServer())
 					.patch('/users')
-					.set('Authorization', `Bearer ${tokenVerified}`)
+					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
 						{
 							id: 1,
@@ -279,7 +287,7 @@ describe('Users Data (e2e)', () => {
 			it('when the user try to change its own name', async () => {
 				const response = await request(app.getHttpServer())
 					.patch('/users')
-					.set('Authorization', `Bearer ${tokenVerified}`)
+					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
 						{
 							id: 1,
@@ -321,7 +329,7 @@ describe('Users Data (e2e)', () => {
 			it('when the user does not exist', async () => {
 				const response = await request(app.getHttpServer())
 					.patch('/users')
-					.set('Authorization', `Bearer ${tokenVerified}`)
+					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
 						{
 							id: 9999,
@@ -345,7 +353,7 @@ describe('Users Data (e2e)', () => {
 				// -> we are updating a user that is not the authenticated one => expect 200
 				const response = await request(app.getHttpServer())
 					.patch('/users')
-					.set('Authorization', `Bearer ${tokenVerified}`)
+					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
 						{
 							id: user.id,
@@ -415,7 +423,7 @@ describe('Users Data (e2e)', () => {
 			it('when the user is authorized but try to delete another user', async () => {
 				const response = await request(app.getHttpServer())
 					.delete('/users/9999')
-					.set('Authorization', `Bearer ${tokenVerified}`)
+					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(403);
 
 				expect(response.body).toEqual({
@@ -449,5 +457,123 @@ describe('Users Data (e2e)', () => {
 		});
 	});
 
-	describe('(GET) /:id/data', () => {});
+	describe('(GET) /:id/data', () => {
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).get('/users/1/data').expect(401);
+
+				expect(response.body).toEqual({
+					message: 'Unauthorized',
+					statusCode: 401,
+				});
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/1/data')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					message: 'Forbidden resource',
+					statusCode: 403,
+				});
+			});
+
+			it('when the user is authenticated but try to get another user data', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/1/data')
+					.set('Authorization', `Bearer ${tokenSubscriber}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					message: 'Forbidden resource',
+					statusCode: 403,
+				});
+			});
+		});
+
+		describe('404 : Not Found', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/9999/data')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(404);
+
+				expect(response.body).toEqual({
+					error: 'Not Found',
+					message: t.Errors.Id.NotFound(User, 9999),
+					statusCode: 404,
+				});
+			});
+		});
+
+		describe('200 : Ok', () => {
+			it('when the user as permission to get the private data', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/2/data')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(200);
+
+				expect(response.body).toEqual({
+					id: 2,
+					created: expect.any(String),
+					updated: expect.any(String),
+					first_name: 'unverified',
+					last_name: 'user',
+					email_verified: false,
+					picture: null,
+					banner: null,
+					email: 'unverified@email.com',
+					birth_date: '2000-01-01T00:00:00.000Z',
+					nickname: null,
+					gender: 'OTHER',
+					pronouns: null,
+					promotion: null,
+					last_seen: expect.any(String),
+					secondary_email: null,
+					phone: null,
+					parent_contact: null,
+					full_name: 'unverified user',
+					age: expect.any(Number),
+					is_minor: false,
+				});
+			});
+
+			it('when the user is asking for himself', async () => {
+				const user = await request(app.getHttpServer())
+					.get('/users/1/data') // root user id = 1
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(200);
+
+				expect(user.body).toEqual({
+					id: 1,
+					created: expect.any(String),
+					updated: expect.any(String),
+					first_name: 'root',
+					last_name: 'root',
+					email_verified: true,
+					picture: null,
+					banner: null,
+					email: 'ae.info@utbm.fr',
+					birth_date: '2000-01-01T00:00:00.000Z',
+					nickname: 'noot noot',
+					gender: 'OTHER',
+					pronouns: null,
+					promotion: 21,
+					last_seen: expect.any(String),
+					secondary_email: null,
+					phone: null,
+					parent_contact: null,
+					full_name: 'root root',
+					age: expect.any(Number),
+					is_minor: false,
+				});
+			});
+		});
+	});
 });
