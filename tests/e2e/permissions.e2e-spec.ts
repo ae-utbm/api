@@ -229,16 +229,14 @@ describe('Permissions (e2e)', () => {
 		describe('400 : Bad Request', () => {
 			it('when the user ID is not valid', async () => {
 				const response = await request(app.getHttpServer())
-					.get('/permissions/invalid')
+					.get('/permissions/abc')
 					.set('Authorization', `Bearer ${tokenPermissionModerator}`)
 					.expect(400);
 
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: {
-						_errors: ['Expected number, received nan'],
-					},
+					message: t.Errors.Id.Invalids(User, ['abc']),
 				});
 			});
 		});

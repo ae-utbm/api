@@ -260,9 +260,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: {
-						_errors: ['Expected number, received nan'],
-					},
+					message: t.Errors.Id.Invalid(User, fakeId),
 				});
 			});
 
@@ -273,9 +271,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: {
-						_errors: ['String must contain at least 12 character(s)'],
-					},
+					message: t.Errors.JWT.Invalid(),
 				});
 			});
 
@@ -358,9 +354,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: {
-						_errors: ['Expected number, received nan'],
-					},
+					message: t.Errors.Id.Invalid(User, fakeId),
 				});
 			});
 
@@ -371,9 +365,7 @@ describe('Auth (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: {
-						_errors: ['String must contain at least 12 character(s)'],
-					},
+					message: t.Errors.JWT.Invalid(),
 				});
 			});
 

@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 
-import { MikroORM, UseRequestContext } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { tap, type Observable } from 'rxjs';
 
@@ -12,7 +12,7 @@ import { Log } from '../entities/log.entity';
 export class LoggingInterceptor implements NestInterceptor {
 	constructor(private readonly orm: MikroORM) {}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
 		type req = IncomingMessage & {
 			route: { path: string };

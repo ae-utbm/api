@@ -17,6 +17,7 @@ import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.d
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { TranslateService } from '@modules/translate/translate.service';
+import { User } from '@modules/users/entities/user.entity';
 import { validate } from '@utils/validate';
 
 import { Log } from './entities/log.entity';
@@ -38,7 +39,7 @@ export class LogsController {
 	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOperation({ summary: 'Get all logs of a user' })
 	getUserLogs(@Param('user_id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.logsService.getUserLogs(id);
 	}
@@ -52,7 +53,7 @@ export class LogsController {
 	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOperation({ summary: 'Delete all logs of a user' })
 	deleteUserLogs(@Param('user_id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.logsService.deleteUserLogs(id);
 	}

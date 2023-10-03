@@ -18,6 +18,7 @@ import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.d
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { TranslateService } from '@modules/translate/translate.service';
+import { User } from '@modules/users/entities/user.entity';
 import { validate } from '@utils/validate';
 
 import { PermissionPatchDTO } from './dto/patch.dto';
@@ -86,7 +87,7 @@ export class PermissionsController {
 	@ApiOkResponse({ description: 'User permission(s) retrieved', type: [Permission] })
 	@ApiParam({ name: 'user_id', description: 'The user ID' })
 	getUserPermissions(@Param('user_id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.permsService.getPermissionsOfUser(id);
 	}

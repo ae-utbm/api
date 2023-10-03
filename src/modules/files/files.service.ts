@@ -5,7 +5,7 @@ import { accessSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { Readable } from 'stream';
 
-import { MikroORM, UseRequestContext } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { fromBuffer, MimeType } from 'file-type';
 
@@ -130,7 +130,7 @@ export class FilesService {
 	 * @param {Uppercase<string>} name - The name of the visibility group to get. @default 'SUBSCRIBER'
 	 * @returns {Promise<FileVisibilityGroup>} The corresponding visibility group.
 	 */
-	@UseRequestContext()
+	@CreateRequestContext()
 	async getVisibilityGroup(name: Uppercase<string> = 'SUBSCRIBER'): Promise<FileVisibilityGroup> {
 		const res = await this.orm.em.findOne(FileVisibilityGroup, { name }, { populate: ['users', 'files'] });
 		if (!res) throw new BadRequestException(this.t.Errors.Entity.NotFound(FileVisibilityGroup, name, 'name'));

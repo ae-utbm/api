@@ -91,7 +91,7 @@ export class RolesController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async getRole(@Param('role_id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(Role, id));
 
 		return this.rolesService.getRole(id);
 	}
@@ -104,7 +104,7 @@ export class RolesController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	async getRoleUsers(@Param('role_id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(Role, id));
 
 		return this.rolesService.getUsers(id);
 	}
@@ -118,7 +118,7 @@ export class RolesController {
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	@ApiBody({ type: [RoleEditUserDTO] })
 	async addUsersToRole(@Param('role_id') role_id: number, @Body() body: RoleEditUserDTO[]) {
-		validate(z.coerce.number().int().min(1), role_id);
+		validate(z.coerce.number().int().min(1), role_id, this.t.Errors.Id.Invalid(Role, role_id));
 
 		const schema = z
 			.object({
@@ -140,7 +140,7 @@ export class RolesController {
 	@ApiNotFoundResponse({ description: 'Role not found' })
 	@ApiBody({ type: [Number] })
 	async removeUsersToRole(@Param('role_id') role_id: number, @Body('') body: number[]) {
-		validate(z.coerce.number().int().min(1), role_id);
+		validate(z.coerce.number().int().min(1), role_id, this.t.Errors.Id.Invalid(Role, role_id));
 
 		const schema = z.array(z.number().min(1)).min(1);
 		validate(schema, body);

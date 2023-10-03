@@ -6,7 +6,7 @@ import { ZodError, ZodTypeAny } from 'zod';
  * @param {ZodObject<T>} schema The schema to validate the input against
  * @param {unknown} input The input to validate
  */
-export function validate(schema: ZodTypeAny, input: unknown): void | never {
+export function validate(schema: ZodTypeAny, input: unknown, error?: string): void | never {
 	try {
 		schema.parse(input);
 	} catch (err) {
@@ -16,7 +16,7 @@ export function validate(schema: ZodTypeAny, input: unknown): void | never {
 		throw new BadRequestException({
 			error: 'Bad Request',
 			statusCode: 400,
-			message: err.format(),
+			message: error ?? err.format(),
 		});
 	}
 }

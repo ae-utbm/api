@@ -235,15 +235,7 @@ describe('Users Data (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: {
-						0: {
-							_errors: [],
-							id: {
-								_errors: ['Expected number, received nan'],
-							},
-						},
-						_errors: [],
-					},
+					message: t.Errors.Id.Invalids(User, ['abc']),
 				});
 			});
 		});
@@ -395,6 +387,21 @@ describe('Users Data (e2e)', () => {
 	});
 
 	describe('(DELETE) /users/:id', () => {
+		describe('400 : Bad Request', () => {
+			it('when the user id is not a number', async () => {
+				const response = await request(app.getHttpServer())
+					.delete('/users/abc')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: t.Errors.Id.Invalids(User, ['abc']),
+				});
+			});
+		});
+
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
 				const response = await request(app.getHttpServer()).delete('/users/1').expect(401);
@@ -458,6 +465,21 @@ describe('Users Data (e2e)', () => {
 	});
 
 	describe('(GET) /:id/data', () => {
+		describe('400 : Bad Request', () => {
+			it('when the user id is not a number', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/abc/data')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: t.Errors.Id.Invalids(User, ['abc']),
+				});
+			});
+		});
+
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
 				const response = await request(app.getHttpServer()).get('/users/1/data').expect(401);
@@ -498,7 +520,7 @@ describe('Users Data (e2e)', () => {
 		});
 
 		describe('404 : Not Found', () => {
-			it('when the user is not authorized', async () => {
+			it('when the user does not exist', async () => {
 				const response = await request(app.getHttpServer())
 					.get('/users/9999/data')
 					.set('Authorization', `Bearer ${tokenRoot}`)
@@ -572,6 +594,174 @@ describe('Users Data (e2e)', () => {
 					full_name: 'root root',
 					age: expect.any(Number),
 					is_minor: false,
+				});
+			});
+		});
+	});
+
+	describe('(GET) /:id/data/public', () => {
+		describe('400 : Bad Request', () => {
+			it('when the user id is not a number', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/abc/data')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: t.Errors.Id.Invalids(User, ['abc']),
+				});
+			});
+		});
+
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).get('/users/1/data/public').expect(401);
+
+				expect(response.body).toEqual({
+					message: 'Unauthorized',
+					statusCode: 401,
+				});
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/1/data/public')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					message: 'Forbidden resource',
+					statusCode: 403,
+				});
+			});
+		});
+
+		describe('404 : Not Found', () => {
+			it('when the user does not exist', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/9999/data/public')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(404);
+
+				expect(response.body).toEqual({
+					error: 'Not Found',
+					message: t.Errors.Id.NotFound(User, 9999),
+					statusCode: 404,
+				});
+			});
+		});
+
+		describe('200 : Ok', () => {
+			it('when the user is asking for himself', async () => {
+				const user = await request(app.getHttpServer())
+					.get('/users/1/data/public') // root user id = 1
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(200);
+
+				expect(user.body).toEqual({
+					id: 1,
+					created: expect.any(String),
+					updated: expect.any(String),
+					first_name: 'root',
+					last_name: 'root',
+					email_verified: true,
+					picture: null,
+					banner: null,
+					birth_date: expect.any(String),
+					nickname: 'noot noot',
+					promotion: 21,
+					last_seen: expect.any(String),
+					full_name: 'root root',
+					age: expect.any(Number),
+					is_minor: false,
+				});
+			});
+
+			it('when the user is asking for another user', async () => {
+				const user = await request(app.getHttpServer())
+					.get('/users/1/data/public')
+					.set('Authorization', `Bearer ${tokenSubscriber}`)
+					.expect(200);
+
+				expect(user.body).toEqual({
+					id: 1,
+					created: expect.any(String),
+					updated: expect.any(String),
+					first_name: 'root',
+					last_name: 'root',
+					email_verified: true,
+					picture: null,
+					banner: null,
+					birth_date: expect.any(String),
+					nickname: 'noot noot',
+					promotion: 21,
+					last_seen: expect.any(String),
+					full_name: 'root root',
+					age: expect.any(Number),
+					is_minor: false,
+				});
+			});
+		});
+	});
+
+	describe('(GET) /:id/data/visibility', () => {
+		describe('400 : Bad Request', () => {
+			it('when the user id is not a number', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/abc/data/visibility')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: t.Errors.Id.Invalids(User, ['abc']),
+				});
+			});
+		});
+
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).get('/users/1/data/visibility').expect(401);
+
+				expect(response.body).toEqual({
+					message: 'Unauthorized',
+					statusCode: 401,
+				});
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/1/data/visibility')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					message: 'Forbidden resource',
+					statusCode: 403,
+				});
+			});
+		});
+
+		describe('404 : Not Found', () => {
+			it('when the user does not exist', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/9999/data/visibility')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(404);
+
+				expect(response.body).toEqual({
+					error: 'Not Found',
+					message: t.Errors.Id.NotFounds(User, [9999]),
+					statusCode: 404,
 				});
 			});
 		});

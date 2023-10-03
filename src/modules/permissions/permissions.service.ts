@@ -1,6 +1,6 @@
 import type { PermissionEntity } from '#types/api';
 
-import { MikroORM, UseRequestContext } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
@@ -21,7 +21,7 @@ export class PermissionsService {
 	 * - Runs every 10 minutes
 	 */
 	@Cron('0 */10 * * * *')
-	@UseRequestContext()
+	@CreateRequestContext()
 	async revokeExpiredPermissions(): Promise<void> {
 		const permissions = await this.orm.em.find(Permission, { expires: { $lte: new Date() }, revoked: false });
 
@@ -40,7 +40,7 @@ export class PermissionsService {
 	 * @param {PermissionPatchDTO} data The permission data to add
 	 * @returns {Promise<PermissionEntity<number>>} The created permission
 	 */
-	@UseRequestContext()
+	@CreateRequestContext()
 	async addPermissionToUser(data: PermissionPostDTO): Promise<PermissionEntity<number>> {
 		// Check if the permission is valid
 		if (!PERMISSIONS_NAMES.includes(data.permission))
@@ -77,7 +77,7 @@ export class PermissionsService {
 	 * @param {number} id User id
 	 * @returns {Promise<Permission[]>} The permissions of the user
 	 */
-	@UseRequestContext()
+	@CreateRequestContext()
 	async getPermissionsOfUser(id: number): Promise<Permission[]> {
 		const user = await this.orm.em.findOne(User, { id });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
@@ -85,7 +85,7 @@ export class PermissionsService {
 		return user.permissions.loadItems();
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async editPermissionOfUser(data: PermissionPatchDTO): Promise<Permission> {
 		const user = await this.orm.em.findOne(User, { id: data.user_id });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, data.user_id));

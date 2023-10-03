@@ -102,7 +102,7 @@ export class PromotionsController {
 	@UseInterceptors(FileInterceptor('file'))
 	async editLogo(@UploadedFile() file: Express.Multer.File, @Param('number') number: number) {
 		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
-		validate(z.coerce.number().int().min(1), number);
+		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
 
 		return this.promotionsService.updateLogo(number, file);
 	}
@@ -116,7 +116,7 @@ export class PromotionsController {
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Promotion not found or promotion has no logo' })
 	async getLogo(@Param('number') number: number) {
-		validate(z.coerce.number().int().min(1), number);
+		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
 
 		const logo = await this.promotionsService.getLogo(number);
 		return new StreamableFile(this.filesService.toReadable(logo));
@@ -131,7 +131,7 @@ export class PromotionsController {
 	@ApiOkResponse({ type: Promotion })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async deleteLogo(@Param('number') number: number) {
-		validate(z.coerce.number().int().min(1), number);
+		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
 
 		return this.promotionsService.deleteLogo(number);
 	}
@@ -145,7 +145,7 @@ export class PromotionsController {
 	@ApiNotFoundResponse({ description: 'Promotion not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async get(@Param('number') number: number) {
-		validate(z.coerce.number().int().min(1), number);
+		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
 
 		return this.promotionsService.findOne(number);
 	}
@@ -159,7 +159,7 @@ export class PromotionsController {
 	@ApiNotFoundResponse({ description: 'Promotion not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getUsers(@Param('number') number: number) {
-		validate(z.coerce.number().int().min(1), number);
+		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
 
 		return this.promotionsService.getUsers(number);
 	}

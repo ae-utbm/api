@@ -78,8 +78,8 @@ export class AuthController {
 	@ApiBadRequestResponse({ description: 'Bad request, missing id/token or email already verified' })
 	@ApiUnauthorizedResponse({ description: 'Unauthorized, invalid token' })
 	async verifyEmail(@Param('user_id') user_id: number, @Param('token') token: string) {
-		validate(z.coerce.number().int().min(1), user_id);
-		validate(z.string().min(12), token);
+		validate(z.coerce.number().int().min(1), user_id, this.t.Errors.Id.Invalid(User, user_id));
+		validate(z.string().min(12), token, this.t.Errors.JWT.Invalid());
 
 		return this.userService.verifyEmail(user_id, token);
 	}
@@ -100,8 +100,8 @@ export class AuthController {
 		@Param('user_id') user_id: number,
 		@Param('token') token: string,
 	) {
-		validate(z.coerce.number().int().min(1), user_id);
-		validate(z.string().min(12), token);
+		validate(z.coerce.number().int().min(1), user_id, this.t.Errors.Id.Invalid(User, user_id));
+		validate(z.string().min(12), token, this.t.Errors.JWT.Invalid());
 
 		await this.userService.verifyEmail(user_id, token);
 		res.redirect(HttpStatus.PERMANENT_REDIRECT, 'https://ae.utbm.fr/');

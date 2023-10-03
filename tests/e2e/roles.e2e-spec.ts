@@ -299,9 +299,7 @@ describe('Roles (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: {
-						_errors: ['Expected number, received nan'],
-					},
+					message: t.Errors.Id.Invalid(Role, 'invalid'),
 				});
 			});
 		});
@@ -383,9 +381,7 @@ describe('Roles (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: {
-						_errors: ['Expected number, received nan'],
-					},
+					message: t.Errors.Id.Invalid(Role, 'invalid'),
 				});
 			});
 		});
@@ -478,9 +474,7 @@ describe('Roles (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: {
-						_errors: ['Expected number, received nan'],
-					},
+					message: t.Errors.Id.Invalid(Role, 'invalid'),
 				});
 			});
 
@@ -648,9 +642,7 @@ describe('Roles (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: {
-						_errors: ['Expected number, received nan'],
-					},
+					message: t.Errors.Id.Invalid(Role, 'invalid'),
 				});
 			});
 

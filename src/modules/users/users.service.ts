@@ -3,7 +3,7 @@ import type { I18nTranslations } from '#types/api';
 
 import { join } from 'path';
 
-import { MikroORM, UseRequestContext } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
@@ -44,7 +44,7 @@ export class UsersService {
 	 * Runs every 10 minutes
 	 */
 	@Cron('0 */10 * * * *')
-	@UseRequestContext()
+	@CreateRequestContext()
 	async deleteUnverifiedUsers() {
 		const users = await this.orm.em.find(User, {
 			email_verified: false,
@@ -61,7 +61,7 @@ export class UsersService {
 	 * @param {User[]} users The users to filter
 	 * @returns {Promise<Partial<User>[]>} The filtered users
 	 */
-	@UseRequestContext()
+	@CreateRequestContext()
 	async removePrivateFields(users: User[]): Promise<Partial<User>[]> {
 		const res: Partial<User>[] = [];
 
@@ -128,7 +128,7 @@ export class UsersService {
 	async findOne(id_or_email: number | email, filter: false): Promise<User>;
 	async findOne(id_or_email: number | email): Promise<Partial<User>>;
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async findOne(id_or_email: number | email, filter = true): Promise<User | Partial<User>> {
 		let user: User = null;
 		const parsed = z.union([z.coerce.number(), z.string().email()]).parse(id_or_email);
@@ -148,12 +148,12 @@ export class UsersService {
 	 * @param {number} ids The ids of the users
 	 * @returns {Promise<UserVisibility[]>} The visibility parameters of each user
 	 */
-	@UseRequestContext()
+	@CreateRequestContext()
 	async findVisibilities(ids: number[] | number): Promise<UserVisibility[]> {
-		if (typeof ids === 'number') ids = [ids];
+		if (!Array.isArray(ids)) ids = [ids];
 
 		const users = await this.orm.em.find(User, { id: { $in: ids } });
-		if (!users) throw new NotFoundException(this.t.Errors.Id.NotFound(User, ids.join(', ')));
+		if (!users || users.length === 0) throw new NotFoundException(this.t.Errors.Id.NotFounds(User, ids));
 
 		return await this.orm.em.find(UserVisibility, { user: { $in: users } });
 	}
@@ -161,7 +161,7 @@ export class UsersService {
 	async findAll(filter: false): Promise<User[]>;
 	async findAll(filter: true): Promise<Partial<User>[]>;
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async findAll(filter = true): Promise<User[] | Partial<User>[]> {
 		const users = await this.orm.em.find(User, {});
 		if (filter) return this.removePrivateFields(users);
@@ -169,7 +169,7 @@ export class UsersService {
 		return users;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async register(input: UserPostDTO): Promise<User> {
 		Object.entries(input).forEach(([key, value]) => {
 			if (typeof value === 'string') {
@@ -224,7 +224,7 @@ export class UsersService {
 		return user;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async registerByAdmin(inputs: UserPostByAdminDTO[]): Promise<User[]> {
 		const existing_users = await this.orm.em.find(User, { email: { $in: inputs.map((i) => i.email) } });
 		if (existing_users.length > 0)
@@ -261,7 +261,7 @@ export class UsersService {
 		return users;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async verifyEmail(user_id: number, token: string): Promise<User> {
 		if (!user_id || !token) throw new BadRequestException('Missing user id or token');
 
@@ -280,7 +280,7 @@ export class UsersService {
 		return user;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async update(requestUserId: number, inputs: UserPatchDTO[]) {
 		const users: User[] = [];
 
@@ -309,7 +309,7 @@ export class UsersService {
 		return users;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async updatePicture(id: number, file: Express.Multer.File): Promise<User> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['picture'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
@@ -348,14 +348,14 @@ export class UsersService {
 		return user;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async getPicture(id: number): Promise<UserPicture> {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['picture'] });
 		if (!user.picture) throw new NotFoundException('User has no picture');
 		return user.picture;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async deletePicture(id: number): Promise<void> {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['picture'] });
 		if (!user.picture) throw new NotFoundException('User has no picture to be deleted');
@@ -364,7 +364,7 @@ export class UsersService {
 		await this.orm.em.removeAndFlush(user.picture);
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async updateBanner(id: number, file: Express.Multer.File): Promise<User> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['banner'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
@@ -403,14 +403,14 @@ export class UsersService {
 		return user;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async getBanner(id: number): Promise<UserBanner> {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['banner'] });
 		if (!user.banner) throw new NotFoundException('User has no banner');
 		return user.banner;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async deleteBanner(id: number): Promise<void> {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['banner'] });
 		if (!user.banner) throw new NotFoundException('User has no banner to be deleted');
@@ -419,7 +419,7 @@ export class UsersService {
 		await this.orm.em.removeAndFlush(user.banner);
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async delete(id: number) {
 		const user = await this.orm.em.findOne(User, { id });
 		await this.orm.em.removeAndFlush(user);
@@ -427,7 +427,7 @@ export class UsersService {
 		return { message: this.t.Success.Entity.Deleted(User), statusCode: 200 };
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async getUserRoles(id: number, input: { show_expired: boolean; show_revoked: boolean }) {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['roles'] });
 		const roles_base = user.roles.getItems();
@@ -445,7 +445,7 @@ export class UsersService {
 		return roles;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async getUserPermissions(id: number, input: { show_expired: boolean; show_revoked: boolean }) {
 		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['permissions'] });
 		const permissions = user.permissions.getItems();

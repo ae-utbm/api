@@ -1,6 +1,6 @@
 import { join } from 'path';
 
-import { MikroORM, UseRequestContext } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
@@ -26,7 +26,7 @@ export class PromotionsService {
 	 * Create a new promotion each year on the 15th of July
 	 */
 	@Cron('0 0 0 15 7 *')
-	@UseRequestContext()
+	@CreateRequestContext()
 	async createNewPromotion(): Promise<void> {
 		const latest = await this.findLatest();
 		const newPromotion = this.orm.em.create(Promotion, { number: latest.number + 1 });
@@ -34,7 +34,7 @@ export class PromotionsService {
 		await this.orm.em.persistAndFlush(newPromotion);
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async findAll(): Promise<PromotionResponseDTO[]> {
 		const promotions = await this.orm.em.find(Promotion, {}, { fields: ['*', 'picture', 'users'] });
 		const res: PromotionResponseDTO[] = [];
@@ -46,7 +46,7 @@ export class PromotionsService {
 		return res;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async findLatest(): Promise<PromotionResponseDTO> {
 		const promotion = (
 			await this.orm.em.find(Promotion, {}, { orderBy: { number: 'DESC' }, fields: ['*', 'picture', 'users'] })
@@ -58,7 +58,7 @@ export class PromotionsService {
 		};
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async findCurrent(): Promise<PromotionResponseDTO[]> {
 		const promotions = await this.orm.em.find(
 			Promotion,
@@ -74,7 +74,7 @@ export class PromotionsService {
 		return res;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async findOne(number: number): Promise<PromotionResponseDTO> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['*', 'picture', 'users'] });
 		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
@@ -85,7 +85,7 @@ export class PromotionsService {
 		};
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async getUsers(number: number): Promise<BaseUserResponseDTO[]> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['users'] });
 		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
@@ -106,7 +106,7 @@ export class PromotionsService {
 		return res;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async updateLogo(number: number, file: Express.Multer.File): Promise<Promotion> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
 
@@ -146,7 +146,7 @@ export class PromotionsService {
 		return out;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async getLogo(number: number): Promise<PromotionPicture> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
 		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
@@ -155,7 +155,7 @@ export class PromotionsService {
 		return promotion.picture;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async deleteLogo(number: number): Promise<Promotion> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
 		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));

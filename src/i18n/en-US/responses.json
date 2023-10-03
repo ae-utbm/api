@@ -9,9 +9,9 @@
       "invalid": "The given email '{email}' does not respect the email format",
       "used": "Email '{email}' is already taken.",
       "are_used": "Emails '{emails}' are already taken.",
-      "not_found": "'{type}' with email '{email}' not found.",
-      "verified": "'{type}' email is already verified.",
-      "unverified": "'{type}' email is not verified.",
+      "not_found": "{type} with email '{email}' not found.",
+      "verified": "{type} email is already verified.",
+      "unverified": "{type} email is not verified.",
       "token": {
         "invalid": "Invalid email verification token."
       }
@@ -32,8 +32,10 @@
       "infected": "The given file '{file}' is infected by a virus."
     },
     "id": {
-      "invalid": "'{type}' ID '{id}' is invalid.",
-      "not_found": "'{type}' with ID '{id}' not found."
+      "invalid": "{type} ID '{id}' is invalid.",
+      "invalids": "{type}(s) with ID(s) in '[{ids}]' are invalid.",
+      "not_found": "{type} with ID '{id}' not found.",
+      "not_founds": "{type}(s) with ID(s) in '[{ids}]' not found."
     },
     "image": {
       "invalid_aspect_ratio": "The given image does not respect the expected '{aspect_ratio}' aspect ratio."

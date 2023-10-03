@@ -66,8 +66,12 @@ export class TranslateService {
 		Id: {
 			Invalid: <T>(type: Class<T> | string, id: string | number) =>
 				this.generic('responses.errors.id.invalid', { type, id }),
+			Invalids: <T>(type: Class<T> | string, ids: (string | number)[]) =>
+				this.generic('responses.errors.id.invalids', { type, ids: ids.join(', ') }),
 			NotFound: <T>(type: Class<T> | string, id: string | number) =>
 				this.generic('responses.errors.id.not_found', { type, id }),
+			NotFounds: <T>(type: Class<T> | string, ids: (string | number)[]) =>
+				this.generic('responses.errors.id.not_founds', { type, ids: ids.join(', ') }),
 		},
 		Image: {
 			InvalidAspectRatio: (aspect_ratio: aspect_ratio) =>

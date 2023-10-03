@@ -1,4 +1,4 @@
-import { MikroORM, UseRequestContext } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
@@ -19,7 +19,7 @@ export class LogsService {
 	 * Remove all logs that are older than 2 months each day at 7am
 	 */
 	@Cron('0 0 7 * * *')
-	@UseRequestContext()
+	@CreateRequestContext()
 	async deleteOldLogs() {
 		await this.orm.em.nativeDelete(Log, { created: { $lt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60) } });
 	}

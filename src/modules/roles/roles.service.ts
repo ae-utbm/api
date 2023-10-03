@@ -1,6 +1,6 @@
 import type { PERMISSION_NAMES } from '#types/api';
 
-import { MikroORM, UseRequestContext } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
@@ -28,7 +28,7 @@ export class RolesService {
 	 * Runs every 10 minutes
 	 */
 	@Cron('0 */10 * * * *')
-	@UseRequestContext()
+	@CreateRequestContext()
 	async revokeExpiredRoles(): Promise<void> {
 		const roles = await this.orm.em.find(RoleExpiration, { expires: { $lte: new Date() } });
 
@@ -46,13 +46,13 @@ export class RolesService {
 	 * Get all roles from the database and filter them according to the input
 	 * @returns the array of all roles
 	 */
-	@UseRequestContext()
+	@CreateRequestContext()
 	async getAllRoles(): Promise<(Omit<Role, 'users'> & { users: number })[]> {
 		const roles = await this.orm.em.find(Role, {}, { populate: ['users'] });
 		return roles.map((r) => ({ ...r, users: r.users.count() }));
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async getRole(id: number): Promise<Omit<Role, 'users'> & { users: number }> {
 		const role = await this.orm.em.findOne(Role, { id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(this.t.Errors.Id.NotFound(Role, id));
@@ -60,7 +60,7 @@ export class RolesService {
 		return { ...role, users: role.users.count() };
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async createRole(name: string, permissions: PERMISSION_NAMES[]): Promise<Omit<Role, 'users'>> {
 		const roleName = name.toUpperCase();
 
@@ -81,7 +81,7 @@ export class RolesService {
 		return role;
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async editRole(input: RolePatchDTO): Promise<Omit<Role, 'users'> & { users: number }> {
 		const role = await this.orm.em.findOne(Role, { id: input.id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(this.t.Errors.Id.NotFound(Role, input.id));
@@ -93,7 +93,7 @@ export class RolesService {
 		return { ...role, users: role.users.count() };
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async getUsers(id: number): Promise<Array<RoleUsersResponseDTO>> {
 		const role = await this.orm.em.findOne(Role, { id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(this.t.Errors.Id.NotFound(Role, id));
@@ -104,7 +104,7 @@ export class RolesService {
 		return users.map((u) => ({ ...u, role_expires: role_expirations.find((r) => r.user.id === u.id).expires }));
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async addUsers(role_id: number, users_specs: Array<{ id: number; expires: Date }>) {
 		const role = await this.orm.em.findOne(Role, { id: role_id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(this.t.Errors.Id.NotFound(Role, role_id));
@@ -129,7 +129,7 @@ export class RolesService {
 		return this.getUsers(role_id);
 	}
 
-	@UseRequestContext()
+	@CreateRequestContext()
 	async removeUsers(role_id: number, users_id: number[]): Promise<BaseUserResponseDTO[]> {
 		const role = await this.orm.em.findOne(Role, { id: role_id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(this.t.Errors.Id.NotFound(Role, role_id));

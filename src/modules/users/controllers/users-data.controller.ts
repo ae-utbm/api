@@ -93,7 +93,7 @@ export class UsersDataController {
 	@ApiOkResponse({ description: 'User deleted', type: MessageResponseDTO })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async delete(@Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.usersService.delete(id);
 	}
@@ -105,7 +105,7 @@ export class UsersDataController {
 	@ApiOkResponse({ description: 'User data', type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getPrivate(@Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.usersService.findOne(id, false);
 	}
@@ -117,21 +117,21 @@ export class UsersDataController {
 	@ApiOkResponse({ description: 'User data, excepted privates fields (set in the visibility table)', type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getPublic(@Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.usersService.findOne(id);
 	}
 
-	@Get(':id/visibility')
+	@Get(':id/data/visibility')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PRIVATE'])
 	@ApiOperation({ summary: 'Get visibility of a user' })
 	@ApiOkResponse({ description: 'User data', type: UserVisibility })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getVisibility(@Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
-		return this.usersService.findVisibilities([id]);
+		return this.usersService.findVisibilities(id);
 	}
 
 	@Get(':id/roles')
@@ -141,7 +141,7 @@ export class UsersDataController {
 	@ApiOkResponse({ description: 'Roles of the user', type: [Role] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getUserRoles(@Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.usersService.getUserRoles(id, { show_expired: true, show_revoked: true });
 	}
@@ -153,7 +153,7 @@ export class UsersDataController {
 	@ApiOkResponse({ description: 'Permissions of the user', type: [Permission] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getUserPermissions(@Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.usersService.getUserPermissions(id, { show_expired: true, show_revoked: true });
 	}

@@ -1,11 +1,10 @@
-import type { I18nTranslations, PERMISSION_NAMES } from '#types/api';
+import type { PERMISSION_NAMES } from '#types/api';
 import type { Request } from 'express';
 
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { I18nService } from 'nestjs-i18n';
 
 import { UsersService } from '@modules/users/users.service';
 
@@ -26,7 +25,6 @@ export class PermissionGuard implements CanActivate {
 		protected readonly jwtService: JwtService,
 		protected readonly configService: ConfigService,
 		protected readonly userService: UsersService,
-		protected readonly i18nService: I18nService<I18nTranslations>,
 		protected readonly reflector: Reflector,
 		protected readonly authService: AuthService,
 	) {}
