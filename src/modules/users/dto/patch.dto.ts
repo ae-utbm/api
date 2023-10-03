@@ -1,8 +1,8 @@
 import type { email } from '#types';
-import type { UserPatchDto } from '#types/api';
+import type { UserVisibilityPatchDto, UserPatchDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsEmail, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsEmail, IsNumber, IsString } from 'class-validator';
 
 export class UserPatchDTO implements UserPatchDto {
 	@ApiProperty({ required: true, minimum: 1 })
@@ -65,4 +65,38 @@ export class UserPatchDTO implements UserPatchDto {
 	@ApiProperty({ required: false, minimum: 1 })
 	@IsNumber()
 	promotion?: number;
+}
+
+export class UserVisibilityPatchDTO implements UserVisibilityPatchDto {
+	@ApiProperty({ type: Boolean, default: false })
+	@IsBoolean()
+	email: boolean;
+
+	@ApiProperty({ type: Boolean, default: false })
+	@IsBoolean()
+	secondary_email: boolean;
+
+	@ApiProperty({ type: Boolean, default: true })
+	@IsBoolean()
+	birth_date: boolean;
+
+	@ApiProperty({ type: Boolean, default: false })
+	@IsBoolean()
+	gender: boolean;
+
+	@ApiProperty({ type: Boolean, default: false })
+	@IsBoolean()
+	pronouns: boolean;
+
+	@ApiProperty({ type: Boolean, default: true })
+	@IsBoolean()
+	promotion: boolean;
+
+	@ApiProperty({ type: Boolean, default: false })
+	@IsBoolean()
+	phone: boolean;
+
+	@ApiProperty({ type: Boolean, default: false })
+	@IsBoolean()
+	parent_contact: boolean;
 }

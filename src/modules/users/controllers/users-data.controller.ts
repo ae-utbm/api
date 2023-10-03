@@ -19,7 +19,7 @@ import { Role } from '@modules/roles/entities/role.entity';
 import { TranslateService } from '@modules/translate/translate.service';
 import { validate } from '@utils/validate';
 
-import { UserPatchDTO } from '../dto/patch.dto';
+import { UserPatchDTO, UserVisibilityPatchDTO } from '../dto/patch.dto';
 import { UserVisibility } from '../entities/user-visibility.entity';
 import { User } from '../entities/user.entity';
 import { UsersService } from '../users.service';
@@ -101,7 +101,7 @@ export class UsersDataController {
 	@Get(':id/data')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PRIVATE'])
-	@ApiOperation({ summary: 'Get private information of a user' })
+	@ApiOperation({ summary: 'Get all information of a user' })
 	@ApiOkResponse({ description: 'User data', type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getPrivate(@Param('id') id: number) {
@@ -113,7 +113,7 @@ export class UsersDataController {
 	@Get(':id/data/public')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER'])
-	@ApiOperation({ summary: 'Get public information of a user' })
+	@ApiOperation({ summary: 'Get publicly available information of a user' })
 	@ApiOkResponse({ description: 'User data, excepted privates fields (set in the visibility table)', type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getPublic(@Param('id') id: number) {
@@ -125,13 +125,39 @@ export class UsersDataController {
 	@Get(':id/data/visibility')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PRIVATE'])
-	@ApiOperation({ summary: 'Get visibility of a user' })
+	@ApiOperation({ summary: 'Get visibility settings of a user' })
 	@ApiOkResponse({ description: 'User data', type: UserVisibility })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getVisibility(@Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
-		return this.usersService.findVisibilities(id);
+		return (await this.usersService.findVisibilities(id))[0];
+	}
+
+	@Patch(':id/data/visibility')
+	@UseGuards(SelfOrPermissionGuard)
+	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
+	@ApiOperation({ summary: 'Update visibility settings of a user' })
+	@ApiOkResponse({ description: 'User data', type: UserVisibility })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	async updateVisibility(@Param('id') id: number, @Body() input: UserVisibilityPatchDTO) {
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
+
+		const schema = z
+			.object({
+				email: z.boolean(),
+				secondary_email: z.boolean(),
+				birth_date: z.boolean(),
+				gender: z.boolean(),
+				pronouns: z.boolean(),
+				promotion: z.boolean(),
+				phone: z.boolean(),
+				parent_contact: z.boolean(),
+			})
+			.strict();
+		validate(schema, input);
+
+		return this.usersService.updateVisibility(id, input);
 	}
 
 	@Get(':id/roles')

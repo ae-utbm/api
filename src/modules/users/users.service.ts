@@ -25,7 +25,7 @@ import { checkPasswordStrength, generateRandomPassword } from '@utils/password';
 import { getTemplate } from '@utils/template';
 
 import { BaseUserResponseDTO } from './dto/base-user.dto';
-import { UserPatchDTO } from './dto/patch.dto';
+import { UserPatchDTO, UserVisibilityPatchDTO } from './dto/patch.dto';
 
 @Injectable()
 export class UsersService {
@@ -158,6 +158,20 @@ export class UsersService {
 		return await this.orm.em.find(UserVisibility, { user: { $in: users } });
 	}
 
+	@CreateRequestContext()
+	async updateVisibility(id: number, input: UserVisibilityPatchDTO): Promise<UserVisibility> {
+		const user = await this.orm.em.findOne(User, { id });
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
+
+		const visibility = await this.orm.em.findOne(UserVisibility, { user });
+		if (!visibility) throw new NotFoundException(this.t.Errors.Id.NotFound(UserVisibility, id));
+
+		Object.assign(visibility, input);
+		await this.orm.em.persistAndFlush(visibility);
+
+		return visibility;
+	}
+
 	async findAll(filter: false): Promise<UserPrivate[]>;
 	async findAll(filter: true): Promise<UserPublic[]>;
 
@@ -263,8 +277,6 @@ export class UsersService {
 
 	@CreateRequestContext()
 	async verifyEmail(user_id: number, token: string): Promise<User> {
-		if (!user_id || !token) throw new BadRequestException('Missing user id or token');
-
 		const user = await this.orm.em.findOne(User, { id: user_id });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, user_id));
 

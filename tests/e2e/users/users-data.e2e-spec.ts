@@ -765,5 +765,51 @@ describe('Users Data (e2e)', () => {
 				});
 			});
 		});
+
+		describe('200 : Ok', () => {
+			it('when the user is asking for himself', async () => {
+				const user = await request(app.getHttpServer())
+					.get('/users/1/data/visibility') // root user id = 1
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(200);
+
+				expect(user.body).toEqual({
+					id: expect.any(Number),
+					created: expect.any(String),
+					updated: expect.any(String),
+					user: 1,
+					email: false,
+					secondary_email: false,
+					birth_date: true,
+					gender: false,
+					pronouns: false,
+					promotion: true,
+					phone: false,
+					parent_contact: false,
+				});
+			});
+
+			it('when the user has permission to get the private data', async () => {
+				const user = await request(app.getHttpServer())
+					.get('/users/3/data/visibility') // root user id = 1
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(200);
+
+				expect(user.body).toEqual({
+					id: expect.any(Number),
+					created: expect.any(String),
+					updated: expect.any(String),
+					user: 3,
+					email: false,
+					secondary_email: false,
+					birth_date: true,
+					gender: false,
+					pronouns: false,
+					promotion: true,
+					phone: false,
+					parent_contact: false,
+				});
+			});
+		});
 	});
 });
