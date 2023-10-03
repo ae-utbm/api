@@ -40,14 +40,14 @@ export class UserVisibility extends BaseEntity implements UserVisibilityEntity<U
 	pronouns: boolean;
 
 	/** Wether the user cursus should be visible or not */
-	@Property({ onCreate: () => true })
-	@ApiProperty({ type: Boolean, default: true })
-	cursus: boolean;
+	// @Property({ onCreate: () => true })
+	// @ApiProperty({ type: Boolean, default: true })
+	// cursus: boolean;
 
 	/** Wether the user cursus should be visible or not */
-	@Property({ onCreate: () => true })
-	@ApiProperty({ type: Boolean, default: true })
-	specialty: boolean;
+	// @Property({ onCreate: () => true })
+	// @ApiProperty({ type: Boolean, default: true })
+	// specialty: boolean;
 
 	/** Wether the user promotion should be visible or not */
 	@Property({ onCreate: () => true })

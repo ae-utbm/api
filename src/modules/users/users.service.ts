@@ -19,7 +19,7 @@ import { TranslateService } from '@modules/translate/translate.service';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
-import { User } from '@modules/users/entities/user.entity';
+import { User, UserPrivate, UserPublic } from '@modules/users/entities/user.entity';
 import { checkBirthDate } from '@utils/dates';
 import { checkPasswordStrength, generateRandomPassword } from '@utils/password';
 import { getTemplate } from '@utils/template';
@@ -59,11 +59,11 @@ export class UsersService {
 	/**
 	 * Remove fields that the user as set to private
 	 * @param {User[]} users The users to filter
-	 * @returns {Promise<Partial<User>[]>} The filtered users
+	 * @returns {Promise<UserPublic[]>} The filtered users
 	 */
 	@CreateRequestContext()
-	async removePrivateFields(users: User[]): Promise<Partial<User>[]> {
-		const res: Partial<User>[] = [];
+	async removePrivateFields(users: User[]): Promise<UserPublic[]> {
+		const res: UserPublic[] = [];
 
 		const visibilities = await this.findVisibilities(users.map((u) => u.id));
 		visibilities.forEach((v) => {
@@ -115,21 +115,21 @@ export class UsersService {
 	 * @param {Partial<number | email>} id_or_email The id or email of the user to find
 	 * @param {boolean} filter Whether to filter the user or not (default: true)
 	 *
-	 * @returns {Promise<User | Partial<User>>} The user found (partial if filter is true)
+	 * @returns {Promise<UserPrivate | UserPublic>} The user found (public if filter is true)
 	 * @throws {BadRequestException} If no id or email is provided
 	 * @throws {NotFoundException} If no user is found with the provided id/email
 	 *
 	 * @example
 	 * ```ts
-	 * const user1: User = await this.usersService.findOne({ id: 1 }, false);
-	 * const user2: Partial<User> = await this.usersService.findOne({ email: 'example@domain.com' });
+	 * const user1: UserPrivate = await this.usersService.findOne({ id: 1 }, false);
+	 * const user2: UserPublic = await this.usersService.findOne({ email: 'example@domain.com' });
 	 * ```
 	 */
-	async findOne(id_or_email: number | email, filter: false): Promise<User>;
-	async findOne(id_or_email: number | email): Promise<Partial<User>>;
+	async findOne(id_or_email: number | email, filter: false): Promise<UserPrivate>;
+	async findOne(id_or_email: number | email): Promise<UserPublic>;
 
 	@CreateRequestContext()
-	async findOne(id_or_email: number | email, filter = true): Promise<User | Partial<User>> {
+	async findOne(id_or_email: number | email, filter = true): Promise<UserPrivate | UserPublic> {
 		let user: User = null;
 		const parsed = z.union([z.coerce.number(), z.string().email()]).parse(id_or_email);
 
@@ -158,11 +158,11 @@ export class UsersService {
 		return await this.orm.em.find(UserVisibility, { user: { $in: users } });
 	}
 
-	async findAll(filter: false): Promise<User[]>;
-	async findAll(filter: true): Promise<Partial<User>[]>;
+	async findAll(filter: false): Promise<UserPrivate[]>;
+	async findAll(filter: true): Promise<UserPublic[]>;
 
 	@CreateRequestContext()
-	async findAll(filter = true): Promise<User[] | Partial<User>[]> {
+	async findAll(filter = true): Promise<UserPrivate[] | UserPublic[]> {
 		const users = await this.orm.em.find(User, {});
 		if (filter) return this.removePrivateFields(users);
 

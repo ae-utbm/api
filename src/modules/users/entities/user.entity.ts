@@ -15,6 +15,13 @@ import { Subscription } from '@modules/subscription/entities/subscription.entity
 
 import { UserBanner } from './user-banner.entity';
 import { UserPicture } from './user-picture.entity';
+import { UserVisibility } from './user-visibility.entity';
+
+/** Keys that may change of visibility */
+export type UserPrivateKeys = Omit<UserVisibility, 'user' | keyof BaseEntity>;
+
+export type UserPrivate = User;
+export type UserPublic = Omit<User, keyof UserPrivateKeys> & Pick<User, keyof UserPrivateKeys>;
 
 @Entity({ tableName: 'users' })
 export class User
