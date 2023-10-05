@@ -90,6 +90,33 @@ describe('Users Data (e2e)', () => {
 				});
 			});
 
+			it('when multiple emails are already used', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/users')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.send([
+						{
+							email: 'ae.info@utbm.fr',
+							first_name: 'John',
+							last_name: 'Doe',
+							birth_date: new Date('1990-01-01'),
+						},
+						{
+							email: 'unverified@email.com',
+							first_name: 'John',
+							last_name: 'Doe',
+							birth_date: new Date('1990-01-01'),
+						},
+					])
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: t.Errors.Email.AreAlreadyUsed(['ae.info@utbm.fr', 'unverified@email.com']),
+				});
+			});
+
 			it('when the email is blacklisted', async () => {
 				const response = await request(app.getHttpServer())
 					.post('/users')
@@ -276,7 +303,7 @@ describe('Users Data (e2e)', () => {
 				});
 			});
 
-			it('when the user try to change its own name', async () => {
+			it('when the user try to change its own first name', async () => {
 				const response = await request(app.getHttpServer())
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
@@ -284,7 +311,25 @@ describe('Users Data (e2e)', () => {
 						{
 							id: 1,
 							first_name: 'John',
-							last_name: 'Doe 2',
+						},
+					])
+					.expect(401);
+
+				expect(response.body).toEqual({
+					error: 'Unauthorized',
+					statusCode: 401,
+					message: t.Errors.User.CannotUpdateBirthDateOrName(),
+				});
+			});
+
+			it('when the user try to change its own last name', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/users')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.send([
+						{
+							id: 1,
+							last_name: 'Smith',
 						},
 					])
 					.expect(401);
@@ -350,6 +395,7 @@ describe('Users Data (e2e)', () => {
 						{
 							id: user.id,
 							birth_date: new Date('1990-01-01').toISOString(),
+							email: 'john.doe@example.fr',
 						},
 					])
 					.expect(200);
@@ -796,7 +842,7 @@ describe('Users Data (e2e)', () => {
 
 			it('when the user has permission to get the private data', async () => {
 				const user = await request(app.getHttpServer())
-					.get('/users/3/data/visibility') // root user id = 1
+					.get('/users/3/data/visibility')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(200);
 
@@ -814,6 +860,330 @@ describe('Users Data (e2e)', () => {
 					phone: false,
 					parent_contact: false,
 				});
+			});
+		});
+	});
+
+	describe('(PATCH) /:id/data/visibility', () => {
+		describe('400 : Bad Request', () => {
+			it('when the user id is not a number', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/users/abc/data/visibility')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.send({
+						email: true,
+					})
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: t.Errors.Id.Invalid(User, 'abc'),
+				});
+			});
+		});
+
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).patch('/users/1/data/visibility').expect(401);
+
+				expect(response.body).toEqual({
+					message: 'Unauthorized',
+					statusCode: 401,
+				});
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/users/1/data/visibility')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.send({ email: true })
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					message: 'Forbidden resource',
+					statusCode: 403,
+				});
+			});
+		});
+
+		describe('404 : Not Found', () => {
+			it('when the user does not exist', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/users/9999/data/visibility')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.send({
+						email: true,
+						secondary_email: true,
+						birth_date: true,
+						gender: false,
+						pronouns: false,
+						promotion: true,
+						phone: false,
+						parent_contact: false,
+					})
+					.expect(404);
+
+				expect(response.body).toEqual({
+					error: 'Not Found',
+					message: t.Errors.Id.NotFound(User, 9999),
+					statusCode: 404,
+				});
+			});
+		});
+
+		describe('200 : Ok', () => {
+			it('when the user is editing for himself', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/users/1/data/visibility') // root user id = 1
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.send({
+						email: true,
+						secondary_email: true,
+						birth_date: true,
+						gender: false,
+						pronouns: false,
+						promotion: true,
+						phone: false,
+						parent_contact: false,
+					})
+					.expect(200);
+
+				expect(response.body).toEqual({
+					id: expect.any(Number),
+					created: expect.any(String),
+					updated: expect.any(String),
+					user: 1,
+					email: true,
+					secondary_email: true,
+					birth_date: true,
+					gender: false,
+					pronouns: false,
+					promotion: true,
+					phone: false,
+					parent_contact: false,
+				});
+			});
+
+			it('when the user has permission to set the private data', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/3/data/visibility')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.send({
+						email: false,
+						secondary_email: false,
+						birth_date: true,
+						gender: false,
+						pronouns: false,
+						promotion: true,
+						phone: false,
+						parent_contact: false,
+					})
+					.expect(200);
+
+				expect(response.body).toEqual({
+					id: expect.any(Number),
+					created: expect.any(String),
+					updated: expect.any(String),
+					user: 3,
+					email: false,
+					secondary_email: false,
+					birth_date: true,
+					gender: false,
+					pronouns: false,
+					promotion: true,
+					phone: false,
+					parent_contact: false,
+				});
+			});
+		});
+	});
+
+	describe('(GET) /:id/roles', () => {
+		describe('400 : Bad Request', () => {
+			it('when the user id is not a number', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/abc/roles')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: t.Errors.Id.Invalid(User, 'abc'),
+				});
+			});
+		});
+
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).get('/users/1/roles').expect(401);
+
+				expect(response.body).toEqual({
+					message: 'Unauthorized',
+					statusCode: 401,
+				});
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/1/roles')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					message: 'Forbidden resource',
+					statusCode: 403,
+				});
+			});
+		});
+
+		describe('404 : Not Found', () => {
+			it('when the user does not exist', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/9999/roles')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(404);
+
+				expect(response.body).toEqual({
+					error: 'Not Found',
+					message: t.Errors.Id.NotFound(User, 9999),
+					statusCode: 404,
+				});
+			});
+		});
+
+		describe('200 : Ok', () => {
+			it('when the user is asking for himself', async () => {
+				const user = await request(app.getHttpServer())
+					.get('/users/8/roles') // root user id = 1
+					.set('Authorization', `Bearer ${tokenSubscriber}`)
+					.expect(200);
+
+				expect(user.body).toEqual([
+					{
+						id: 4,
+						created: expect.any(String),
+						updated: expect.any(String),
+						name: 'SUBSCRIBER',
+						revoked: false,
+						permissions: ['CAN_READ_USER', 'CAN_READ_PROMOTION', 'CAN_READ_FILE'],
+						expires: expect.any(String),
+					},
+				]);
+			});
+
+			it('when the user has permission to get the data', async () => {
+				const user = await request(app.getHttpServer())
+					.get('/users/8/roles') // root user id = 1
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(200);
+
+				expect(user.body).toEqual([
+					{
+						id: 4,
+						created: expect.any(String),
+						updated: expect.any(String),
+						name: 'SUBSCRIBER',
+						revoked: false,
+						permissions: ['CAN_READ_USER', 'CAN_READ_PROMOTION', 'CAN_READ_FILE'],
+						expires: expect.any(String),
+					},
+				]);
+			});
+		});
+	});
+
+	describe('(GET) /:id/permissions', () => {
+		describe('400 : Bad Request', () => {
+			it('when the user id is not a number', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/abc/permissions')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: t.Errors.Id.Invalid(User, 'abc'),
+				});
+			});
+		});
+
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer()).get('/users/1/permissions').expect(401);
+
+				expect(response.body).toEqual({
+					message: 'Unauthorized',
+					statusCode: 401,
+				});
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/1/permissions')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					message: 'Forbidden resource',
+					statusCode: 403,
+				});
+			});
+		});
+
+		describe('404 : Not Found', () => {
+			it('when the user does not exist', async () => {
+				const response = await request(app.getHttpServer())
+					.get('/users/9999/permissions')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(404);
+
+				expect(response.body).toEqual({
+					error: 'Not Found',
+					message: t.Errors.Id.NotFound(User, 9999),
+					statusCode: 404,
+				});
+			});
+		});
+
+		describe('200 : Ok', () => {
+			it('when the user is asking for himself', async () => {
+				const user = await request(app.getHttpServer())
+					.get('/users/1/permissions') // root user id = 1
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(200);
+
+				expect(user.body).toEqual([
+					{
+						id: 1,
+						created: expect.any(String),
+						updated: expect.any(String),
+						name: 'ROOT',
+						revoked: false,
+						expires: '9999-12-31T00:00:00.000Z',
+						user: 1,
+					},
+				]);
+			});
+
+			it('when the user has permission to get the data', async () => {
+				const user = await request(app.getHttpServer())
+					.get('/users/8/permissions') // root user id = 1
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(200);
+
+				expect(user.body).toEqual([]);
 			});
 		});
 	});
