@@ -49,7 +49,7 @@ export class UsersService {
 	@CreateRequestContext()
 	async deleteUnverifiedUsers() {
 		const users = await this.orm.em.find(User, {
-			email_verified: false,
+			verified: null,
 			created: { $lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
 		});
 
@@ -185,8 +185,6 @@ export class UsersService {
 			}
 		});
 
-		this.emailsService.validateEmail(input.email);
-
 		if (await this.orm.em.findOne(User, { email: input.email }))
 			throw new BadRequestException(this.t.Errors.Email.IsAlreadyUsed(input.email));
 
@@ -198,37 +196,71 @@ export class UsersService {
 		// Check if the password is already hashed
 		if (input.password.length !== 60) input.password = hashSync(input.password, 10);
 
-		// Add the email verification token & create the user
-		const email_token = generateRandomPassword(12);
-		const user = this.orm.em.create(User, {
-			...input,
-			email_verification: hashSync(email_token, 10),
-		});
-
-		// Save changes to the database & create the user's visibility parameters
-		this.orm.em.create(UserVisibility, { user });
+		const user = this.orm.em.create(User, input);
 		await this.orm.em.persistAndFlush(user);
 
 		// Fetch the user again to get the id
-		const registered = await this.orm.em.findOne(User, { email: input.email });
+		const registered = await this.findOne(input.email, false);
+		await this.updateUserEmail(registered.id, input.email);
 
-		await this.emailsService.sendEmail({
-			to: [registered.email],
-			subject: this.i18n.t('templates.register_common.subject', { lang: I18nContext.current().lang }),
-			html: getTemplate('emails/register_user', this.i18n, {
-				username: registered.full_name,
-				link: this.configService.get<boolean>('production')
-					? `${this.configService.get<string>('production_url')}/auth/confirm/${registered.id}/${encodeURI(
-							email_token,
-					  )}/redirect`
-					: `http://localhost:${this.configService.get<string>('port')}/auth/confirm/${registered.id}/${encodeURI(
-							email_token,
-					  )}`,
-				days: this.configService.get<number>('email.token_validity'),
-			}),
-		});
+		// Save changes to the database & create the user's visibility parameters
+		this.orm.em.create(UserVisibility, { user });
 
 		return user;
+	}
+
+	@CreateRequestContext()
+	async updateUserEmail(id: number, email: email): Promise<void> {
+		this.emailsService.validateEmail(email);
+
+		// Add the email verification token & create the user
+		const user = await this.findOne(id, false);
+		const user_b = await this.orm.em.findOne(User, { email });
+
+		// Check if the email is already used by someone else
+		if (user_b && user_b.id !== user.id) throw new BadRequestException(this.t.Errors.Email.IsAlreadyUsed(email));
+		const email_token = generateRandomPassword(12);
+
+		user.email_verification = hashSync(email_token, 10);
+		user.email_verified = false;
+		user.email = email;
+
+		// First time setting the email -> account creation template
+		if (user.verified === null)
+			await this.emailsService.sendEmail({
+				to: [email],
+				subject: this.i18n.t('templates.register_common.subject', { lang: I18nContext.current().lang }),
+				html: getTemplate('emails/register_user', this.i18n, {
+					username: user.full_name,
+					link: this.configService.get<boolean>('production')
+						? /* istanbul ignore next-line */
+						  `${this.configService.get<string>('production_url')}/auth/confirm/${user.id}/${encodeURI(
+								email_token,
+						  )}/redirect`
+						: `http://localhost:${this.configService.get<string>('port')}/auth/confirm/${user.id}/${encodeURI(
+								email_token,
+						  )}`,
+					days: this.configService.get<number>('email.token_validity'),
+				}),
+			});
+		// Email change -> email changed template
+		else {
+			await this.emailsService.sendEmail({
+				to: [email],
+				subject: this.i18n.t('templates.email_changed.subject', { lang: I18nContext.current().lang }),
+				html: getTemplate('emails/email_changed', this.i18n, {
+					username: user.full_name,
+					link: this.configService.get<boolean>('production')
+						? /* istanbul ignore next-line */
+						  `${this.configService.get<string>('production_url')}/auth/confirm/${user.id}/${encodeURI(
+								email_token,
+						  )}/redirect`
+						: `http://localhost:${this.configService.get<string>('port')}/auth/confirm/${user.id}/${encodeURI(
+								email_token,
+						  )}`,
+				}),
+			});
+		}
 	}
 
 	@CreateRequestContext()
@@ -270,14 +302,13 @@ export class UsersService {
 
 	@CreateRequestContext()
 	async verifyEmail(user_id: number, token: string): Promise<User> {
-		const user = await this.orm.em.findOne(User, { id: user_id });
-		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, user_id));
-
+		const user = await this.findOne(user_id, false);
 		if (user.email_verified) throw new BadRequestException(this.t.Errors.Email.AlreadyVerified(User));
 
 		if (!compareSync(token, user.email_verification))
 			throw new UnauthorizedException(this.t.Errors.Email.InvalidVerificationToken());
 
+		if (user.verified === null) user.verified = new Date();
 		user.email_verified = true;
 		user.email_verification = null;
 
@@ -291,9 +322,9 @@ export class UsersService {
 
 		for (const input of inputs) {
 			const user = await this.findOne(input.id, false);
-			if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, input.id));
 
-			if (input.email) this.emailsService.validateEmail(input.email);
+			if (input.email) await this.updateUserEmail(user.id, input.email);
+
 			if (
 				input.hasOwnProperty('birth_date') ||
 				input.hasOwnProperty('first_name') ||

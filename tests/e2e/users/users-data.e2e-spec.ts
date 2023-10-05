@@ -377,6 +377,7 @@ describe('Users Data (e2e)', () => {
 						promotion: null,
 						pronouns: null,
 						secondary_email: null,
+						verified: null,
 					},
 				]);
 
@@ -563,6 +564,7 @@ describe('Users Data (e2e)', () => {
 					full_name: 'unverified user',
 					age: expect.any(Number),
 					is_minor: false,
+					verified: null,
 				});
 			});
 
@@ -594,6 +596,7 @@ describe('Users Data (e2e)', () => {
 					full_name: 'root root',
 					age: expect.any(Number),
 					is_minor: false,
+					verified: expect.any(String),
 				});
 			});
 		});
@@ -679,6 +682,7 @@ describe('Users Data (e2e)', () => {
 					full_name: 'root root',
 					age: expect.any(Number),
 					is_minor: false,
+					verified: expect.any(String),
 				});
 			});
 
@@ -704,6 +708,7 @@ describe('Users Data (e2e)', () => {
 					full_name: 'root root',
 					age: expect.any(Number),
 					is_minor: false,
+					verified: expect.any(String),
 				});
 			});
 		});

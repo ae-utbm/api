@@ -324,6 +324,7 @@ describe('Auth (e2e)', () => {
 					pronouns: null,
 					secondary_email: null,
 					updated: expect.any(String),
+					verified: expect.any(String),
 				});
 
 				// Reset user email_verified to false (for other tests)
@@ -331,6 +332,7 @@ describe('Auth (e2e)', () => {
 
 				user.email_verified = false;
 				user.email_verification = hashSync(token, 10);
+				user.verified = null;
 
 				await orm.em.persistAndFlush(user);
 				orm.em.clear();
@@ -407,6 +409,7 @@ describe('Auth (e2e)', () => {
 
 				user.email_verified = false;
 				user.email_verification = hashSync(token, 10);
+				user.verified = null;
 
 				await orm.em.persistAndFlush(user);
 				orm.em.clear();

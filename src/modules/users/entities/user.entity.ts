@@ -37,13 +37,6 @@ export class User
 	@ApiProperty({ example: 'Doe' })
 	last_name: string;
 
-	@Property({ onCreate: () => false })
-	@ApiProperty({ type: Boolean, default: false })
-	email_verified: boolean;
-
-	@Property({ nullable: true, hidden: true })
-	email_verification?: string;
-
 	/** Get the full name of the user */
 	@Property({ persist: false })
 	@ApiProperty({ example: 'John Doe' })
@@ -62,6 +55,13 @@ export class User
 	@Property({ unique: true, type: String })
 	@ApiProperty({ type: String, example: 'example@domain.com' })
 	email: email;
+
+	@Property({ onCreate: () => false })
+	@ApiProperty({ type: Boolean, default: false })
+	email_verified: boolean;
+
+	@Property({ nullable: true, hidden: true })
+	email_verification?: string;
 
 	@Property({ hidden: true })
 	password: string;
@@ -167,6 +167,10 @@ export class User
 
 	@OneToMany(() => Log, (log) => log.user, { cascade: [Cascade.REMOVE], orphanRemoval: true, nullable: true })
 	logs? = new Collection<Log>(this);
+
+	@Property({ type: Date, nullable: true })
+	@ApiProperty({ type: Date })
+	verified?: Date;
 
 	//* FILES
 	@ManyToMany(() => FileVisibilityGroup, (group) => group.users, { nullable: true })

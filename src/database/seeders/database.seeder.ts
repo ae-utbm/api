@@ -142,6 +142,7 @@ export class DatabaseSeeder extends Seeder {
 			{
 				email: 'ae.info@utbm.fr',
 				email_verified: true,
+				verified: new Date('2000-01-01'),
 				password: hashSync('root', 10),
 				first_name: 'root',
 				last_name: 'root',
@@ -164,6 +165,7 @@ export class DatabaseSeeder extends Seeder {
 			{
 				email: 'unauthorized@email.com',
 				email_verified: true,
+				verified: new Date('2000-01-01'),
 				password: hashSync('root', 10),
 				first_name: 'unauthorized',
 				last_name: 'user',
@@ -174,6 +176,7 @@ export class DatabaseSeeder extends Seeder {
 			{
 				email: 'logs@email.com',
 				email_verified: true,
+				verified: new Date('2000-01-01'),
 				password: hashSync('root', 10),
 				first_name: 'logs',
 				last_name: 'moderator',
@@ -184,6 +187,7 @@ export class DatabaseSeeder extends Seeder {
 			{
 				email: 'perms@email.com',
 				email_verified: true,
+				verified: new Date('2000-01-01'),
 				password: hashSync('root', 10),
 				first_name: 'perms',
 				last_name: 'moderator',
@@ -194,6 +198,7 @@ export class DatabaseSeeder extends Seeder {
 			{
 				email: 'promos@email.com',
 				email_verified: true,
+				verified: new Date('2000-01-01'),
 				password: hashSync('root', 10),
 				first_name: 'promos',
 				last_name: 'moderator',
@@ -204,6 +209,7 @@ export class DatabaseSeeder extends Seeder {
 			{
 				email: 'roles@email.com',
 				email_verified: true,
+				verified: new Date('2000-01-01'),
 				password: hashSync('root', 10),
 				first_name: 'promos',
 				last_name: 'moderator',
@@ -213,6 +219,7 @@ export class DatabaseSeeder extends Seeder {
 			{
 				email: 'subscriber@email.com',
 				email_verified: true,
+				verified: new Date('2000-01-01'),
 				password: hashSync('root', 10),
 				first_name: 'subscribed',
 				last_name: 'user',
