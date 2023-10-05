@@ -22,6 +22,6 @@ export class Permission extends BaseEntity implements PermissionEntity<User> {
 	expires: Date;
 
 	@ManyToOne(() => User, { onDelete: 'cascade', joinColumn: 'user_id' })
-	@ApiProperty({ type: Number })
+	@ApiProperty({ type: Number, minimum: 1 })
 	user: User;
 }

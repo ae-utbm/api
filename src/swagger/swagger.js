@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable */
 
 /**
  * Swagger pre-auth and auth script for Swagger UI
