@@ -235,7 +235,7 @@ describe('Users Data (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Id.Invalids(User, ['abc']),
+					message: t.Errors.Id.Invalid(User, 'abc'),
 				});
 			});
 		});
@@ -397,7 +397,7 @@ describe('Users Data (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Id.Invalids(User, ['abc']),
+					message: t.Errors.Id.Invalid(User, 'abc'),
 				});
 			});
 		});
@@ -475,7 +475,7 @@ describe('Users Data (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Id.Invalids(User, ['abc']),
+					message: t.Errors.Id.Invalid(User, 'abc'),
 				});
 			});
 		});
@@ -610,7 +610,7 @@ describe('Users Data (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Id.Invalids(User, ['abc']),
+					message: t.Errors.Id.Invalid(User, 'abc'),
 				});
 			});
 		});
@@ -720,7 +720,7 @@ describe('Users Data (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Id.Invalids(User, ['abc']),
+					message: t.Errors.Id.Invalid(User, 'abc'),
 				});
 			});
 		});

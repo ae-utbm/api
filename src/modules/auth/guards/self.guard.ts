@@ -61,7 +61,13 @@ export class SelfGuard implements CanActivate {
 
 		/* istanbul ignore next-line */
 		if (!id_key_values.length) return false;
-		validate(z.array(z.coerce.number().int().min(1)).min(1), id_key_values, t.Errors.Id.Invalids(User, id_key_values));
+		validate(
+			z.array(z.coerce.number().int().min(1)).min(1),
+			id_key_values,
+			id_key_values.length > 1
+				? t.Errors.Id.Invalids(User, id_key_values)
+				: t.Errors.Id.Invalid(User, id_key_values[0]),
+		);
 
 		// Retrieve the authenticated user from the request's user object or session
 		const token = request.headers.authorization;

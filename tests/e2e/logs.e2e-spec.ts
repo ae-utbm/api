@@ -57,7 +57,7 @@ describe('Logs (e2e)', () => {
 				expect(response.body).toEqual({
 					error: 'Bad Request',
 					statusCode: 400,
-					message: t.Errors.Id.Invalids(User, [fakeId]),
+					message: t.Errors.Id.Invalid(User, fakeId),
 				});
 			});
 		});

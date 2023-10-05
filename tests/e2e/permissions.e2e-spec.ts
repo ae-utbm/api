@@ -236,7 +236,7 @@ describe('Permissions (e2e)', () => {
 				expect(response.body).toEqual({
 					statusCode: 400,
 					error: 'Bad Request',
-					message: t.Errors.Id.Invalids(User, ['abc']),
+					message: t.Errors.Id.Invalid(User, 'abc'),
 				});
 			});
 		});
