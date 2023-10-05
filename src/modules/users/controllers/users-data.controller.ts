@@ -15,10 +15,10 @@ import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { SelfGuard } from '@modules/auth/guards/self.guard';
 import { Permission } from '@modules/permissions/entities/permission.entity';
-import { Role } from '@modules/roles/entities/role.entity';
 import { TranslateService } from '@modules/translate/translate.service';
 import { validate } from '@utils/validate';
 
+import { UserRolesGetDTO } from '../dto/get.dto';
 import { UserPatchDTO, UserVisibilityPatchDTO } from '../dto/patch.dto';
 import { UserVisibility } from '../entities/user-visibility.entity';
 import { User } from '../entities/user.entity';
@@ -164,7 +164,7 @@ export class UsersDataController {
 	@UseGuards(PermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER'])
 	@ApiOperation({ summary: 'Get roles of a user' })
-	@ApiOkResponse({ description: 'Roles of the user', type: [Role] })
+	@ApiOkResponse({ description: 'Roles of the user', type: [UserRolesGetDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async getUserRoles(@Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));

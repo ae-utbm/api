@@ -5,14 +5,13 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
 import { BaseEntity } from '@modules/_mixin/entities/base.entity';
-import { Permission } from '@modules/permissions/entities/permission.entity';
 import { User } from '@modules/users/entities/user.entity';
 
 /**
  * Entity used to store roles, which are a collection of permissions
  */
 @Entity({ tableName: 'roles' })
-export class Role extends BaseEntity implements RoleEntity<Permission, User> {
+export class Role extends BaseEntity implements RoleEntity<User> {
 	/** Name of the role, in caps */
 	@Property({ unique: true })
 	@ApiProperty({ type: String, example: 'AE_ADMIN' })

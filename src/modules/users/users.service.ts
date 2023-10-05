@@ -14,6 +14,7 @@ import { z } from 'zod';
 import { UserPostByAdminDTO, UserPostDTO } from '@modules/auth/dto/register.dto';
 import { EmailsService } from '@modules/emails/emails.service';
 import { FilesService } from '@modules/files/files.service';
+import { Permission } from '@modules/permissions/entities/permission.entity';
 import { RoleExpiration } from '@modules/roles/entities/role-expiration.entity';
 import { TranslateService } from '@modules/translate/translate.service';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';
@@ -25,6 +26,7 @@ import { checkPasswordStrength, generateRandomPassword } from '@utils/password';
 import { getTemplate } from '@utils/template';
 
 import { BaseUserResponseDTO } from './dto/base-user.dto';
+import { UserRolesGetDTO } from './dto/get.dto';
 import { UserPatchDTO, UserVisibilityPatchDTO } from './dto/patch.dto';
 
 @Injectable()
@@ -164,23 +166,14 @@ export class UsersService {
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 
 		const visibility = await this.orm.em.findOne(UserVisibility, { user });
+		// Should never happen as the visibility is created when the user is created
+		/* istanbul ignore next-line */
 		if (!visibility) throw new NotFoundException(this.t.Errors.Id.NotFound(UserVisibility, id));
 
 		Object.assign(visibility, input);
 		await this.orm.em.persistAndFlush(visibility);
 
 		return visibility;
-	}
-
-	async findAll(filter: false): Promise<UserPrivate[]>;
-	async findAll(filter: true): Promise<UserPublic[]>;
-
-	@CreateRequestContext()
-	async findAll(filter = true): Promise<UserPrivate[] | UserPublic[]> {
-		const users = await this.orm.em.find(User, {});
-		if (filter) return this.removePrivateFields(users);
-
-		return users;
 	}
 
 	@CreateRequestContext()
@@ -424,7 +417,8 @@ export class UsersService {
 
 	@CreateRequestContext()
 	async deleteBanner(id: number): Promise<void> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['banner'] });
+		const user = await this.orm.em.findOne(User, { id }, { populate: ['banner'] });
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 		if (!user.banner) throw new NotFoundException('User has no banner to be deleted');
 
 		this.filesService.deleteFromDisk(user.banner);
@@ -440,8 +434,10 @@ export class UsersService {
 	}
 
 	@CreateRequestContext()
-	async getUserRoles(id: number, input: { show_expired: boolean; show_revoked: boolean }) {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['roles'] });
+	async getUserRoles(id: number, input: { show_expired: boolean; show_revoked: boolean }): Promise<UserRolesGetDTO[]> {
+		const user = await this.orm.em.findOne(User, { id }, { populate: ['roles'] });
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
+
 		const roles_base = user.roles.getItems();
 		const roles_data = await this.orm.em.find(RoleExpiration, { user: { $in: [user] } });
 
@@ -458,8 +454,10 @@ export class UsersService {
 	}
 
 	@CreateRequestContext()
-	async getUserPermissions(id: number, input: { show_expired: boolean; show_revoked: boolean }) {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['permissions'] });
+	async getUserPermissions(id: number, input: { show_expired: boolean; show_revoked: boolean }): Promise<Permission[]> {
+		const user = await this.orm.em.findOne(User, { id }, { populate: ['permissions'] });
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
+
 		const permissions = user.permissions.getItems();
 
 		if (!input.show_expired) permissions.filter((p) => p.expires > new Date());
