@@ -32,7 +32,7 @@ export class TranslateService {
 		},
 		Email: {
 			AreAlreadyUsed: (emails: email[]) =>
-				this.generic('responses.errors.email.are_used', { emails: emails.join(', ') }),
+				this.generic('responses.errors.email.are_used', { emails: emails.sort().join(', ') }),
 			IsAlreadyUsed: (email: email) => this.generic('responses.errors.email.used', { email }),
 			AlreadyVerified: <T>(type: Class<T> | string) => this.generic('responses.errors.email.verified', { type }),
 			Blacklisted: (email: email) => this.generic('responses.errors.email.blacklisted', { email }),
