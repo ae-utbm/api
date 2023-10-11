@@ -12,11 +12,14 @@ describe('Users Data (e2e)', () => {
 	let tokenUnauthorized: string;
 	let tokenRoot: string;
 	let tokenSubscriber: string;
+	let em: typeof orm.em;
 
 	const fakeUserEmail: email = 'john.doe@example.fr';
 	type res = Omit<request.Response, 'body'> & { body: TokenDTO };
 
 	beforeAll(async () => {
+		em = orm.em.fork();
+
 		const responseA: res = await request(app.getHttpServer()).post('/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
@@ -385,7 +388,7 @@ describe('Users Data (e2e)', () => {
 		describe('200 : Ok', () => {
 			it('when the user is updated', async () => {
 				// get user before updating it to restore it after
-				const user = await orm.em.findOne(User, { email: fakeUserEmail });
+				const user = await em.findOne(User, { email: fakeUserEmail });
 
 				// -> we are updating a user that is not the authenticated one => expect 200
 				const response = await request(app.getHttpServer())
@@ -428,7 +431,7 @@ describe('Users Data (e2e)', () => {
 				]);
 
 				// restore user
-				await orm.em.persistAndFlush(user);
+				await em.persistAndFlush(user);
 			});
 		});
 	});
@@ -490,7 +493,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the use delete itself', async () => {
-				const user = await orm.em.fork().findOne(User, { email: fakeUserEmail });
+				const user = await em.findOne(User, { email: fakeUserEmail });
 
 				const auth: res = await request(app.getHttpServer()).post('/auth/login').send({
 					email: user.email,

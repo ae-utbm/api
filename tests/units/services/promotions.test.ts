@@ -5,8 +5,10 @@ import { moduleFixture, orm } from '../..';
 
 describe('PromotionsService (unit)', () => {
 	let promotionsService: PromotionsService;
+	let em: typeof orm.em;
 
 	beforeAll(() => {
+		em = orm.em.fork();
 		promotionsService = moduleFixture.get<PromotionsService>(PromotionsService);
 	});
 
@@ -22,7 +24,7 @@ describe('PromotionsService (unit)', () => {
 			expect(newLatest.number).toBe(currentLatest.number + 1);
 
 			// Clean up
-			await orm.em.nativeDelete(Promotion, { id: newLatest.id });
+			await em.nativeDelete(Promotion, { id: newLatest.id });
 			// ------------------------------
 		});
 	});

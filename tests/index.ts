@@ -17,8 +17,10 @@ let moduleFixture: TestingModule;
 let config: ConfigService;
 let jwt: JwtService;
 let app: NestExpressApplication;
-let orm: MikroORM;
 let t: TranslateService;
+
+/** Should be forked using om.em.fork() for each test suite */
+let orm: MikroORM;
 
 /**
  * This file is used to setup the ORM & the NestJS application before running each suite of tests.
@@ -39,8 +41,6 @@ beforeAll(async () => {
 	t = moduleFixture.get<TranslateService>(TranslateService);
 	config = moduleFixture.get<ConfigService>(ConfigService);
 	jwt = moduleFixture.get<JwtService>(JwtService);
-
-	orm.config.set('allowGlobalContext', true);
 
 	await app.init();
 });

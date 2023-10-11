@@ -11,6 +11,12 @@ import { generateRandomPassword } from '@utils/password';
 import { orm, app, t } from '..';
 
 describe('Auth (e2e)', () => {
+	let em: typeof orm.em;
+
+	beforeAll(() => {
+		em = orm.em.fork();
+	});
+
 	describe('(POST) /auth/login', () => {
 		describe('400 : Bad Request', () => {
 			it('when email/password is not provided', async () => {
@@ -328,14 +334,14 @@ describe('Auth (e2e)', () => {
 				});
 
 				// Reset user email_verified to false (for other tests)
-				const user = await orm.em.findOne(User, { id: user_id });
+				const user = await em.findOne(User, { id: user_id });
 
 				user.email_verified = false;
 				user.email_verification = hashSync(token, 10);
 				user.verified = null;
 
-				await orm.em.persistAndFlush(user);
-				orm.em.clear();
+				await em.persistAndFlush(user);
+				em.clear();
 				// ------------------------------
 			});
 		});
@@ -405,14 +411,14 @@ describe('Auth (e2e)', () => {
 				expect((response.header as { location: string }).location).toEqual('https://ae.utbm.fr/');
 
 				// Reset user email_verified to false (for other tests)
-				const user = await orm.em.findOne(User, { id: user_id });
+				const user = await em.findOne(User, { id: user_id });
 
 				user.email_verified = false;
 				user.email_verification = hashSync(token, 10);
 				user.verified = null;
 
-				await orm.em.persistAndFlush(user);
-				orm.em.clear();
+				await em.persistAndFlush(user);
+				em.clear();
 				// ------------------------------
 			});
 		});

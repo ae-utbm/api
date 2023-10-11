@@ -12,8 +12,10 @@ import { app, config, t, orm } from '..';
 describe('Promotions (e2e)', () => {
 	let tokenUnauthorized: string;
 	let tokenPromotionModerator: string;
+	let em: typeof orm.em;
 
 	beforeAll(async () => {
+		em = orm.em.fork();
 		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
 
 		const resA: res = await request(app.getHttpServer()).post('/auth/login').send({
@@ -391,7 +393,7 @@ describe('Promotions (e2e)', () => {
 		describe('200 : Ok', () => {
 			it('when the promotion exists and return the logo', async () => {
 				// Set a fake logo
-				const logo = orm.em.create(PromotionPicture, {
+				const logo = em.create(PromotionPicture, {
 					filename: '21.webp',
 					mimetype: 'image/webp',
 					path: join(process.cwd(), './tests/files/promo_21.png'),
@@ -400,7 +402,7 @@ describe('Promotions (e2e)', () => {
 					size: 0,
 				});
 
-				await orm.em.persistAndFlush(logo);
+				await em.persistAndFlush(logo);
 				// ------------------------------
 
 				const response = await request(app.getHttpServer())
@@ -411,7 +413,7 @@ describe('Promotions (e2e)', () => {
 				expect(response.body).toBeInstanceOf(Buffer);
 
 				// Delete the fake logo
-				await orm.em.removeAndFlush(logo);
+				await em.removeAndFlush(logo);
 				// ------------------------------
 			});
 		});
@@ -549,7 +551,7 @@ describe('Promotions (e2e)', () => {
 				// * Note: The logo is deleted in 'when the promotion exists and delete the logo' * //
 
 				// Get the old logo
-				const oldLogo = await orm.em.findOne(PromotionPicture, { picture_promotion: 21 });
+				const oldLogo = await em.findOne(PromotionPicture, { picture_promotion: 21 });
 
 				const response = await request(app.getHttpServer())
 					.post('/promotions/21/logo')
@@ -656,7 +658,7 @@ describe('Promotions (e2e)', () => {
 		describe('200 : Ok', () => {
 			it('when the promotion exists and delete the logo', async () => {
 				// Get the logo filename
-				const logo = await orm.em.findOne(PromotionPicture, { picture_promotion: 21 });
+				const logo = await em.findOne(PromotionPicture, { picture_promotion: 21 });
 
 				const response = await request(app.getHttpServer())
 					.delete('/promotions/21/logo')

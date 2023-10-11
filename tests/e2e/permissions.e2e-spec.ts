@@ -9,8 +9,10 @@ import { app, t, orm } from '..';
 describe('Permissions (e2e)', () => {
 	let tokenUnauthorized: string;
 	let tokenPermissionModerator: string;
+	let em: typeof orm.em;
 
 	beforeAll(async () => {
+		em = orm.em.fork();
 		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
 
 		const resA: res = await request(app.getHttpServer()).post('/auth/login').send({
@@ -139,9 +141,9 @@ describe('Permissions (e2e)', () => {
 				});
 
 				// Remove the permission after the test
-				const permission = await orm.em.findOneOrFail(Permission, { name: 'CAN_EDIT_PROMOTION', user: 1 });
-				orm.em.remove(permission);
-				await orm.em.flush();
+				const permission = await em.findOneOrFail(Permission, { name: 'CAN_EDIT_PROMOTION', user: 1 });
+				em.remove(permission);
+				await em.flush();
 				// ------------------------------
 			});
 		});

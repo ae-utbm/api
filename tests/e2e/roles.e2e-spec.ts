@@ -8,9 +8,11 @@ import { app, t, orm } from '..';
 describe('Roles (e2e)', () => {
 	let tokenUnauthorized: string;
 	let tokenRolesModerator: string;
+	let em: typeof orm.em;
 
 	beforeAll(async () => {
 		type res = Omit<request.Response, 'body'> & { body: { token: string } };
+		em = orm.em.fork();
 
 		const resA: res = await request(app.getHttpServer()).post('/auth/login').send({
 			email: 'unauthorized@email.com',
@@ -264,7 +266,7 @@ describe('Roles (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the role is updated', async () => {
-				const role_id = (await orm.em.findOne(Role, { name: 'TEST_ROLE' })).id;
+				const role_id = (await em.findOne(Role, { name: 'TEST_ROLE' })).id;
 				const response = await request(app.getHttpServer())
 					.patch('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
@@ -580,7 +582,7 @@ describe('Roles (e2e)', () => {
 
 		describe('201 : Created', () => {
 			it('should add the users to the role', async () => {
-				const role_id = (await orm.em.findOne(Role, { name: 'TEST_TEST_ROLE' })).id;
+				const role_id = (await em.findOne(Role, { name: 'TEST_TEST_ROLE' })).id;
 				const response = await request(app.getHttpServer())
 					.post(`/roles/${role_id}/users`)
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
@@ -740,7 +742,7 @@ describe('Roles (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the role exist and the users are removed', async () => {
-				const role_id = (await orm.em.findOne(Role, { name: 'TEST_TEST_ROLE' })).id;
+				const role_id = (await em.findOne(Role, { name: 'TEST_TEST_ROLE' })).id;
 				const response = await request(app.getHttpServer())
 					.delete(`/roles/${role_id}/users`)
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
