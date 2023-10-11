@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { existsSync, rmSync } from 'fs';
 
 (() => {
