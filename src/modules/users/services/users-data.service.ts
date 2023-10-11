@@ -226,15 +226,8 @@ export class UsersDataService {
 				subject: this.i18n.t('templates.register_common.subject', { lang: I18nContext.current().lang }),
 				html: getTemplate('emails/register_user', this.i18n, {
 					username: user.full_name,
-					link: this.configService.get<boolean>('production')
-						? /* istanbul ignore next-line */
-						  `${this.configService.get<string>('production_url')}/auth/confirm/${user.id}/${encodeURI(
-								email_token,
-						  )}/redirect`
-						: `http://localhost:${this.configService.get<string>('port')}/auth/confirm/${user.id}/${encodeURI(
-								email_token,
-						  )}`,
-					days: this.configService.get<number>('email.token_validity'),
+					link: `${this.configService.get<string>('api_url')}/auth/confirm/${user.id}/${encodeURI(email_token)}`,
+					days: this.configService.get<number>('users.verification_token_validity'),
 				}),
 			});
 		// Email change -> email changed template
@@ -244,14 +237,7 @@ export class UsersDataService {
 				subject: this.i18n.t('templates.email_changed.subject', { lang: I18nContext.current().lang }),
 				html: getTemplate('emails/email_changed', this.i18n, {
 					username: user.full_name,
-					link: this.configService.get<boolean>('production')
-						? /* istanbul ignore next-line */
-						  `${this.configService.get<string>('production_url')}/auth/confirm/${user.id}/${encodeURI(
-								email_token,
-						  )}/redirect`
-						: `http://localhost:${this.configService.get<string>('port')}/auth/confirm/${user.id}/${encodeURI(
-								email_token,
-						  )}`,
+					link: `${this.configService.get<string>('api_url')}/auth/confirm/${user.id}/${encodeURI(email_token)}`,
 				}),
 			});
 		}

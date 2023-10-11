@@ -1,18 +1,27 @@
 import { join } from 'path';
 
-export default () => ({
-	production: process.env['DEBUG'] === 'false',
-	production_url: 'https://ae.utbm.fr/api',
-	port: parseInt(process.env['API_PORT'], 10) || 3000,
+const PORT = parseInt(process.env['API_PORT'], 10) || 3000;
+const DEBUG = process.env['DEBUG'] === 'true';
+
+export type Config = typeof config;
+
+const config = () => ({
+	production: !DEBUG,
+	api_url: DEBUG ? `http://localhost:${PORT}` : 'https://ae.utbm.fr/api',
+	port: PORT,
+	cors: DEBUG ? ['*'] : process.env['CORS_ORIGIN_WHITELIST']?.split(';'),
 	auth: {
 		jwtKey: process.env['JWT_KEY'],
 		jwtExpirationTime: parseInt(process.env['JWT_EXPIRATION_TIME'], 10) || 60 * 60 * 24 * 7, // 1 week
 	},
 	files: {
 		baseDir: join(process.cwd(), process.env['FILES_BASE_DIR'] || './public'),
-		usersPicturesDelay: parseInt(process.env['USERS_PICTURES_DELAY'], 10) || 60 * 60 * 24 * 7, // 1 week
 		users: join(process.cwd(), process.env['USERS_PATH'] || './public/users'),
 		promotions: join(process.cwd(), process.env['PROMOTIONS_LOGO_PATH'] || './public/promotions'),
+	},
+	users: {
+		verification_token_validity: 7, // number of days before the account being deleted
+		picture_cooldown: parseInt(process.env['USERS_PICTURES_DELAY'], 10) || 60 * 60 * 24 * 7, // 1 week
 	},
 	email: {
 		enabled: process.env['EMAIL_ENABLED'] === 'true',
@@ -23,16 +32,15 @@ export default () => ({
 			user: process.env['EMAIL_AUTH_USER'],
 			pass: process.env['EMAIL_AUTH_PASS'],
 		},
-		token_validity: 7, // number of days before the account being deleted
-		whitelist: [
-			// Email addresses that are allowed to be used to register
-			// even if they're domain is blacklisted
-			'ae.info@utbm.fr',
-			...(process.env['WHITELISTED_EMAILS']?.split(';') ?? []),
-		],
+		whitelist: {
+			hosts: process.env['WHITELISTED_HOSTS']?.split(';') ?? [],
+			emails: ['ae.info@utbm.fr', ...(process.env['WHITELISTED_EMAILS']?.split(';') ?? [])],
+		},
 		blacklist: {
-			host: ['@utbm.fr', ...(process.env['BLACKLISTED_HOSTS']?.split(';') ?? [])],
+			hosts: ['@utbm.fr', ...(process.env['BLACKLISTED_HOSTS']?.split(';') ?? [])],
+			emails: process.env['BLACKLISTED_EMAILS']?.split(';') ?? [],
 		},
 	},
-	cors: process.env['DEBUG'] === 'true' ? '*' : process.env['CORS_ORIGIN_WHITELIST']?.split(';'),
 });
+
+export default config;

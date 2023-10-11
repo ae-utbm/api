@@ -2,6 +2,7 @@
 // TODO: Find a way to test emails
 
 import type { email } from '#types';
+import type { Config } from '@env';
 
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -47,11 +48,11 @@ export class EmailsService {
 
 		if (email.length > 60 || email.length < 6) throw new BadRequestException(this.t.Errors.Email.Malformed(email));
 
-		const whitelisted = this.configService.get<string[]>('email.whitelist');
-		const blacklisted = this.configService.get<string[]>('email.blacklist.host');
+		const whitelisted = this.configService.get<ReturnType<Config>['email']['whitelist']>('email.whitelist');
+		const blacklisted = this.configService.get<ReturnType<Config>['email']['blacklist']>('email.blacklist');
 
-		if (whitelisted.includes(email)) return;
-		if (blacklisted.some((host) => email.endsWith(host)))
+		if (whitelisted.hosts.some((host) => email.endsWith(host)) || whitelisted.emails.includes(email)) return;
+		if (blacklisted.hosts.some((host) => email.endsWith(host)) || blacklisted.emails.includes(email))
 			throw new BadRequestException(this.t.Errors.Email.Blacklisted(email));
 
 		const regex = new RegExp(
