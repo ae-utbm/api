@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 
-import { UsersService } from '@modules/users/users.service';
+import { UsersDataService } from '@modules/users/services/users-data.service';
 
 import { AuthService } from '../auth.service';
 
@@ -24,7 +24,7 @@ export class PermissionGuard implements CanActivate {
 	constructor(
 		protected readonly jwtService: JwtService,
 		protected readonly configService: ConfigService,
-		protected readonly userService: UsersService,
+		protected readonly userService: UsersDataService,
 		protected readonly reflector: Reflector,
 		protected readonly authService: AuthService,
 	) {}

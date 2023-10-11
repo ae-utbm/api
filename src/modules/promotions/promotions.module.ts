@@ -7,7 +7,7 @@ import { EmailsService } from '@modules/emails/emails.service';
 import { FilesService } from '@modules/files/files.service';
 import { ImagesService } from '@modules/files/images.service';
 import { TranslateService } from '@modules/translate/translate.service';
-import { UsersService } from '@modules/users/users.service';
+import { UsersDataService } from '@modules/users/services/users-data.service';
 
 import { PromotionPicture } from './entities/promotion-picture.entity';
 import { Promotion } from './entities/promotion.entity';
@@ -19,7 +19,7 @@ import { PromotionsService } from './promotions.service';
 	providers: [
 		PromotionsService,
 		JwtService,
-		UsersService,
+		UsersDataService,
 		FilesService,
 		EmailsService,
 		AuthService,

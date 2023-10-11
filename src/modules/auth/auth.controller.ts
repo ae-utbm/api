@@ -14,7 +14,7 @@ import { z } from 'zod';
 
 import { TranslateService } from '@modules/translate/translate.service';
 import { User } from '@modules/users/entities/user.entity';
-import { UsersService } from '@modules/users/users.service';
+import { UsersDataService } from '@modules/users/services/users-data.service';
 import { validate } from '@utils/validate';
 
 import { AuthService } from './auth.service';
@@ -28,7 +28,7 @@ export class AuthController {
 	constructor(
 		private readonly t: TranslateService,
 		private readonly authService: AuthService,
-		private readonly userService: UsersService,
+		private readonly userService: UsersDataService,
 	) {}
 
 	@Post('login')

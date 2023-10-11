@@ -8,7 +8,7 @@ import { compareSync } from 'bcrypt';
 
 import { TranslateService } from '@modules/translate/translate.service';
 import { User } from '@modules/users/entities/user.entity';
-import { UsersService } from '@modules/users/users.service';
+import { UsersDataService } from '@modules/users/services/users-data.service';
 
 import { TokenDTO } from './dto/token.dto';
 
@@ -17,7 +17,7 @@ export class AuthService {
 	constructor(
 		private readonly t: TranslateService,
 		private readonly jwtService: JwtService,
-		private readonly usersService: UsersService,
+		private readonly usersService: UsersDataService,
 		private readonly configService: ConfigService,
 	) {}
 

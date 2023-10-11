@@ -4,7 +4,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 
 import { TranslateService } from '@modules/translate/translate.service';
-import { UsersService } from '@modules/users/users.service';
+import { UsersDataService } from '@modules/users/services/users-data.service';
 
 import { PermissionGuard } from './permission.guard';
 import { SelfGuard } from './self.guard';
@@ -16,7 +16,7 @@ export class SelfOrPermissionGuard extends PermissionGuard implements CanActivat
 		private readonly t: TranslateService,
 		override readonly jwtService: JwtService,
 		override readonly configService: ConfigService,
-		override readonly userService: UsersService,
+		override readonly userService: UsersDataService,
 		override readonly reflector: Reflector,
 		override readonly authService: AuthService,
 	) {

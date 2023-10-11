@@ -22,14 +22,14 @@ import { UserRolesGetDTO } from '../dto/get.dto';
 import { UserPatchDTO, UserVisibilityPatchDTO } from '../dto/patch.dto';
 import { UserVisibility } from '../entities/user-visibility.entity';
 import { User } from '../entities/user.entity';
-import { UsersService } from '../users.service';
+import { UsersDataService } from '../services/users-data.service';
 
 @ApiTags('Users')
 @Controller('users')
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
 export class UsersDataController {
-	constructor(private readonly usersService: UsersService, private readonly t: TranslateService) {}
+	constructor(private readonly usersService: UsersDataService, private readonly t: TranslateService) {}
 
 	@Post()
 	@UseGuards(PermissionGuard)

@@ -12,12 +12,22 @@ import { User } from '@modules/users/entities/user.entity';
 
 import { UsersDataController } from './controllers/users-data.controller';
 import { UsersFilesController } from './controllers/users-files.controller';
-import { UsersService } from './users.service';
+import { UsersDataService } from './services/users-data.service';
+import { UsersFilesService } from './services/users-files.service';
 
 @Module({
 	imports: [MikroOrmModule.forFeature([User, UserVisibility])],
-	providers: [UsersService, JwtService, FilesService, EmailsService, AuthService, TranslateService, ImagesService],
+	providers: [
+		AuthService,
+		EmailsService,
+		FilesService,
+		ImagesService,
+		JwtService,
+		TranslateService,
+		UsersDataService,
+		UsersFilesService,
+	],
 	controllers: [UsersDataController, UsersFilesController],
-	exports: [UsersService],
+	exports: [UsersDataService, UsersFilesService],
 })
 export class UsersModule {}

@@ -8,7 +8,7 @@ import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
 import { TranslateService } from '@modules/translate/translate.service';
 import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
 import { User } from '@modules/users/entities/user.entity';
-import { UsersService } from '@modules/users/users.service';
+import { UsersDataService } from '@modules/users/services/users-data.service';
 
 import { RolePatchDTO } from './dto/patch.dto';
 import { RoleUsersResponseDTO } from './dto/users.dto';
@@ -20,7 +20,7 @@ export class RolesService {
 	constructor(
 		private readonly orm: MikroORM,
 		private readonly t: TranslateService,
-		private readonly usersService: UsersService,
+		private readonly usersService: UsersDataService,
 	) {}
 
 	/**

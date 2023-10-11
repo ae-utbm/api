@@ -28,7 +28,7 @@ import { TranslateService } from '@modules/translate/translate.service';
 import { validate } from '@utils/validate';
 
 import { User } from '../entities/user.entity';
-import { UsersService } from '../users.service';
+import { UsersFilesService } from '../services/users-files.service';
 
 @ApiTags('Users Files')
 @Controller('users')
@@ -37,7 +37,7 @@ import { UsersService } from '../users.service';
 export class UsersFilesController {
 	constructor(
 		private readonly t: TranslateService,
-		private readonly usersService: UsersService,
+		private readonly usersFilesService: UsersFilesService,
 		private readonly filesService: FilesService,
 	) {}
 
@@ -63,7 +63,7 @@ export class UsersFilesController {
 		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
 		validate(z.coerce.number().int().min(1), id);
 
-		return this.usersService.updatePicture(id, file);
+		return this.usersFilesService.updatePicture(id, file);
 	}
 
 	@Delete(':id/picture')
@@ -74,7 +74,7 @@ export class UsersFilesController {
 	async deletePicture(@Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id);
 
-		return this.usersService.deletePicture(id);
+		return this.usersFilesService.deletePicture(id);
 	}
 
 	@Get(':id/picture')
@@ -85,7 +85,7 @@ export class UsersFilesController {
 	async getPicture(@Req() req: RequestWithUser, @Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id);
 
-		const picture = await this.usersService.getPicture(id);
+		const picture = await this.usersFilesService.getPicture(id);
 
 		if (await this.filesService.canReadFile(picture, req.user as User))
 			return new StreamableFile(this.filesService.toReadable(picture));
@@ -115,7 +115,7 @@ export class UsersFilesController {
 		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
 		validate(z.coerce.number().int().min(1), id);
 
-		return this.usersService.updateBanner(id, file);
+		return this.usersFilesService.updateBanner(id, file);
 	}
 
 	@Delete(':id/banner')
@@ -126,7 +126,7 @@ export class UsersFilesController {
 	async deleteBanner(@Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id);
 
-		return this.usersService.deleteBanner(id);
+		return this.usersFilesService.deleteBanner(id);
 	}
 
 	@Get(':id/banner')
@@ -137,7 +137,7 @@ export class UsersFilesController {
 	async getBanner(@Req() req: RequestWithUser, @Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id);
 
-		const banner = await this.usersService.getBanner(id);
+		const banner = await this.usersFilesService.getBanner(id);
 
 		if (await this.filesService.canReadFile(banner, req.user as User))
 			return new StreamableFile(this.filesService.toReadable(banner));

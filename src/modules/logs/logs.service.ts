@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
 import { TranslateService } from '@modules/translate/translate.service';
-import { UsersService } from '@modules/users/users.service';
+import { UsersDataService } from '@modules/users/services/users-data.service';
 
 import { Log } from './entities/log.entity';
 
@@ -12,7 +12,7 @@ export class LogsService {
 	constructor(
 		private readonly orm: MikroORM,
 		private readonly t: TranslateService,
-		private readonly usersService: UsersService,
+		private readonly usersService: UsersDataService,
 	) {}
 
 	/**
