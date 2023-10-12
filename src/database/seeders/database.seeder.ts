@@ -54,7 +54,6 @@ export class DatabaseSeeder extends Seeder {
 		permUser.roles.add(roles.find((r) => r.name === 'PERMISSIONS_MODERATOR'));
 		promosUser.roles.add(roles.find((r) => r.name === 'PROMOTIONS_MODERATOR'));
 		rolesUser.roles.add(roles.find((r) => r.name === 'ROLES_MODERATOR'));
-		subscribedUser.roles.add(roles.find((r) => r.name === 'SUBSCRIBER'));
 
 		const role_expirations = [
 			em.create(RoleExpiration, {
@@ -70,11 +69,6 @@ export class DatabaseSeeder extends Seeder {
 			em.create(RoleExpiration, {
 				user: rolesUser,
 				role: roles.find((r) => r.name === 'ROLES_MODERATOR'),
-				expires: new Date('9999-12-31'),
-			}),
-			em.create(RoleExpiration, {
-				user: subscribedUser,
-				role: roles.find((r) => r.name === 'SUBSCRIBER'),
 				expires: new Date('9999-12-31'),
 			}),
 		];
@@ -119,10 +113,6 @@ export class DatabaseSeeder extends Seeder {
 			{
 				name: 'ROLES_MODERATOR',
 				permissions: ['CAN_READ_ROLE', 'CAN_EDIT_ROLE'],
-			},
-			{
-				name: 'SUBSCRIBER',
-				permissions: ['CAN_READ_USER', 'CAN_READ_PROMOTION', 'CAN_READ_FILE'],
 			},
 		];
 
@@ -224,6 +214,7 @@ export class DatabaseSeeder extends Seeder {
 				first_name: 'subscribed',
 				last_name: 'user',
 				birth_date: new Date('2000-01-01'),
+				subscribed: true,
 			},
 		];
 

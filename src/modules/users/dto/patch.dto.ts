@@ -53,7 +53,7 @@ export class UserPatchDTO implements UserPatchDto {
 	@IsString()
 	parent_contact?: string;
 
-	// TODO: to implement in an upcoming PR (see the user entity)
+	// TODO: (KEY: 1) Make a PR to implement cursus & specialty in the API
 	// @ApiProperty({ required: false })
 	// @IsString()
 	// cursus?: string;

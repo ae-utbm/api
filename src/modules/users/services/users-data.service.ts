@@ -261,7 +261,13 @@ export class UsersDataService {
 
 			// Generate a random password & hash it
 			const password = generateRandomPassword(12);
-			const user = this.orm.em.create(User, { ...input, password: hashSync(password, 10), email_verified: true });
+			const user = this.orm.em.create(User, {
+				...input,
+				password: hashSync(password, 10),
+				email_verified: true,
+				verified: new Date(),
+			});
+
 			this.orm.em.create(UserVisibility, { user });
 			users.push(user);
 

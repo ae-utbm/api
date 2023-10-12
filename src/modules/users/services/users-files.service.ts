@@ -61,15 +61,18 @@ export class UsersFilesService {
 
 	@CreateRequestContext()
 	async getPicture(id: number): Promise<UserPicture> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['picture'] });
-		if (!user.picture) throw new NotFoundException('User has no picture');
+		const user = await this.orm.em.findOne(User, { id }, { populate: ['picture', 'picture.visibility'] });
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
+		if (!user.picture) throw new NotFoundException(this.t.Errors.User.NoPicture(id));
+
 		return user.picture;
 	}
 
 	@CreateRequestContext()
 	async deletePicture(id: number): Promise<void> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['picture'] });
-		if (!user.picture) throw new NotFoundException('User has no picture to be deleted');
+		const user = await this.orm.em.findOne(User, { id }, { populate: ['picture'] });
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
+		if (!user.picture) throw new NotFoundException(this.t.Errors.User.NoPicture(id));
 
 		this.filesService.deleteFromDisk(user.picture);
 		await this.orm.em.removeAndFlush(user.picture);
@@ -116,8 +119,10 @@ export class UsersFilesService {
 
 	@CreateRequestContext()
 	async getBanner(id: number): Promise<UserBanner> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['banner'] });
-		if (!user.banner) throw new NotFoundException('User has no banner');
+		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['banner', 'banner.visibility'] });
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
+		if (!user.picture) throw new NotFoundException(this.t.Errors.User.NoBanner(id));
+
 		return user.banner;
 	}
 
@@ -125,7 +130,7 @@ export class UsersFilesService {
 	async deleteBanner(id: number): Promise<void> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['banner'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
-		if (!user.banner) throw new NotFoundException('User has no banner to be deleted');
+		if (!user.picture) throw new NotFoundException(this.t.Errors.User.NoBanner(id));
 
 		this.filesService.deleteFromDisk(user.banner);
 		await this.orm.em.removeAndFlush(user.banner);

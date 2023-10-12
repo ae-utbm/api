@@ -64,7 +64,7 @@ export class LoggingInterceptor implements NestInterceptor {
 					if ((await em.fork().findOne(User, { id: user.id })) === null) return;
 
 					// Update the log entity after the observable is ended
-					log.response = JSON.stringify(response.body); // TODO: Get the actual response body (actually null)
+					log.response = JSON.stringify(response.body); // TODO: (KEY: 6) Get the actual response body (actually null)
 					log.status_code = response.statusCode;
 					log.error = response.error;
 					log.error_stack = response.error_stack;

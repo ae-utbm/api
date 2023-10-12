@@ -62,6 +62,8 @@ export class TranslateService {
 			NotProvided: () => this.generic('responses.errors.file.no_file', {}),
 			NotFoundOnDisk: (file: string) => this.generic('responses.errors.file.not_found_on_disk', { file }),
 			UndefinedMimeType: () => this.generic('responses.errors.file.undefined_mime_type', {}),
+			Unauthorized: (visibility_group: string) =>
+				this.generic('responses.errors.file.unauthorized', { visibility_group }),
 		},
 		Id: {
 			Invalid: <T>(type: Class<T> | string, id: string | number) =>
@@ -102,6 +104,8 @@ export class TranslateService {
 		},
 		User: {
 			CannotUpdateBirthDateOrName: () => this.generic('responses.errors.user.cannot_update_birth_date_or_name', {}),
+			NoPicture: (user_id: number | string) => this.generic('responses.errors.user.no_picture', { user_id }),
+			NoBanner: (user_id: number | string) => this.generic('responses.errors.user.no_banner', { user_id }),
 		},
 	};
 

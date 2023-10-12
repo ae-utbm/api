@@ -324,7 +324,7 @@ describe('Promotions (e2e)', () => {
 		});
 	});
 
-	describe('(GET) /promotions/:id/logo', () => {
+	describe('(GET) /promotions/:number/logo', () => {
 		describe('400 : Bad Request', () => {
 			it('when the promotion number is invalid', async () => {
 				const response = await request(app.getHttpServer())
@@ -397,8 +397,8 @@ describe('Promotions (e2e)', () => {
 					filename: '21.webp',
 					mimetype: 'image/webp',
 					path: join(process.cwd(), './tests/files/promo_21.png'),
-					picture_promotion: 21,
-					description: 'Promotion logo of the promotion 21',
+					picture_promotion: em.getReference(Promotion, 21),
+					description: 'Promotion logo of the 21st promotion',
 					size: 0,
 				});
 

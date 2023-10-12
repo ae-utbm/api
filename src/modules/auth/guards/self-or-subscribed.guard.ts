@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
@@ -6,14 +6,13 @@ import { JwtService } from '@nestjs/jwt';
 import { TranslateService } from '@modules/translate/translate.service';
 import { UsersDataService } from '@modules/users/services/users-data.service';
 
-import { PermissionGuard } from './permission.guard';
 import { SelfGuard } from './self.guard';
+import { SubscribedGuard } from './subscribed.guard';
 import { AuthService } from '../auth.service';
 
-@Injectable()
-export class SelfOrPermissionGuard extends PermissionGuard implements CanActivate {
+export class SelfOrSubscribedGuard extends SubscribedGuard implements CanActivate {
 	constructor(
-		readonly t: TranslateService,
+		private readonly t: TranslateService,
 		override readonly jwtService: JwtService,
 		override readonly configService: ConfigService,
 		override readonly userService: UsersDataService,

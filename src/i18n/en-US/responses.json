@@ -25,11 +25,12 @@
       "invalid": "Field '{field}' is invalid, '{type}' expected."
     },
     "file": {
+      "infected": "The given file '{file}' is infected by a virus.",
+      "invalid_mime_type": "The given file has not one of the expected mime type : '[{mime_type}]'.",
       "no_file": "No file was provided.",
       "not_found_on_disk": "File '{file}' not found on disk.",
-      "invalid_mime_type": "The given file has not one of the expected mime type : '[{mime_type}]'.",
       "undefined_mime_type": "The given file has an undefined mime type.",
-      "infected": "The given file '{file}' is infected by a virus."
+      "unauthorized": "You need to be in the '{visibility_group}' visibility group to access this file."
     },
     "id": {
       "invalid": "{type} ID '{id}' is invalid.",
@@ -61,7 +62,9 @@
       "name_used": "Role name '{name}' is already taken."
     },
     "user": {
-      "cannot_update_birth_date_or_name": "You cannot update your own birth date/name, ask another user with the appropriate permission"
+      "cannot_update_birth_date_or_name": "You cannot update your own birth date/name, ask another user with the appropriate permission",
+      "no_picture": "User '{user_id}' does not have a picture.",
+      "no_banner": "User '{user_id}' does not have a banner."
     }
   },
   "success": {

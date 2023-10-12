@@ -12,6 +12,7 @@ describe('Users Data (e2e)', () => {
 	let tokenUnauthorized: string;
 	let tokenRoot: string;
 	let tokenSubscriber: string;
+	let tokenPerms: string;
 	let em: typeof orm.em;
 
 	const fakeUserEmail: email = 'john.doe@example.fr';
@@ -40,6 +41,13 @@ describe('Users Data (e2e)', () => {
 		});
 
 		tokenSubscriber = responseC.body.token;
+
+		const responseD: res = await request(app.getHttpServer()).post('/auth/login').send({
+			email: 'perms@email.com',
+			password: 'root',
+		});
+
+		tokenPerms = responseD.body.token;
 	});
 
 	describe('(POST) /users', () => {
@@ -243,6 +251,7 @@ describe('Users Data (e2e)', () => {
 						logs: [],
 						permissions: [],
 						roles: [],
+						verified: expect.any(String),
 					},
 				]);
 			});
@@ -266,6 +275,25 @@ describe('Users Data (e2e)', () => {
 					error: 'Bad Request',
 					statusCode: 400,
 					message: t.Errors.Id.Invalid(User, 'abc'),
+				});
+			});
+
+			it('when the user email is already used', async () => {
+				const response = await request(app.getHttpServer())
+					.patch('/users')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.send([
+						{
+							id: 1,
+							email: 'unverified@email.com',
+						},
+					])
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: t.Errors.Email.IsAlreadyUsed('unverified@email.com'),
 				});
 			});
 		});
@@ -426,7 +454,7 @@ describe('Users Data (e2e)', () => {
 						promotion: null,
 						pronouns: null,
 						secondary_email: null,
-						verified: null,
+						verified: expect.any(String),
 					},
 				]);
 
@@ -1065,18 +1093,23 @@ describe('Users Data (e2e)', () => {
 		describe('200 : Ok', () => {
 			it('when the user is asking for himself', async () => {
 				const user = await request(app.getHttpServer())
-					.get('/users/8/roles') // root user id = 1
-					.set('Authorization', `Bearer ${tokenSubscriber}`)
+					.get('/users/5/roles') // perms user id = 5
+					.set('Authorization', `Bearer ${tokenPerms}`)
 					.expect(200);
 
 				expect(user.body).toEqual([
 					{
-						id: 4,
+						id: 1,
 						created: expect.any(String),
 						updated: expect.any(String),
-						name: 'SUBSCRIBER',
+						name: 'PERMISSIONS_MODERATOR',
 						revoked: false,
-						permissions: ['CAN_READ_USER', 'CAN_READ_PROMOTION', 'CAN_READ_FILE'],
+						permissions: [
+							'CAN_READ_PERMISSIONS_OF_USER',
+							'CAN_EDIT_PERMISSIONS_OF_USER',
+							'CAN_READ_PERMISSIONS_OF_ROLE',
+							'CAN_EDIT_PERMISSIONS_OF_ROLE',
+						],
 						expires: expect.any(String),
 					},
 				]);
@@ -1084,18 +1117,23 @@ describe('Users Data (e2e)', () => {
 
 			it('when the user has permission to get the data', async () => {
 				const user = await request(app.getHttpServer())
-					.get('/users/8/roles') // root user id = 1
+					.get('/users/5/roles')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(200);
 
 				expect(user.body).toEqual([
 					{
-						id: 4,
+						id: 1,
 						created: expect.any(String),
 						updated: expect.any(String),
-						name: 'SUBSCRIBER',
+						name: 'PERMISSIONS_MODERATOR',
 						revoked: false,
-						permissions: ['CAN_READ_USER', 'CAN_READ_PROMOTION', 'CAN_READ_FILE'],
+						permissions: [
+							'CAN_READ_PERMISSIONS_OF_USER',
+							'CAN_EDIT_PERMISSIONS_OF_USER',
+							'CAN_READ_PERMISSIONS_OF_ROLE',
+							'CAN_EDIT_PERMISSIONS_OF_ROLE',
+						],
 						expires: expect.any(String),
 					},
 				]);

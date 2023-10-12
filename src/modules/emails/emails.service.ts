@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-// TODO: Find a way to test emails
+// TODO: (KEY: 3) Find a way to test emails (sending / receiving)
 
 import type { email } from '#types';
 import type { Config } from '@env';

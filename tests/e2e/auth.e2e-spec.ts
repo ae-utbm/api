@@ -248,6 +248,7 @@ describe('Auth (e2e)', () => {
 					permissions: [],
 					roles: [],
 					updated: expect.any(String),
+					verified: null,
 				});
 			});
 		});

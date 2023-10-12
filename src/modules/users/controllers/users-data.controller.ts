@@ -9,10 +9,12 @@ import { USER_GENDER } from '@exported/api/constants/genders';
 import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
+import { GuardSelfOrPermsOrSub } from '@modules/auth/decorators/self-or-sub-perms.decorator';
 import { GuardSelfParam } from '@modules/auth/decorators/self.decorator';
 import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
+import { SelfOrPermsOrSubGuard } from '@modules/auth/guards/self-or-sub-or-perms.guard';
 import { SelfGuard } from '@modules/auth/guards/self.guard';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { TranslateService } from '@modules/translate/translate.service';
@@ -75,7 +77,7 @@ export class UsersDataController {
 				secondary_email: z.string().email().optional(),
 				phone: z.string().optional(),
 				parent_contact: z.string().optional(),
-				// TODO: to implement in an upcoming PR (see the user entity)
+				// TODO: (KEY: 1) Make a PR to implement cursus & specialty in the API
 				// cursus: z.string().optional(),
 				// specialty: z.string().optional(),
 				promotion: z.coerce.number().optional(),
@@ -111,8 +113,8 @@ export class UsersDataController {
 	}
 
 	@Get(':id/data/public')
-	@UseGuards(SelfOrPermissionGuard)
-	@GuardSelfOrPermissions('id', ['CAN_READ_USER'])
+	@UseGuards(SelfOrPermsOrSubGuard)
+	@GuardSelfOrPermsOrSub('id', ['CAN_READ_USER'])
 	@ApiOperation({ summary: 'Get publicly available information of a user' })
 	@ApiOkResponse({ description: 'User data, excepted privates fields (set in the visibility table)', type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
@@ -161,7 +163,7 @@ export class UsersDataController {
 	}
 
 	@Get(':id/roles')
-	@UseGuards(PermissionGuard)
+	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER'])
 	@ApiOperation({ summary: 'Get roles of a user' })
 	@ApiOkResponse({ description: 'Roles of the user', type: [UserRolesGetDTO] })
@@ -173,7 +175,7 @@ export class UsersDataController {
 	}
 
 	@Get(':id/permissions')
-	@UseGuards(PermissionGuard)
+	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER'])
 	@ApiOperation({ summary: 'Get permissions of a user' })
 	@ApiOkResponse({ description: 'Permissions of the user', type: [Permission] })

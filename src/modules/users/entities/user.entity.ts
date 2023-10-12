@@ -97,7 +97,7 @@ export class User
 	@ApiProperty({ example: null })
 	pronouns?: string;
 
-	// TODO: use an entity relation with both cursus and specialty (called semester ?)
+	// TODO: (KEY: 1) Make a PR to implement cursus & specialty in the API
 	//* Should be a One to Many relation (one user can have multiple semester)
 	// @Property({ nullable: true })
 	// @ApiProperty()
@@ -116,30 +116,10 @@ export class User
 	last_seen?: Date;
 
 	//* SUBSCRIPTIONS
-	// TODO: to be implemented
-	// @OneToMany(() => Subscription, (subscription) => subscription.user, {
-	// 	cascade: [Cascade.REMOVE],
-	// 	nullable: true,
-	// 	orphanRemoval: true,
-	// })
-	// subscriptions?: Collection<Subscription>;
-
-	// @Property({ nullable: true })
-	// @ApiProperty()
-	// subscriber_account?: string;
-
-	/** The current subscription of the user */
-	// @Property({ persist: false })
-	// get current_subscription(): EntityDTO<Subscription> | undefined {
-	// 	return this.subscriptions.toArray().find((subscription) => subscription.is_active);
-	// }
-
-	/** True if the user is currently subscribed */
-	// @Property({ persist: false })
-	// @ApiProperty()
-	// get is_currently_subscribed(): boolean {
-	// 	return this.current_subscription !== undefined;
-	// }
+	// TODO: (KEY: 2) Make a PR to implement subscriptions in the API
+	@Property({ onCreate: () => false, hidden: true })
+	@ApiProperty({ example: false })
+	subscribed: boolean;
 
 	//* CONTACT
 	@Property({ nullable: true })
@@ -168,7 +148,7 @@ export class User
 	@OneToMany(() => Log, (log) => log.user, { cascade: [Cascade.REMOVE], orphanRemoval: true, nullable: true })
 	logs? = new Collection<Log>(this);
 
-	@Property({ type: Date, nullable: true })
+	@Property({ type: Date, nullable: true, onCreate: () => null })
 	@ApiProperty({ type: Date })
 	verified?: Date;
 

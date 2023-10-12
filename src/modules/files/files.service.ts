@@ -10,6 +10,8 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { fromBuffer, MimeType } from 'file-type';
 
 import { TranslateService } from '@modules/translate/translate.service';
+import { UserBanner } from '@modules/users/entities/user-banner.entity';
+import { UserPicture } from '@modules/users/entities/user-picture.entity';
 import { User } from '@modules/users/entities/user.entity';
 
 import { FileVisibilityGroup } from './entities/file-visibility.entity';
@@ -43,20 +45,21 @@ export class FilesService {
 		await file.visibility.init();
 		if (!file.visibility) return true;
 
+		// File owner can always read his own files
+		if (file instanceof UserPicture && file.picture_user.id === user.id) return true;
+		if (file instanceof UserBanner && file.banner_user.id === user.id) return true;
+
 		// If user is ROOT / CAN_READ_FILE, he can read the file no matter what
 		await user.permissions.init();
-		const perms = user.permissions.getItems();
-		if (perms.some((perm) => perm.name === 'ROOT' || perm.name === 'CAN_READ_FILE')) return true;
+		if (user.permissions.getItems().some((perm) => perm.name === 'ROOT' || perm.name === 'CAN_READ_FILE')) return true;
 
+		// Check if the user has the correct visibility group to read the file
 		await user.files_visibility_groups.init();
-
-		const fileGroup = file.visibility;
-		const userGroups = user.files_visibility_groups.getItems();
-
-		// File owner can always read his own files
-		if ('user' in file && 'id' in (file.user as User) && user.id === (file.user as User).id) return true;
-
-		return userGroups.includes(fileGroup);
+		return (
+			user.files_visibility_groups
+				.getItems()
+				.find((g) => g.id === file.visibility.id && g.name === file.visibility.name) !== undefined
+		);
 	}
 
 	/**
@@ -94,7 +97,7 @@ export class FilesService {
 	/**
 	 * Upload file on disk, but convert it to webp first
 	 * (unless it's a GIF or webp already)
-	 * TODO: move this function to the images.service.ts file ?
+	 * TODO: (KEY: 4) move this function to the images.service.ts file ?
 	 */
 	async writeOnDiskAsImage(file: Express.Multer.File, options: WriteImageOptions) {
 		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
@@ -116,7 +119,7 @@ export class FilesService {
 
 	/**
 	 * Scan a file with an Antivirus
-	 * TODO: Implement an antivirus (do a specific PR for it, as it's quite a big feature)
+	 * TODO: (KEY: 5) Implement an antivirus (do a specific PR for it, as it's quite a big feature)
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	private async scanWithAntivirus(buffer: Buffer): Promise<boolean> {
