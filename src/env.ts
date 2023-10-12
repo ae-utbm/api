@@ -1,15 +1,15 @@
 import { join } from 'path';
 
-const PORT = parseInt(process.env['API_PORT'], 10) || 3000;
-const DEBUG = process.env['DEBUG'] === 'true';
-
 export type Config = typeof config;
 
 const config = () => ({
-	production: !DEBUG,
-	api_url: DEBUG ? `http://localhost:${PORT}` : 'https://ae.utbm.fr/api',
-	port: PORT,
-	cors: DEBUG ? ['*'] : process.env['CORS_ORIGIN_WHITELIST']?.split(';'),
+	production: process.env['DEBUG'] !== 'true',
+	api_url:
+		process.env['DEBUG'] === 'true'
+			? `http://localhost:${parseInt(process.env['API_PORT'], 10) || 3000}`
+			: 'https://ae.utbm.fr/api',
+	port: parseInt(process.env['API_PORT'], 10) || 3000,
+	cors: process.env['DEBUG'] === 'true' ? ['*'] : process.env['CORS_ORIGIN_WHITELIST']?.split(';'),
 	auth: {
 		jwtKey: process.env['JWT_KEY'],
 		jwtExpirationTime: parseInt(process.env['JWT_EXPIRATION_TIME'], 10) || 60 * 60 * 24 * 7, // 1 week
