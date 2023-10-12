@@ -347,11 +347,16 @@ export class UsersDataService {
 		const roles_base = user.roles.getItems();
 		const roles_data = await this.orm.em.find(RoleExpiration, { user: { $in: [user] } });
 
-		const roles = roles_base.map((r) => ({
-			...r,
-			users: undefined,
-			expires: roles_data.find((d) => d.role.id === r.id).expires,
-		}));
+		const roles = roles_data.map((d) => {
+			const r = roles_base.find((r) => r.id === d.role.id);
+
+			return {
+				...r,
+				users: undefined,
+				expires: d.expires,
+				revoked: d.revoked || r.revoked,
+			};
+		});
 
 		if (!input.show_expired) roles.filter((p) => p.expires > new Date());
 		if (!input.show_revoked) roles.filter((p) => p.revoked === false);

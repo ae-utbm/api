@@ -164,7 +164,7 @@ export class UsersDataController {
 
 	@Get(':id/roles')
 	@UseGuards(SelfOrPermissionGuard)
-	@GuardSelfOrPermissions('id', ['CAN_READ_USER'])
+	@GuardSelfOrPermissions('id', ['CAN_READ_USER', 'CAN_READ_ROLE'])
 	@ApiOperation({ summary: 'Get roles of a user' })
 	@ApiOkResponse({ description: 'Roles of the user', type: [UserRolesGetDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
@@ -176,7 +176,7 @@ export class UsersDataController {
 
 	@Get(':id/permissions')
 	@UseGuards(SelfOrPermissionGuard)
-	@GuardSelfOrPermissions('id', ['CAN_READ_USER'])
+	@GuardSelfOrPermissions('id', ['CAN_READ_USER', 'CAN_READ_PERMISSIONS_OF_USER'])
 	@ApiOperation({ summary: 'Get permissions of a user' })
 	@ApiOkResponse({ description: 'Permissions of the user', type: [Permission] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })

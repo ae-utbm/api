@@ -98,9 +98,10 @@ export class RolesService {
 		const role = await this.orm.em.findOne(Role, { id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(this.t.Errors.Id.NotFound(Role, id));
 
-		const role_expirations = await this.orm.em.find(RoleExpiration, { role: { id } });
+		const role_expirations = await this.orm.em.find(RoleExpiration, { role: { id }, revoked: false });
+		const users_ids = role_expirations.map((r) => r.user.id).unique();
 
-		const users = this.usersService.asBaseUsers(role.users.getItems());
+		const users = this.usersService.asBaseUsers(role.users.getItems().filter((u) => users_ids.includes(u.id)));
 		return users.map((u) => ({ ...u, role_expires: role_expirations.find((r) => r.user.id === u.id).expires }));
 	}
 
@@ -137,9 +138,14 @@ export class RolesService {
 		const users = await this.orm.em.find(User, { id: { $in: users_id } });
 		if (!users.length) throw new NotFoundException(this.t.Errors.Id.NotFound(User, users_id.join(', ')));
 
-		role.users.remove(users);
+		const roleExpirations = await this.orm.em.find(RoleExpiration, {
+			role,
+			user: { $in: users },
+		});
 
-		await this.orm.em.persistAndFlush([role, ...users]);
+		roleExpirations.forEach((r) => (r.revoked = true));
+		await this.orm.em.persistAndFlush([role, ...users, ...roleExpirations]);
+
 		return this.getUsers(role_id);
 	}
 }

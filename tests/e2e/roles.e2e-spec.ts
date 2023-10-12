@@ -589,7 +589,6 @@ describe('Roles (e2e)', () => {
 					.send([
 						{ id: 1, expires: new Date('9021-01-01').toISOString() },
 						{ id: 2, expires: new Date('9022-01-01').toISOString() },
-						{ id: 5, expires: new Date('9023-01-01').toISOString() },
 					])
 					.expect(201);
 
@@ -616,16 +615,6 @@ describe('Roles (e2e)', () => {
 					role_expires: '9022-01-01T00:00:00.000Z',
 					first_name: 'unverified',
 					last_name: 'user',
-					nickname: null,
-				});
-
-				expect(body[2]).toEqual({
-					id: 5,
-					created: expect.any(String),
-					updated: expect.any(String),
-					role_expires: '9023-01-01T00:00:00.000Z',
-					first_name: 'perms',
-					last_name: 'moderator',
 					nickname: null,
 				});
 			});
@@ -743,16 +732,36 @@ describe('Roles (e2e)', () => {
 		describe('200 : Ok', () => {
 			it('when the role exist and the users are removed', async () => {
 				const role_id = (await em.findOne(Role, { name: 'TEST_TEST_ROLE' })).id;
-				const response = await request(app.getHttpServer())
+
+				// Check that the user has the role
+				const response1 = await request(app.getHttpServer())
+					.get('/users/2/roles')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.expect(200);
+
+				expect(response1.body).toEqual([
+					{
+						id: role_id,
+						created: expect.any(String),
+						expires: expect.any(String),
+						name: 'TEST_TEST_ROLE',
+						permissions: ['ROOT', 'CAN_READ_ROLE', 'CAN_EDIT_ROLE'],
+						revoked: false,
+						updated: expect.any(String),
+					},
+				]);
+
+				// check that the users are removed
+				const response2 = await request(app.getHttpServer())
 					.delete(`/roles/${role_id}/users`)
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send([2])
 					.expect(200);
 
-				const body = response.body as Array<unknown>;
+				const body = response2.body as Array<unknown>;
 
 				expect(body).toBeInstanceOf(Array);
-				expect(body.length).toEqual(2);
+				expect(body.length).toEqual(1);
 				expect(body.haveEqualObjects()).toBe(true);
 
 				expect(body[0]).toEqual({
@@ -765,15 +774,23 @@ describe('Roles (e2e)', () => {
 					role_expires: expect.any(String),
 				});
 
-				expect(body[1]).toEqual({
-					id: 5,
-					created: expect.any(String),
-					updated: expect.any(String),
-					first_name: 'perms',
-					last_name: 'moderator',
-					nickname: null,
-					role_expires: expect.any(String),
-				});
+				// check that the role has been revoked
+				const response3 = await request(app.getHttpServer())
+					.get('/users/2/roles')
+					.set('Authorization', `Bearer ${tokenRolesModerator}`)
+					.expect(200);
+
+				expect(response3.body).toEqual([
+					{
+						id: role_id,
+						created: expect.any(String),
+						expires: expect.any(String),
+						name: 'TEST_TEST_ROLE',
+						permissions: ['ROOT', 'CAN_READ_ROLE', 'CAN_EDIT_ROLE'],
+						revoked: true, // this is the only difference
+						updated: expect.any(String),
+					},
+				]);
 			});
 		});
 	});
