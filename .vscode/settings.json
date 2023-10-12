@@ -26,5 +26,6 @@
   "editor.fontLigatures": true,
   "editor.fontFamily": "'Fira Code', Consolas, 'Courier New', monospace",
   "material-icon-theme.activeIconPack": "nest",
-  "prettier.configPath": ".prettierrc"
+  "prettier.configPath": ".prettierrc",
+  "commentAnchors.workspace.excludeFiles": "**/{node_modules,.git,.idea,target,out,build,bin,obj,dist,vendor,coverage}/**/*"
 }
