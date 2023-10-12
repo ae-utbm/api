@@ -73,21 +73,6 @@ export class AuthController {
 	@ApiParam({ name: 'user_id', type: Number })
 	@ApiParam({ name: 'token', type: String })
 	@ApiOperation({ summary: 'Validate a user account and redirect after' })
-	@ApiOkResponse({ description: 'User account validated', type: User })
-	@ApiNotFoundResponse({ description: 'User not found' })
-	@ApiBadRequestResponse({ description: 'Bad request, missing id/token or email already verified' })
-	@ApiUnauthorizedResponse({ description: 'Unauthorized, invalid token' })
-	async verifyEmail(@Param('user_id') user_id: number, @Param('token') token: string) {
-		validate(z.coerce.number().int().min(1), user_id, this.t.Errors.Id.Invalid(User, user_id));
-		validate(z.string().min(12), token, this.t.Errors.JWT.Invalid());
-
-		return this.userService.verifyEmail(user_id, token);
-	}
-
-	@Get('confirm/:user_id/:token/redirect')
-	@ApiParam({ name: 'user_id', type: Number })
-	@ApiParam({ name: 'token', type: String })
-	@ApiOperation({ summary: 'Validate a user account and redirect after' })
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiBadRequestResponse({ description: 'Bad request, missing id/token or email already verified' })
 	@ApiUnauthorizedResponse({ description: 'Unauthorized, invalid token' })
