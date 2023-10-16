@@ -19,7 +19,7 @@ module.exports = {
 		jest: true,
 	},
 	ignorePatterns: [
-		'.eslintrc.js',
+		'.eslintrc.cjs',
 		'dist',
 		'node_modules',
 		'coverage',
