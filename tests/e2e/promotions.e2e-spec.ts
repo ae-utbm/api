@@ -391,30 +391,35 @@ describe('Promotions (e2e)', () => {
 		});
 
 		describe('200 : Ok', () => {
-			it('when the promotion exists and return the logo', async () => {
+			let logo: PromotionPicture;
+
+			beforeAll(async () => {
 				// Set a fake logo
-				const logo = em.create(PromotionPicture, {
+				logo = em.create(PromotionPicture, {
 					filename: '21.webp',
 					mimetype: 'image/webp',
 					path: join(process.cwd(), './tests/files/promo_21.png'),
 					picture_promotion: em.getReference(Promotion, 21),
-					description: 'Promotion logo of the 21st promotion',
+					description: 'Promotion logo',
 					size: 0,
 				});
 
 				await em.persistAndFlush(logo);
-				// ------------------------------
+			});
 
+			afterAll(async () => {
+				// Delete the fake logo
+				await em.removeAndFlush(logo);
+			});
+
+			it('when the promotion exists and return the logo', async () => {
 				const response = await request(app.getHttpServer())
 					.get('/promotions/21/logo')
-					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
+					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
+					.expect(200);
 
 				expect(response.body).toBeDefined();
 				expect(response.body).toBeInstanceOf(Buffer);
-
-				// Delete the fake logo
-				await em.removeAndFlush(logo);
-				// ------------------------------
 			});
 		});
 	});
@@ -515,8 +520,6 @@ describe('Promotions (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the promotion exists and set the logo', async () => {
-				// * Note: The logo is deleted in 'when the promotion exists and delete the logo' * //
-
 				const response = await request(app.getHttpServer())
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
@@ -533,7 +536,6 @@ describe('Promotions (e2e)', () => {
 						created: expect.any(String),
 						updated: expect.any(String),
 						filename: expect.any(String),
-						description: 'Promotion logo of the promotion 21',
 						mimetype: 'image/webp',
 						size: 117280,
 					},
@@ -548,8 +550,6 @@ describe('Promotions (e2e)', () => {
 			});
 
 			it('when the promotion has a logo and update the logo', async () => {
-				// * Note: The logo is deleted in 'when the promotion exists and delete the logo' * //
-
 				// Get the old logo
 				const oldLogo = await em.findOne(PromotionPicture, { picture_promotion: 21 });
 
@@ -569,7 +569,7 @@ describe('Promotions (e2e)', () => {
 						created: expect.any(String),
 						updated: expect.any(String),
 						filename: expect.any(String),
-						description: 'Promotion logo of the promotion 21',
+						description: null,
 						mimetype: 'image/webp',
 						size: 117280,
 						visibility: null,
@@ -656,10 +656,19 @@ describe('Promotions (e2e)', () => {
 		});
 
 		describe('200 : Ok', () => {
+			let logo: PromotionPicture;
+
+			beforeAll(async () => {
+				await request(app.getHttpServer())
+					.post('/promotions/21/logo')
+					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
+					.attach('file', `./tests/files/promo_21.png`);
+
+				logo = await em.findOne(PromotionPicture, { picture_promotion: 21 });
+			});
+
 			it('when the promotion exists and delete the logo', async () => {
 				// Get the logo filename
-				const logo = await em.findOne(PromotionPicture, { picture_promotion: 21 });
-
 				const response = await request(app.getHttpServer())
 					.delete('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
@@ -674,6 +683,7 @@ describe('Promotions (e2e)', () => {
 
 				// expect the file to be deleted from disk
 				expect(existsSync(join(config.get<string>('files.promotions'), 'logo', logo.filename))).toBe(false);
+				expect(await em.findOne(PromotionPicture, { picture_promotion: 21 })).toBeNull();
 			});
 		});
 	});

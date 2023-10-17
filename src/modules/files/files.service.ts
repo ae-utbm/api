@@ -10,9 +10,8 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { fromBuffer, MimeType } from 'file-type';
 
 import { TranslateService } from '@modules/translate/translate.service';
-import { UserBanner } from '@modules/users/entities/user-banner.entity';
-import { UserPicture } from '@modules/users/entities/user-picture.entity';
 import { User } from '@modules/users/entities/user.entity';
+import { UsersDataService } from '@modules/users/services/users-data.service';
 
 import { FileVisibilityGroup } from './entities/file-visibility.entity';
 import { File } from './entities/file.entity';
@@ -33,6 +32,7 @@ export class FilesService {
 		private readonly orm: MikroORM,
 		private readonly t: TranslateService,
 		private readonly imagesService: ImagesService,
+		private readonly usersDataService: UsersDataService,
 	) {}
 
 	/**
@@ -40,18 +40,16 @@ export class FilesService {
 	 * @param {File} file - The file to check the visibility of.
 	 * @param {User} user - The user to check the visibility for.
 	 */
-	async canReadFile(file: File, user: User): Promise<boolean> {
+	async canReadFile(file: File<unknown>, user: User): Promise<boolean> {
 		// If the file has no visibility group, it's public
-		await file.visibility.init();
+		await file.visibility?.init();
 		if (!file.visibility) return true;
 
 		// File owner can always read his own files
-		if (file instanceof UserPicture && file.picture_user.id === user.id) return true;
-		if (file instanceof UserBanner && file.banner_user.id === user.id) return true;
+		if (file.owner instanceof User && file.owner.id === user.id) return true;
 
-		// If user is ROOT / CAN_READ_FILE, he can read the file no matter what
-		await user.permissions.init();
-		if (user.permissions.getItems().some((perm) => perm.name === 'ROOT' || perm.name === 'CAN_READ_FILE')) return true;
+		// If user has ROOT / CAN_READ_FILE, he can read the file no matter what
+		if (await this.usersDataService.hasPermissionOrRoleWithPermission(user.id, false, ['CAN_READ_FILE'])) return true;
 
 		// Check if the user has the correct visibility group to read the file
 		await user.files_visibility_groups.init();
@@ -146,7 +144,7 @@ export class FilesService {
 	 * @param {File} file The file to delete
 	 * @param {boolean} silent If true, the function will not throw an error if the file doesn't exist
 	 */
-	deleteFromDisk(file: File, silent: boolean = true) {
+	deleteFromDisk(file: File<unknown>, silent: boolean = true) {
 		try {
 			accessSync(file.path);
 		} catch {
@@ -162,7 +160,7 @@ export class FilesService {
 	 * @param {File} file The path of the file to get the stream
 	 * @returns {Readable} The stream of the file
 	 */
-	toReadable(file: File): Readable {
+	toReadable(file: File<unknown>): Readable {
 		try {
 			accessSync(file.path);
 		} catch {

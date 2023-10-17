@@ -131,7 +131,6 @@ export class PromotionsService {
 			promotion.picture = this.orm.em.create(PromotionPicture, {
 				filename: fileInfos.filename,
 				mimetype: fileInfos.mimetype,
-				description: `Promotion logo of the promotion ${promotion.number}`,
 				path: fileInfos.filepath,
 				picture_promotion: promotion,
 				size: fileInfos.size,
@@ -152,6 +151,8 @@ export class PromotionsService {
 		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
 
 		if (!promotion.picture) throw new NotFoundException(this.t.Errors.Promotion.LogoNotFound(number));
+
+		delete promotion.picture.picture_promotion; // avoid circular reference
 		return promotion.picture;
 	}
 

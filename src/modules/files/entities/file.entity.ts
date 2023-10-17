@@ -16,7 +16,7 @@ import { FileVisibilityGroup } from '@modules/files/entities/file-visibility.ent
 	},
 	abstract: true,
 })
-export class File extends BaseEntity implements FE<FileVisibilityGroup> {
+export abstract class File<T> extends BaseEntity implements FE<FileVisibilityGroup, T> {
 	@Property()
 	@ApiProperty()
 	filename: string;
@@ -32,11 +32,13 @@ export class File extends BaseEntity implements FE<FileVisibilityGroup> {
 	@ApiProperty()
 	size: number;
 
-	@ManyToOne(() => FileVisibilityGroup, { nullable: true })
+	@ManyToOne(() => FileVisibilityGroup, { nullable: true, default: null })
 	@ApiProperty({ type: Number, minimum: 1 })
 	visibility?: FileVisibilityGroup;
 
-	@Property()
-	@ApiProperty()
-	description: string;
+	@Property({ nullable: true, default: null })
+	@ApiProperty({ type: String, nullable: true })
+	description?: string;
+
+	abstract get owner(): T;
 }

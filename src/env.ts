@@ -12,7 +12,7 @@ const config = () => ({
 	cors: process.env['DEBUG'] === 'true' ? ['*'] : process.env['CORS_ORIGIN_WHITELIST']?.split(';'),
 	auth: {
 		jwtKey: process.env['JWT_KEY'],
-		jwtExpirationTime: parseInt(process.env['JWT_EXPIRATION_TIME'], 10) || 60 * 60 * 24 * 7, // 1 week
+		jwtExpirationTime: parseInt(process.env['JWT_EXPIRATION_TIME'], 10) || 60 * 60 * 24 * 7 * 1000, // 1 week
 	},
 	files: {
 		baseDir: join(process.cwd(), process.env['FILES_BASE_DIR'] || './public'),
@@ -21,7 +21,7 @@ const config = () => ({
 	},
 	users: {
 		verification_token_validity: 7, // number of days before the account being deleted
-		picture_cooldown: parseInt(process.env['USERS_PICTURES_DELAY'], 10) || 60 * 60 * 24 * 7, // 1 week
+		picture_cooldown: parseInt(process.env['USERS_PICTURES_DELAY'], 10) || 60 * 60 * 24 * 7 * 1000, // 1 week
 	},
 	email: {
 		enabled: process.env['EMAIL_ENABLED'] === 'true',

@@ -6,7 +6,6 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { z } from 'zod';
 
-import { TranslateService } from '@modules/translate/translate.service';
 import { validate } from '@utils/validate';
 
 import { AuthService } from '../auth.service';
@@ -16,11 +15,7 @@ import { AuthService } from '../auth.service';
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-	constructor(
-		private readonly t: TranslateService,
-		private readonly configService: ConfigService,
-		private readonly authService: AuthService,
-	) {
+	constructor(private readonly configService: ConfigService, private readonly authService: AuthService) {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 			ignoreExpiration: true,

@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { FilesService } from '@modules/files/files.service';
 import { TranslateService } from '@modules/translate/translate.service';
 
+import { UsersDataService } from './users-data.service';
 import { UserBanner } from '../entities/user-banner.entity';
 import { UserPicture } from '../entities/user-picture.entity';
 import { User } from '../entities/user.entity';
@@ -18,12 +19,34 @@ export class UsersFilesService {
 		private readonly orm: MikroORM,
 		private readonly filesService: FilesService,
 		private readonly configService: ConfigService,
+		private readonly dataService: UsersDataService,
 	) {}
 
+	/**
+	 * Edit user profile picture
+	 * @param {User} req_id User making the request
+	 * @param {number} owner_id User id to whom the picture belongs
+	 * @param {Express.Multer.File} file The picture file
+	 * @returns {Promise<User>} The updated user
+	 */
 	@CreateRequestContext()
-	async updatePicture(id: number, file: Express.Multer.File): Promise<User> {
-		const user = await this.orm.em.findOne(User, { id }, { populate: ['picture'] });
-		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
+	async updatePicture(req_user: User, owner_id: number, file: Express.Multer.File): Promise<User> {
+		const user = await this.orm.em.findOne(User, { id: owner_id }, { populate: ['picture'] });
+		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, owner_id));
+
+		if (req_user.id === owner_id) {
+			const cooldown = this.configService.get<number>('users.picture_cooldown') * 1000;
+			const now = Date.now();
+
+			if (
+				!(await this.dataService.hasPermissionOrRoleWithPermission(owner_id, false, ['CAN_EDIT_USER'])) &&
+				user.picture &&
+				user.picture.updated.getTime() + cooldown > now
+			) {
+				// Throw error if cooldown is not yet passed
+				throw new Error(this.t.Errors.User.PictureCooldown(user.picture.updated.getTime() + cooldown - now));
+			}
+		}
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
 			directory: join(this.configService.get<string>('files.users'), 'pictures'),

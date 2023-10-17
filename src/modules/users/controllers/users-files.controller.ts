@@ -61,11 +61,11 @@ export class UsersFilesController {
 		},
 	})
 	@UseInterceptors(FileInterceptor('file'))
-	async editPicture(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
+	async editPicture(@Req() req: RequestWithUser, @UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
 		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
 		validate(z.coerce.number().int().min(1), id);
 
-		return this.usersFilesService.updatePicture(id, file);
+		return this.usersFilesService.updatePicture(req.user as User, id, file);
 	}
 
 	@Delete(':id/picture')
@@ -88,11 +88,12 @@ export class UsersFilesController {
 		validate(z.coerce.number().int().min(1), id);
 
 		const picture = await this.usersFilesService.getPicture(id);
+		await picture.visibility?.init();
 
 		if (await this.filesService.canReadFile(picture, req.user as User))
 			return new StreamableFile(this.filesService.toReadable(picture));
 
-		throw new UnauthorizedException(this.t.Errors.File.Unauthorized(picture.visibility.name));
+		throw new UnauthorizedException(this.t.Errors.File.Unauthorized(picture.visibility?.name));
 	}
 
 	@Post(':id/banner')
@@ -140,11 +141,11 @@ export class UsersFilesController {
 		validate(z.coerce.number().int().min(1), id);
 
 		const banner = await this.usersFilesService.getBanner(id);
-		await banner.visibility.init();
+		await banner.visibility?.init();
 
 		if (await this.filesService.canReadFile(banner, req.user as User))
 			return new StreamableFile(this.filesService.toReadable(banner));
 
-		throw new UnauthorizedException(this.t.Errors.File.Unauthorized(banner.visibility.name));
+		throw new UnauthorizedException(this.t.Errors.File.Unauthorized(banner.visibility?.name));
 	}
 }

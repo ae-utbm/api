@@ -1,3 +1,5 @@
+import type { RequestWithUser } from '#types/api';
+
 import {
 	BadRequestException,
 	Controller,
@@ -5,7 +7,9 @@ import {
 	Get,
 	Param,
 	Post,
+	Req,
 	StreamableFile,
+	UnauthorizedException,
 	UploadedFile,
 	UseGuards,
 	UseInterceptors,
@@ -30,6 +34,7 @@ import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { FilesService } from '@modules/files/files.service';
 import { TranslateService } from '@modules/translate/translate.service';
+import { User } from '@modules/users/entities/user.entity';
 import { validate } from '@utils/validate';
 
 import { PromotionResponseDTO } from './dto/promotion.dto';
@@ -115,11 +120,16 @@ export class PromotionsController {
 	@ApiNotFoundResponse({ description: 'Promotion not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiNotFoundResponse({ description: 'Promotion not found or promotion has no logo' })
-	async getLogo(@Param('number') number: number) {
+	async getLogo(@Req() req: RequestWithUser, @Param('number') number: number) {
 		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
 
 		const logo = await this.promotionsService.getLogo(number);
-		return new StreamableFile(this.filesService.toReadable(logo));
+		await logo.visibility?.init();
+
+		if (await this.filesService.canReadFile(logo, req.user as User))
+			return new StreamableFile(this.filesService.toReadable(logo));
+
+		throw new UnauthorizedException(this.t.Errors.File.Unauthorized(logo.visibility?.name));
 	}
 
 	@Delete(':number/logo')

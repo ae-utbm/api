@@ -47,23 +47,6 @@ export class PermissionGuard implements CanActivate {
 		// Get the user from the database
 		// If no user found -> thrown within the service
 		const user = await this.userService.findOne(payload.sub, false);
-
-		const user_perms = await this.userService.getUserPermissions(user.id, { show_expired: false, show_revoked: false });
-		const perms = user_perms.map((p) => p.name);
-
-		const user_roles = await this.userService.getUserRoles(user.id, { show_expired: false, show_revoked: false });
-		const roles = user_roles
-			.filter((r) => r.expires > new Date() && r.revoked === false)
-			.map((r) => r.permissions)
-			.flat();
-
-		const acquired_perms = [...perms, ...roles];
-
-		// If the user has the ROOT permission, they have all permissions.
-		// If the user has any of the required permissions, they have permission.
-		if (acquired_perms.includes('ROOT') || acquired_perms.some((p) => perms_to_validate.includes(p))) return true;
-
-		// Otherwise, they don't have permission.
-		return false;
+		return this.userService.hasPermissionOrRoleWithPermission(user.id, false, perms_to_validate);
 	}
 }

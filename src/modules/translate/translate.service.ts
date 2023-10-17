@@ -104,6 +104,7 @@ export class TranslateService {
 		},
 		User: {
 			CannotUpdateBirthDateOrName: () => this.generic('responses.errors.user.cannot_update_birth_date_or_name', {}),
+			PictureCooldown: (time_left: number) => this.generic('responses.errors.user.picture_cooldown', { time_left }),
 			NoPicture: (user_id: number | string) => this.generic('responses.errors.user.no_picture', { user_id }),
 			NoBanner: (user_id: number | string) => this.generic('responses.errors.user.no_banner', { user_id }),
 		},

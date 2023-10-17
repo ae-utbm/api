@@ -63,6 +63,7 @@
     },
     "user": {
       "cannot_update_birth_date_or_name": "You cannot update your own birth date/name, ask another user with the appropriate permission",
+      "picture_cooldown": "You cannot update your picture before {time_left} ms.",
       "no_picture": "User '{user_id}' does not have a picture.",
       "no_banner": "User '{user_id}' does not have a banner."
     }

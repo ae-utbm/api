@@ -1,5 +1,5 @@
 import type { KeysOf, email } from '#types';
-import type { I18nTranslations } from '#types/api';
+import type { I18nTranslations, PERMISSION_NAMES } from '#types/api';
 
 import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
@@ -375,5 +375,29 @@ export class UsersDataService {
 		if (!input.show_revoked) permissions.filter((p) => p.revoked === false);
 
 		return permissions;
+	}
+
+	/**
+	 * Determines whether the user has permission or role with permission
+	 * @param {number} id The id of the user
+	 * @param {boolean} all True if all permissions must be present, false if only one
+	 * @param {PERMISSION_NAMES[]} permissions Permissions to check
+	 */
+	@CreateRequestContext()
+	async hasPermissionOrRoleWithPermission(id: number, all: boolean, permissions: PERMISSION_NAMES[]): Promise<boolean> {
+		const user_perms = await this.getUserPermissions(id, { show_expired: false, show_revoked: false });
+		const perms = user_perms.map((p) => p.name);
+
+		const user_roles = await this.getUserRoles(id, { show_expired: false, show_revoked: false });
+		const roles = user_roles
+			.filter((r) => r.expires > new Date() && r.revoked === false)
+			.map((r) => r.permissions)
+			.flat();
+
+		const acquired_perms = [...perms, ...roles];
+
+		if (acquired_perms.includes('ROOT')) return true;
+		if (all) return permissions.every((p) => acquired_perms.includes(p));
+		return acquired_perms.some((p) => permissions.includes(p));
 	}
 }
