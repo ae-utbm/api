@@ -16,7 +16,15 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import {
+	ApiBearerAuth,
+	ApiBody,
+	ApiConsumes,
+	ApiOkResponse,
+	ApiOperation,
+	ApiTags,
+	ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { z } from 'zod';
 
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
@@ -29,6 +37,8 @@ import { FilesService } from '@modules/files/files.service';
 import { TranslateService } from '@modules/translate/translate.service';
 import { validate } from '@utils/validate';
 
+import { UserBanner } from '../entities/user-banner.entity';
+import { UserPicture } from '../entities/user-picture.entity';
 import { User } from '../entities/user.entity';
 import { UsersFilesService } from '../services/users-files.service';
 
@@ -48,6 +58,7 @@ export class UsersFilesController {
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Update user profile picture' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiOkResponse({ description: 'The updated user picture', type: UserPicture })
 	@ApiConsumes('multipart/form-data')
 	@ApiBody({
 		schema: {
@@ -100,6 +111,7 @@ export class UsersFilesController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Update user profile banner' })
+	@ApiOkResponse({ description: 'The updated user banner', type: UserBanner })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	@ApiConsumes('multipart/form-data')
 	@ApiBody({

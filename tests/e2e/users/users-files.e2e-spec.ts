@@ -14,6 +14,7 @@ describe('Users Files (e2e)', () => {
 	let tokenRoot: string;
 	let tokenSubscriber: string;
 	let tokenLogs: string;
+	let idLogs: number;
 	let em: typeof orm.em;
 
 	beforeAll(async () => {
@@ -47,6 +48,7 @@ describe('Users Files (e2e)', () => {
 		});
 
 		tokenLogs = responseD.body.token;
+		idLogs = responseD.body.user_id;
 	});
 
 	describe('(GET) /users/:id/picture', () => {
@@ -74,7 +76,7 @@ describe('Users Files (e2e)', () => {
 		});
 
 		describe('400 : Bad Request', () => {
-			it('when the promotion number is invalid', async () => {
+			it('when the user id is invalid', async () => {
 				const response = await request(app.getHttpServer())
 					.get('/users/invalid/picture')
 					.set('Authorization', `Bearer ${tokenRoot}`)
@@ -171,6 +173,158 @@ describe('Users Files (e2e)', () => {
 
 				expect(response.body).toBeDefined();
 				expect(response.body).toBeInstanceOf(Buffer);
+			});
+		});
+	});
+
+	describe('(POST) /users/:id/picture', () => {
+		describe('400 : Bad Request', () => {
+			it('when the user id is invalid', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/users/invalid/picture')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: t.Errors.Id.Invalid(User, 'invalid'),
+				});
+			});
+
+			it('when no file is provided', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/users/1/picture')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: t.Errors.File.NotProvided(),
+				});
+			});
+		});
+
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(app.getHttpServer())
+					.post(`/users/${idLogs}/picture`)
+					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.expect(401);
+
+				expect(response.body).toEqual({
+					statusCode: 401,
+					message: 'Unauthorized',
+				});
+			});
+
+			it('when the user try to update its picture before the cooldown is passed', async () => {
+				// Set a fake picture
+				const picture = em.create(UserPicture, {
+					filename: 'user_picture.jpeg',
+					description: 'A fake picture for root',
+					mimetype: 'image/jpeg',
+					path: join(process.cwd(), './tests/files/user_picture.jpeg'),
+					picture_user: em.getReference(User, idLogs),
+					size: 0,
+					visibility: await em.findOneOrFail(FileVisibilityGroup, { name: 'SUBSCRIBER' }),
+				});
+
+				await em.persistAndFlush(picture);
+				// ---------------------------------------------
+
+				const response = await request(app.getHttpServer())
+					.post(`/users/${idLogs}/picture`)
+					.set('Authorization', `Bearer ${tokenLogs}`)
+					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.expect(401);
+
+				expect(response.body).toEqual({
+					error: 'Unauthorized',
+					statusCode: 401,
+					message: expect.any(String), // TODO : Find a way to get the cooldown and test the message
+				});
+
+				// Delete the fake picture
+				await em.removeAndFlush(picture);
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/users/1/picture')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					statusCode: 403,
+					message: 'Forbidden resource',
+				});
+			});
+		});
+
+		describe('404 : Not Found', () => {
+			it('when the user does not exist', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/users/999/picture')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.expect(404);
+
+				expect(response.body).toEqual({
+					error: 'Not Found',
+					statusCode: 404,
+					message: t.Errors.Id.NotFound(User, 999),
+				});
+			});
+		});
+
+		describe('201 : Created', () => {
+			it('when the user set its own profile picture', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/users/4/picture')
+					.set('Authorization', `Bearer ${tokenLogs}`)
+					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.expect(201);
+
+				expect(response.body).toEqual({
+					created: expect.any(String),
+					description: 'Picture of logs moderator',
+					filename: expect.stringContaining('logs_moderator') as unknown,
+					id: expect.any(Number),
+					mimetype: 'image/webp',
+					size: 3028,
+					updated: expect.any(String),
+				});
+
+				// Delete the picture
+				await em.removeAndFlush(await em.findOne(UserPicture, { picture_user: 4 }));
+			});
+
+			it('when the user can change its own profile picture', async () => {
+				const response = await request(app.getHttpServer())
+					.post('/users/1/picture')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.expect(201);
+
+				expect(response.body).toEqual({
+					created: expect.any(String),
+					description: 'Picture of root root',
+					filename: expect.stringContaining('root_root') as unknown,
+					id: expect.any(Number),
+					mimetype: 'image/webp',
+					size: 3028,
+					updated: expect.any(String),
+				});
+
+				// Delete the picture
+				await em.removeAndFlush(await em.findOne(UserPicture, { picture_user: 1 }));
 			});
 		});
 	});

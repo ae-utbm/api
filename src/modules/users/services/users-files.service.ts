@@ -1,7 +1,7 @@
 import { join } from 'path';
 
 import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { FilesService } from '@modules/files/files.service';
@@ -30,33 +30,38 @@ export class UsersFilesService {
 	 * @returns {Promise<User>} The updated user
 	 */
 	@CreateRequestContext()
-	async updatePicture(req_user: User, owner_id: number, file: Express.Multer.File): Promise<User> {
+	async updatePicture(
+		req_user: User,
+		owner_id: number,
+		file: Express.Multer.File,
+	): Promise<Omit<UserPicture, 'picture_user' | 'visibility'>> {
 		const user = await this.orm.em.findOne(User, { id: owner_id }, { populate: ['picture'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, owner_id));
 
-		if (req_user.id === owner_id) {
+		if (req_user.id === user.id && user.picture !== null) {
 			const cooldown = this.configService.get<number>('users.picture_cooldown') * 1000;
 			const now = Date.now();
 
 			if (
-				!(await this.dataService.hasPermissionOrRoleWithPermission(owner_id, false, ['CAN_EDIT_USER'])) &&
-				user.picture &&
+				!(await this.dataService.hasPermissionOrRoleWithPermission(user.id, false, ['CAN_EDIT_USER'])) &&
 				user.picture.updated.getTime() + cooldown > now
 			) {
 				// Throw error if cooldown is not yet passed
-				throw new Error(this.t.Errors.User.PictureCooldown(user.picture.updated.getTime() + cooldown - now));
+				throw new UnauthorizedException(
+					this.t.Errors.User.PictureCooldown(user.picture.updated.getTime() + cooldown - now),
+				);
 			}
 		}
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
 			directory: join(this.configService.get<string>('files.users'), 'pictures'),
-			filename: user.full_name.replaceAll(' ', '_'),
+			filename: user.full_name.toLowerCase().replaceAll(' ', '_'),
 			aspectRatio: '1:1',
 		});
 
 		// Remove old file if present
 		if (user.picture) {
-			this.filesService.deleteFromDisk(user.picture);
+			// this.filesService.deleteFromDisk(user.picture);
 
 			user.picture.filename = fileInfos.filename;
 			user.picture.mimetype = fileInfos.mimetype;
@@ -79,7 +84,8 @@ export class UsersFilesService {
 		await this.orm.em.persistAndFlush(user);
 
 		delete user.picture.picture_user; // avoid circular reference
-		return user;
+		delete user.picture.visibility;
+		return user.picture;
 	}
 
 	@CreateRequestContext()
