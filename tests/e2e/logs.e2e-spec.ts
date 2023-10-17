@@ -143,7 +143,7 @@ describe('Logs (e2e)', () => {
 
 				expect(body).toBeInstanceOf(Array);
 				expect(body.length).toBeGreaterThanOrEqual(0);
-				expect(body.haveEqualObjects()).toBe(true);
+				expect(body.isUniform()).toBe(true);
 			});
 
 			it('when user is asking for another user with the right permission', async () => {
@@ -157,7 +157,7 @@ describe('Logs (e2e)', () => {
 
 				expect(body).toBeInstanceOf(Array);
 				expect(body.length).toBeGreaterThan(0);
-				expect(body.haveEqualObjects()).toBe(true);
+				expect(body.isUniform()).toBe(true);
 
 				expect(body[0]).toEqual({
 					id: expect.any(Number),

@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs';
 import { join } from 'path';
 
 import request from 'supertest';
@@ -16,6 +17,8 @@ describe('Users Files (e2e)', () => {
 	let tokenLogs: string;
 	let idLogs: number;
 	let em: typeof orm.em;
+
+	const filePictureSquare = readFileSync(join(process.cwd(), './tests/files/user_picture.jpeg'));
 
 	beforeAll(async () => {
 		em = orm.em.fork();
@@ -183,7 +186,7 @@ describe('Users Files (e2e)', () => {
 				const response = await request(server)
 					.post('/users/invalid/picture')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.attach('file', filePictureSquare, 'file.jpeg')
 					.expect(400);
 
 				expect(response.body).toEqual({
@@ -210,8 +213,8 @@ describe('Users Files (e2e)', () => {
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
 				const response = await request(server)
-					.post(`/users/${idLogs}/picture`)
-					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.post('/users/1/picture')
+					.attach('file', filePictureSquare, 'file.jpeg')
 					.expect(401);
 
 				expect(response.body).toEqual({
@@ -238,7 +241,7 @@ describe('Users Files (e2e)', () => {
 				const response = await request(server)
 					.post(`/users/${idLogs}/picture`)
 					.set('Authorization', `Bearer ${tokenLogs}`)
-					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.attach('file', filePictureSquare, 'file.jpeg')
 					.expect(401);
 
 				expect(response.body).toEqual({
@@ -257,7 +260,7 @@ describe('Users Files (e2e)', () => {
 				const response = await request(server)
 					.post('/users/1/picture')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
-					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.attach('file', filePictureSquare, 'file.jpeg')
 					.expect(403);
 
 				expect(response.body).toEqual({
@@ -273,7 +276,7 @@ describe('Users Files (e2e)', () => {
 				const response = await request(server)
 					.post('/users/999/picture')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.attach('file', filePictureSquare, 'file.jpeg')
 					.expect(404);
 
 				expect(response.body).toEqual({
@@ -289,7 +292,7 @@ describe('Users Files (e2e)', () => {
 				const response = await request(server)
 					.post('/users/4/picture')
 					.set('Authorization', `Bearer ${tokenLogs}`)
-					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.attach('file', filePictureSquare, 'file.jpeg')
 					.expect(201);
 
 				expect(response.body).toEqual({
@@ -310,7 +313,7 @@ describe('Users Files (e2e)', () => {
 				const response = await request(server)
 					.post('/users/1/picture')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.attach('file', join(process.cwd(), './tests/files/user_picture.jpeg'))
+					.attach('file', filePictureSquare, 'file.jpeg')
 					.expect(201);
 
 				expect(response.body).toEqual({
@@ -327,5 +330,63 @@ describe('Users Files (e2e)', () => {
 				await em.removeAndFlush(await em.findOne(UserPicture, { picture_user: 1 }));
 			});
 		});
+	});
+
+	describe('(DELETE) /users/:id/picture', () => {
+		describe('400 : Bad Request', () => {
+			it('when the user id is invalid', async () => {
+				const response = await request(server)
+					.delete('/users/invalid/picture')
+					.set('Authorization', `Bearer ${tokenRoot}`)
+					.expect(400);
+
+				expect(response.body).toEqual({
+					error: 'Bad Request',
+					statusCode: 400,
+					message: t.Errors.Id.Invalid(User, 'invalid'),
+				});
+			});
+		});
+
+		describe('401 : Unauthorized', () => {
+			it('when the user is not authenticated', async () => {
+				const response = await request(server).delete('/users/1/picture').expect(401);
+
+				expect(response.body).toEqual({
+					statusCode: 401,
+					message: 'Unauthorized',
+				});
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user is not authorized', async () => {
+				const response = await request(server)
+					.delete('/users/1/picture')
+					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					statusCode: 403,
+					message: 'Forbidden resource',
+				});
+			});
+
+			it('when the user does not have the permission to delete his picture', async () => {
+				const response = await request(server)
+					.delete(`/users/${idLogs}/picture`)
+					.set('Authorization', `Bearer ${tokenLogs}`)
+					.expect(403);
+
+				expect(response.body).toEqual({
+					error: 'Forbidden',
+					statusCode: 403,
+					message: 'Forbidden resource',
+				});
+			});
+		});
+
+		describe('404 : Not Found', () => {});
 	});
 });

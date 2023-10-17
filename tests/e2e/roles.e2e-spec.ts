@@ -68,7 +68,7 @@ describe('Roles (e2e)', () => {
 
 				expect(body).toBeInstanceOf(Array);
 				expect(body.length).toBeGreaterThan(0);
-				expect(body.haveEqualObjects()).toBe(true);
+				expect(body.isUniform()).toBe(true);
 
 				expect(body[0]).toEqual({
 					created: expect.any(String),
@@ -596,7 +596,7 @@ describe('Roles (e2e)', () => {
 
 				expect(body).toBeInstanceOf(Array);
 				expect(body.length).toBeGreaterThan(0);
-				expect(body.haveEqualObjects()).toBe(true);
+				expect(body.isUniform()).toBe(true);
 
 				expect(body[0]).toEqual({
 					id: 1,
@@ -762,7 +762,7 @@ describe('Roles (e2e)', () => {
 
 				expect(body).toBeInstanceOf(Array);
 				expect(body.length).toEqual(1);
-				expect(body.haveEqualObjects()).toBe(true);
+				expect(body.isUniform()).toBe(true);
 
 				expect(body[0]).toEqual({
 					id: 1,

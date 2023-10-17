@@ -85,7 +85,7 @@ export class UsersFilesController {
 	@ApiOperation({ summary: 'Delete user profile picture' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async deletePicture(@Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.usersFilesService.deletePicture(id);
 	}
@@ -142,7 +142,7 @@ export class UsersFilesController {
 	@ApiOperation({ summary: 'Delete user profile banner' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async deleteBanner(@Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
+		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.usersFilesService.deleteBanner(id);
 	}

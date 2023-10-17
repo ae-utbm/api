@@ -1,4 +1,4 @@
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 import request from 'supertest';
@@ -13,6 +13,10 @@ describe('Promotions (e2e)', () => {
 	let tokenUnauthorized: string;
 	let tokenPromotionModerator: string;
 	let em: typeof orm.em;
+
+	const filePictureSquare = readFileSync(join(process.cwd(), './tests/files/promo_21.png'));
+	const filePictureNotSquare = readFileSync(join(process.cwd(), './tests/files/promo_21_not_square.png'));
+	const fileNotAnImage = readFileSync(join(process.cwd(), './tests/files/text_file.txt'));
 
 	beforeAll(async () => {
 		em = orm.em.fork();
@@ -68,7 +72,7 @@ describe('Promotions (e2e)', () => {
 
 				expect(body).toBeInstanceOf(Array);
 				expect(body.length).toBeGreaterThan(0);
-				expect(body.haveEqualObjects()).toBe(true);
+				expect(body.isUniform()).toBe(true);
 
 				expect(body[0]).toEqual({
 					id: 1,
@@ -118,7 +122,7 @@ describe('Promotions (e2e)', () => {
 
 				expect(body).toBeInstanceOf(Array);
 				expect(body.length).toEqual(5);
-				expect(body.haveEqualObjects()).toBe(true);
+				expect(body.isUniform()).toBe(true);
 
 				expect(body[0]).toEqual({
 					id: expect.any(Number),
@@ -440,7 +444,7 @@ describe('Promotions (e2e)', () => {
 				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
-					.attach('file', './tests/files/text_file.txt');
+					.attach('file', fileNotAnImage, 'file.txt');
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
@@ -453,7 +457,7 @@ describe('Promotions (e2e)', () => {
 				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
-					.attach('file', './tests/files/promo_21_not_square.png');
+					.attach('file', filePictureNotSquare, 'file.png');
 
 				expect(response.body).toEqual({
 					error: 'Bad Request',
@@ -466,7 +470,7 @@ describe('Promotions (e2e)', () => {
 				const response = await request(server)
 					.post('/promotions/invalid/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
-					.attach('file', `./tests/files/promo_21.png`);
+					.attach('file', filePictureSquare, 'file.png');
 
 				expect(response.body).toEqual({
 					statusCode: 400,
@@ -506,7 +510,7 @@ describe('Promotions (e2e)', () => {
 				const response = await request(server)
 					.post('/promotions/999999/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
-					.attach('file', `./tests/files/promo_21.png`);
+					.attach('file', filePictureSquare, 'file.png');
 
 				expect(response.body).toEqual({
 					error: 'Not Found',
@@ -521,7 +525,7 @@ describe('Promotions (e2e)', () => {
 				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
-					.attach('file', `./tests/files/promo_21.png`);
+					.attach('file', filePictureSquare, 'file.png');
 
 				// expect registered data to be returned
 				expect(response.body).toEqual({
@@ -554,7 +558,7 @@ describe('Promotions (e2e)', () => {
 				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
-					.attach('file', `./tests/files/promo_21.png`);
+					.attach('file', filePictureSquare, 'file.png');
 
 				// expect registered data to be returned
 				expect(response.body).toEqual({
@@ -660,7 +664,7 @@ describe('Promotions (e2e)', () => {
 				await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
-					.attach('file', `./tests/files/promo_21.png`);
+					.attach('file', filePictureSquare, 'file.png');
 
 				logo = await em.findOne(PromotionPicture, { picture_promotion: 21 });
 			});
