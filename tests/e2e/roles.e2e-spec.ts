@@ -3,7 +3,7 @@ import request from 'supertest';
 import { Role } from '@modules/roles/entities/role.entity';
 import { User } from '@modules/users/entities/user.entity';
 
-import { app, t, orm } from '..';
+import { server, t, orm } from '..';
 
 describe('Roles (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -14,14 +14,14 @@ describe('Roles (e2e)', () => {
 		type res = Omit<request.Response, 'body'> & { body: { token: string } };
 		em = orm.em.fork();
 
-		const resA: res = await request(app.getHttpServer()).post('/auth/login').send({
+		const resA: res = await request(server).post('/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
 		});
 
 		tokenUnauthorized = resA.body.token;
 
-		const resB: res = await request(app.getHttpServer()).post('/auth/login').send({
+		const resB: res = await request(server).post('/auth/login').send({
 			email: 'roles@email.com',
 			password: 'root',
 		});
@@ -32,7 +32,7 @@ describe('Roles (e2e)', () => {
 	describe('(GET) /roles', () => {
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/roles').expect(401);
+				const response = await request(server).get('/roles').expect(401);
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -43,7 +43,7 @@ describe('Roles (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/roles')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -58,7 +58,7 @@ describe('Roles (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the user is authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.expect(200);
@@ -86,7 +86,7 @@ describe('Roles (e2e)', () => {
 	describe('(POST) /roles', () => {
 		describe('400 : Bad Request', () => {
 			it('when the body is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
@@ -107,7 +107,7 @@ describe('Roles (e2e)', () => {
 			});
 
 			it('when one of the permissions is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
@@ -124,7 +124,7 @@ describe('Roles (e2e)', () => {
 			});
 
 			it('when a role with the same name already exists', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
@@ -143,7 +143,7 @@ describe('Roles (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).post('/roles').expect(401);
+				const response = await request(server).post('/roles').expect(401);
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -154,7 +154,7 @@ describe('Roles (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/roles')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -169,7 +169,7 @@ describe('Roles (e2e)', () => {
 
 		describe('201 : Created', () => {
 			it('when the role is created', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
@@ -193,7 +193,7 @@ describe('Roles (e2e)', () => {
 	describe('(PATCH) /roles', () => {
 		describe('400 : Bad Request', () => {
 			it('when the body is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
@@ -220,7 +220,7 @@ describe('Roles (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).patch('/roles').expect(401);
+				const response = await request(server).patch('/roles').expect(401);
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -231,7 +231,7 @@ describe('Roles (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/roles')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -246,7 +246,7 @@ describe('Roles (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the role does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
@@ -267,7 +267,7 @@ describe('Roles (e2e)', () => {
 		describe('200 : Ok', () => {
 			it('when the role is updated', async () => {
 				const role_id = (await em.findOne(Role, { name: 'TEST_ROLE' })).id;
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send({
@@ -293,7 +293,7 @@ describe('Roles (e2e)', () => {
 	describe('(GET) /roles/:roles_id', () => {
 		describe('400 : Bad Request', () => {
 			it('when the id is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/roles/invalid')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.expect(400);
@@ -308,7 +308,7 @@ describe('Roles (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/roles/1').expect(401);
+				const response = await request(server).get('/roles/1').expect(401);
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -319,7 +319,7 @@ describe('Roles (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/roles/1')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -334,7 +334,7 @@ describe('Roles (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the role id does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/roles/9999')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.expect(404);
@@ -349,7 +349,7 @@ describe('Roles (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the role exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/roles/1')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.expect(200);
@@ -375,7 +375,7 @@ describe('Roles (e2e)', () => {
 	describe('(GET) /roles/:roles_id/users', () => {
 		describe('400 : Bad Request', () => {
 			it('when the id is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/roles/invalid/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.expect(400);
@@ -390,7 +390,7 @@ describe('Roles (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/roles/1/users').expect(401);
+				const response = await request(server).get('/roles/1/users').expect(401);
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -401,7 +401,7 @@ describe('Roles (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -416,7 +416,7 @@ describe('Roles (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the role does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/roles/9999/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.expect(404);
@@ -431,7 +431,7 @@ describe('Roles (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the role exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.expect(200);
@@ -454,7 +454,7 @@ describe('Roles (e2e)', () => {
 	describe('(POST) /roles/:roles_id/users', () => {
 		describe('400 : Bad Request', () => {
 			it('when the role id is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/roles/invalid/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send([
@@ -481,7 +481,7 @@ describe('Roles (e2e)', () => {
 			});
 
 			it('when one of the user id is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send([
@@ -508,7 +508,7 @@ describe('Roles (e2e)', () => {
 			});
 
 			it('when no users info are given', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send([])
@@ -526,7 +526,7 @@ describe('Roles (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).post('/roles/1/users').expect(401);
+				const response = await request(server).post('/roles/1/users').expect(401);
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -537,7 +537,7 @@ describe('Roles (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -552,7 +552,7 @@ describe('Roles (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the role does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/roles/9999/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send([{ id: 1, expires: new Date('9021-01-01').toISOString() }])
@@ -566,7 +566,7 @@ describe('Roles (e2e)', () => {
 			});
 
 			it('when the user does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send([{ id: 9999, expires: new Date('9021-01-01').toISOString() }])
@@ -583,7 +583,7 @@ describe('Roles (e2e)', () => {
 		describe('201 : Created', () => {
 			it('should add the users to the role', async () => {
 				const role_id = (await em.findOne(Role, { name: 'TEST_TEST_ROLE' })).id;
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post(`/roles/${role_id}/users`)
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send([
@@ -624,7 +624,7 @@ describe('Roles (e2e)', () => {
 	describe('(DELETE) /roles/:roles_id/users', () => {
 		describe('400 : Bad Request', () => {
 			it('when the id is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/roles/invalid/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send([1, 2, 3])
@@ -638,7 +638,7 @@ describe('Roles (e2e)', () => {
 			});
 
 			it('when the user id is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send(['invalid'])
@@ -657,7 +657,7 @@ describe('Roles (e2e)', () => {
 			});
 
 			it('when no user ids are given', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send([])
@@ -675,7 +675,7 @@ describe('Roles (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).delete('/roles/1/users').expect(401);
+				const response = await request(server).delete('/roles/1/users').expect(401);
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -686,7 +686,7 @@ describe('Roles (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -701,7 +701,7 @@ describe('Roles (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the role does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/roles/9999/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send([1, 2, 3])
@@ -715,7 +715,7 @@ describe('Roles (e2e)', () => {
 			});
 
 			it('when the user does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send([9999])
@@ -734,7 +734,7 @@ describe('Roles (e2e)', () => {
 				const role_id = (await em.findOne(Role, { name: 'TEST_TEST_ROLE' })).id;
 
 				// Check that the user has the role
-				const response1 = await request(app.getHttpServer())
+				const response1 = await request(server)
 					.get('/users/2/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.expect(200);
@@ -752,7 +752,7 @@ describe('Roles (e2e)', () => {
 				]);
 
 				// check that the users are removed
-				const response2 = await request(app.getHttpServer())
+				const response2 = await request(server)
 					.delete(`/roles/${role_id}/users`)
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.send([2])
@@ -775,7 +775,7 @@ describe('Roles (e2e)', () => {
 				});
 
 				// check that the role has been revoked
-				const response3 = await request(app.getHttpServer())
+				const response3 = await request(server)
 					.get('/users/2/roles')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
 					.expect(200);

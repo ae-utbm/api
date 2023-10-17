@@ -2,13 +2,13 @@ import { UnauthorizedException } from '@nestjs/common';
 
 import { AuthService } from '@modules/auth/auth.service';
 
-import { moduleFixture, jwt, config, t } from '../..';
+import { module_fixture, jwt, config, t } from '../..';
 
 describe('AuthService (unit)', () => {
 	let authService: AuthService;
 
 	beforeAll(() => {
-		authService = moduleFixture.get<AuthService>(AuthService);
+		authService = module_fixture.get<AuthService>(AuthService);
 	});
 
 	describe('.verifyJWT()', () => {

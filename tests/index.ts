@@ -13,10 +13,11 @@ import { AppModule } from '@app.module';
 import env from '@env';
 import { TranslateService } from '@modules/translate/translate.service';
 
-let moduleFixture: TestingModule;
+let module_fixture: TestingModule;
 let config: ConfigService;
 let jwt: JwtService;
 let app: NestExpressApplication;
+let server: Awaited<ReturnType<NestExpressApplication['listen']>>;
 let t: TranslateService;
 
 /** Should be forked using om.em.fork() for each test suite */
@@ -29,19 +30,20 @@ let orm: MikroORM;
 
 // So this runs before all tests of the suite
 beforeAll(async () => {
-	moduleFixture = await Test.createTestingModule({
+	module_fixture = await Test.createTestingModule({
 		imports: [AppModule],
 	}).compile();
 
-	app = moduleFixture.createNestApplication();
+	app = module_fixture.createNestApplication();
 	app.enableCors({ origin: env().cors });
 	app.useStaticAssets(env().files.baseDir, { index: false, prefix: '/public' });
 
-	orm = moduleFixture.get<MikroORM>(MikroORM);
-	t = moduleFixture.get<TranslateService>(TranslateService);
-	config = moduleFixture.get<ConfigService>(ConfigService);
-	jwt = moduleFixture.get<JwtService>(JwtService);
+	orm = module_fixture.get<MikroORM>(MikroORM);
+	t = module_fixture.get<TranslateService>(TranslateService);
+	config = module_fixture.get<ConfigService>(ConfigService);
+	jwt = module_fixture.get<JwtService>(JwtService);
 
+	server = await app.listen(5325);
 	await app.init();
 });
 
@@ -49,6 +51,7 @@ beforeAll(async () => {
 afterAll(async () => {
 	await orm.close(true);
 	await app.close();
+	server.close();
 });
 
-export { moduleFixture, config, app, orm, t, jwt };
+export { module_fixture, config, server, orm, t, jwt };

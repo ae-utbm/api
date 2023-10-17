@@ -4,7 +4,7 @@ import { TokenDTO } from '@modules/auth/dto/token.dto';
 import { Log } from '@modules/logs/entities/log.entity';
 import { User } from '@modules/users/entities/user.entity';
 
-import { app, t } from '..';
+import { server, t } from '..';
 
 describe('Logs (e2e)', () => {
 	let tokenUnverified: string;
@@ -19,7 +19,7 @@ describe('Logs (e2e)', () => {
 	beforeAll(async () => {
 		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
 
-		const responseA: res = await request(app.getHttpServer()).post('/auth/login').send({
+		const responseA: res = await request(server).post('/auth/login').send({
 			email: 'unverified@email.com',
 			password: 'root',
 		});
@@ -27,7 +27,7 @@ describe('Logs (e2e)', () => {
 		tokenUnverified = responseA.body.token;
 		userIdUnverified = responseA.body.user_id;
 
-		const responseB: res = await request(app.getHttpServer()).post('/auth/login').send({
+		const responseB: res = await request(server).post('/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
 		});
@@ -35,7 +35,7 @@ describe('Logs (e2e)', () => {
 		tokenUnauthorized = responseB.body.token;
 		userIdUnauthorized = responseB.body.user_id;
 
-		const responseC: res = await request(app.getHttpServer()).post('/auth/login').send({
+		const responseC: res = await request(server).post('/auth/login').send({
 			email: 'logs@email.com',
 			password: 'root',
 		});
@@ -49,7 +49,7 @@ describe('Logs (e2e)', () => {
 			it('when the user ID is invalid', async () => {
 				const fakeId = 'invalid';
 
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get(`/logs/user/${fakeId}`)
 					.set('Authorization', `Bearer ${tokenLogModerator}`)
 					.expect(400);
@@ -64,7 +64,7 @@ describe('Logs (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/logs/user/1').expect(401);
+				const response = await request(server).get('/logs/user/1').expect(401);
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -73,7 +73,7 @@ describe('Logs (e2e)', () => {
 			});
 
 			it('when user is not verified', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get(`/logs/user/${userIdUnverified}`)
 					.set('Authorization', `Bearer ${tokenUnverified}`)
 					.expect(401);
@@ -88,7 +88,7 @@ describe('Logs (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not the same as the user ID in the request', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get(`/logs/user/${userIdUnverified}`)
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -101,7 +101,7 @@ describe('Logs (e2e)', () => {
 			});
 
 			it('when user is asking for another user without the permission', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get(`/logs/user/${userIdLogModerator}`)
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -118,7 +118,7 @@ describe('Logs (e2e)', () => {
 			it('when the user does not exist', async () => {
 				const fakeId = 9999;
 
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get(`/logs/user/${fakeId}`)
 					.set('Authorization', `Bearer ${tokenLogModerator}`)
 					.expect(404);
@@ -133,7 +133,7 @@ describe('Logs (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when user is asking for himself', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get(`/logs/user/${userIdUnauthorized}`)
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(200);
@@ -147,7 +147,7 @@ describe('Logs (e2e)', () => {
 			});
 
 			it('when user is asking for another user with the right permission', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get(`/logs/user/${userIdUnauthorized}`)
 					.set('Authorization', `Bearer ${tokenLogModerator}`)
 					.expect(200);
@@ -187,7 +187,7 @@ describe('Logs (e2e)', () => {
 			it('when the user ID is invalid', async () => {
 				const fakeId = 'invalid';
 
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete(`/logs/user/${fakeId}`)
 					.set('Authorization', `Bearer ${tokenLogModerator}`)
 					.expect(400);
@@ -202,7 +202,7 @@ describe('Logs (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/logs/user/1').expect(401);
+				const response = await request(server).get('/logs/user/1').expect(401);
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -213,7 +213,7 @@ describe('Logs (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get(`/logs/user/${userIdUnverified}`)
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -228,7 +228,7 @@ describe('Logs (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the user is authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete(`/logs/user/${userIdLogModerator}`)
 					.set('Authorization', `Bearer ${tokenLogModerator}`)
 					.expect(200);

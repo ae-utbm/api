@@ -2,7 +2,7 @@ import { Log } from '@modules/logs/entities/log.entity';
 import { LogsService } from '@modules/logs/logs.service';
 import { User } from '@modules/users/entities/user.entity';
 
-import { moduleFixture, orm } from '../..';
+import { module_fixture, orm } from '../..';
 
 describe('LogsService (unit)', () => {
 	let logsService: LogsService;
@@ -10,7 +10,7 @@ describe('LogsService (unit)', () => {
 
 	beforeAll(() => {
 		em = orm.em.fork();
-		logsService = moduleFixture.get<LogsService>(LogsService);
+		logsService = module_fixture.get<LogsService>(LogsService);
 	});
 
 	describe('.deleteOldLogs()', () => {

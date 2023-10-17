@@ -6,7 +6,7 @@ import { USER_GENDER } from '@exported/api/constants/genders';
 import { TokenDTO } from '@modules/auth/dto/token.dto';
 import { User } from '@modules/users/entities/user.entity';
 
-import { orm, app, t } from '../..';
+import { orm, t, server } from '../..';
 
 describe('Users Data (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -21,28 +21,28 @@ describe('Users Data (e2e)', () => {
 	beforeAll(async () => {
 		em = orm.em.fork();
 
-		const responseA: res = await request(app.getHttpServer()).post('/auth/login').send({
+		const responseA: res = await request(server).post('/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
 		});
 
 		tokenUnauthorized = responseA.body.token;
 
-		const responseB: res = await request(app.getHttpServer()).post('/auth/login').send({
+		const responseB: res = await request(server).post('/auth/login').send({
 			email: 'ae.info@utbm.fr',
 			password: 'root',
 		});
 
 		tokenRoot = responseB.body.token;
 
-		const responseC: res = await request(app.getHttpServer()).post('/auth/login').send({
+		const responseC: res = await request(server).post('/auth/login').send({
 			email: 'subscriber@email.com',
 			password: 'root',
 		});
 
 		tokenSubscriber = responseC.body.token;
 
-		const responseD: res = await request(app.getHttpServer()).post('/auth/login').send({
+		const responseD: res = await request(server).post('/auth/login').send({
 			email: 'perms@email.com',
 			password: 'root',
 		});
@@ -53,7 +53,7 @@ describe('Users Data (e2e)', () => {
 	describe('(POST) /users', () => {
 		describe('400 : Bad Request', () => {
 			it('when a field is missing', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -81,7 +81,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the email is already used', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -102,7 +102,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when multiple emails are already used', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -129,7 +129,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the email is blacklisted', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -152,7 +152,7 @@ describe('Users Data (e2e)', () => {
 			it('when the user age is less than 13 years old', async () => {
 				const date = new Date();
 
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -175,7 +175,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/users')
 					.send([
 						{
@@ -196,7 +196,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.send([
@@ -219,7 +219,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('201 : Created', () => {
 			it('when the user is created', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -261,7 +261,7 @@ describe('Users Data (e2e)', () => {
 	describe('(PATCH) /users', () => {
 		describe('400 : Bad Request', () => {
 			it('when the user id is not a number', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -279,7 +279,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the user email is already used', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -300,7 +300,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users')
 					.send([
 						{
@@ -316,7 +316,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the user try to change its own birth date', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -335,7 +335,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the user try to change its own first name', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -354,7 +354,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the user try to change its own last name', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -375,7 +375,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.send([
@@ -395,7 +395,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the user does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -419,7 +419,7 @@ describe('Users Data (e2e)', () => {
 				const user = await em.findOne(User, { email: fakeUserEmail });
 
 				// -> we are updating a user that is not the authenticated one => expect 200
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send([
@@ -467,7 +467,7 @@ describe('Users Data (e2e)', () => {
 	describe('(DELETE) /users/:id', () => {
 		describe('400 : Bad Request', () => {
 			it('when the user id is not a number', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/users/abc')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(400);
@@ -482,7 +482,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).delete('/users/1').expect(401);
+				const response = await request(server).delete('/users/1').expect(401);
 
 				expect(response.body).toEqual({
 					message: 'Unauthorized',
@@ -493,7 +493,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/users/1')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -506,7 +506,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the user is authorized but try to delete another user', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/users/9999')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(403);
@@ -523,13 +523,13 @@ describe('Users Data (e2e)', () => {
 			it('when the use delete itself', async () => {
 				const user = await em.findOne(User, { email: fakeUserEmail });
 
-				const auth: res = await request(app.getHttpServer()).post('/auth/login').send({
+				const auth: res = await request(server).post('/auth/login').send({
 					email: user.email,
 					password: user.password,
 				});
 
 				const token = auth.body.token;
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete(`/users/${user.id}`)
 					.set('Authorization', `Bearer ${token}`)
 					.expect(200);
@@ -545,7 +545,7 @@ describe('Users Data (e2e)', () => {
 	describe('(GET) /:id/data', () => {
 		describe('400 : Bad Request', () => {
 			it('when the user id is not a number', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/abc/data')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(400);
@@ -560,7 +560,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/users/1/data').expect(401);
+				const response = await request(server).get('/users/1/data').expect(401);
 
 				expect(response.body).toEqual({
 					message: 'Unauthorized',
@@ -571,7 +571,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/1/data')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -584,7 +584,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the user is authenticated but try to get another user data', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/1/data')
 					.set('Authorization', `Bearer ${tokenSubscriber}`)
 					.expect(403);
@@ -599,7 +599,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the user does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/9999/data')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(404);
@@ -614,7 +614,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the user as permission to get the private data', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/2/data')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(200);
@@ -646,7 +646,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the user is asking for himself', async () => {
-				const user = await request(app.getHttpServer())
+				const user = await request(server)
 					.get('/users/1/data') // root user id = 1
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(200);
@@ -682,7 +682,7 @@ describe('Users Data (e2e)', () => {
 	describe('(GET) /:id/data/public', () => {
 		describe('400 : Bad Request', () => {
 			it('when the user id is not a number', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/abc/data')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(400);
@@ -697,7 +697,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/users/1/data/public').expect(401);
+				const response = await request(server).get('/users/1/data/public').expect(401);
 
 				expect(response.body).toEqual({
 					message: 'Unauthorized',
@@ -708,7 +708,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/1/data/public')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -723,7 +723,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the user does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/9999/data/public')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(404);
@@ -738,7 +738,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the user is asking for himself', async () => {
-				const user = await request(app.getHttpServer())
+				const user = await request(server)
 					.get('/users/1/data/public') // root user id = 1
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(200);
@@ -764,7 +764,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the user is asking for another user', async () => {
-				const user = await request(app.getHttpServer())
+				const user = await request(server)
 					.get('/users/1/data/public')
 					.set('Authorization', `Bearer ${tokenSubscriber}`)
 					.expect(200);
@@ -794,7 +794,7 @@ describe('Users Data (e2e)', () => {
 	describe('(GET) /:id/data/visibility', () => {
 		describe('400 : Bad Request', () => {
 			it('when the user id is not a number', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/abc/data/visibility')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(400);
@@ -809,7 +809,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/users/1/data/visibility').expect(401);
+				const response = await request(server).get('/users/1/data/visibility').expect(401);
 
 				expect(response.body).toEqual({
 					message: 'Unauthorized',
@@ -820,7 +820,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/1/data/visibility')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -835,7 +835,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the user does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/9999/data/visibility')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(404);
@@ -850,7 +850,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the user is asking for himself', async () => {
-				const user = await request(app.getHttpServer())
+				const user = await request(server)
 					.get('/users/1/data/visibility') // root user id = 1
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(200);
@@ -872,7 +872,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the user has permission to get the private data', async () => {
-				const user = await request(app.getHttpServer())
+				const user = await request(server)
 					.get('/users/3/data/visibility')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(200);
@@ -898,7 +898,7 @@ describe('Users Data (e2e)', () => {
 	describe('(PATCH) /:id/data/visibility', () => {
 		describe('400 : Bad Request', () => {
 			it('when the user id is not a number', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users/abc/data/visibility')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send({
@@ -916,7 +916,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).patch('/users/1/data/visibility').expect(401);
+				const response = await request(server).patch('/users/1/data/visibility').expect(401);
 
 				expect(response.body).toEqual({
 					message: 'Unauthorized',
@@ -927,7 +927,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users/1/data/visibility')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.send({ email: true })
@@ -943,7 +943,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the user does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users/9999/data/visibility')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send({
@@ -968,7 +968,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the user is editing for himself', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.patch('/users/1/data/visibility') // root user id = 1
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send({
@@ -1000,7 +1000,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the user has permission to set the private data', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/3/data/visibility')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.send({
@@ -1036,7 +1036,7 @@ describe('Users Data (e2e)', () => {
 	describe('(GET) /:id/roles', () => {
 		describe('400 : Bad Request', () => {
 			it('when the user id is not a number', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/abc/roles')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(400);
@@ -1051,7 +1051,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/users/1/roles').expect(401);
+				const response = await request(server).get('/users/1/roles').expect(401);
 
 				expect(response.body).toEqual({
 					message: 'Unauthorized',
@@ -1062,7 +1062,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/1/roles')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -1077,7 +1077,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the user does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/9999/roles')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(404);
@@ -1092,7 +1092,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the user is asking for himself', async () => {
-				const user = await request(app.getHttpServer())
+				const user = await request(server)
 					.get('/users/5/roles') // perms user id = 5
 					.set('Authorization', `Bearer ${tokenPerms}`)
 					.expect(200);
@@ -1116,7 +1116,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the user has permission to get the data', async () => {
-				const user = await request(app.getHttpServer())
+				const user = await request(server)
 					.get('/users/5/roles')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(200);
@@ -1144,7 +1144,7 @@ describe('Users Data (e2e)', () => {
 	describe('(GET) /:id/permissions', () => {
 		describe('400 : Bad Request', () => {
 			it('when the user id is not a number', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/abc/permissions')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(400);
@@ -1159,7 +1159,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/users/1/permissions').expect(401);
+				const response = await request(server).get('/users/1/permissions').expect(401);
 
 				expect(response.body).toEqual({
 					message: 'Unauthorized',
@@ -1170,7 +1170,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/1/permissions')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
@@ -1185,7 +1185,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the user does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/users/9999/permissions')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(404);
@@ -1200,7 +1200,7 @@ describe('Users Data (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the user is asking for himself', async () => {
-				const user = await request(app.getHttpServer())
+				const user = await request(server)
 					.get('/users/1/permissions') // root user id = 1
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(200);
@@ -1219,7 +1219,7 @@ describe('Users Data (e2e)', () => {
 			});
 
 			it('when the user has permission to get the data', async () => {
-				const user = await request(app.getHttpServer())
+				const user = await request(server)
 					.get('/users/8/permissions') // root user id = 1
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(200);

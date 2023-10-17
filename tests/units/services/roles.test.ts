@@ -3,7 +3,7 @@ import { Role } from '@modules/roles/entities/role.entity';
 import { RolesService } from '@modules/roles/roles.service';
 import { User } from '@modules/users/entities/user.entity';
 
-import { moduleFixture, orm } from '../..';
+import { module_fixture, orm } from '../..';
 
 describe('RolesService (unit)', () => {
 	let rolesService: RolesService;
@@ -11,7 +11,7 @@ describe('RolesService (unit)', () => {
 
 	beforeAll(() => {
 		em = orm.em.fork();
-		rolesService = moduleFixture.get<RolesService>(RolesService);
+		rolesService = module_fixture.get<RolesService>(RolesService);
 	});
 
 	describe('.revokeExpiredRoles()', () => {

@@ -104,6 +104,9 @@ export class UsersFilesController {
 		if (await this.filesService.canReadFile(picture, req.user as User))
 			return new StreamableFile(this.filesService.toReadable(picture));
 
+		// Should not happen unless the user is subscribed but not in the visibility group of subscribers
+		// -> all others options are caught by the guard
+		/* istanbul ignore next-line */
 		throw new UnauthorizedException(this.t.Errors.File.Unauthorized(picture.visibility?.name));
 	}
 
@@ -158,6 +161,9 @@ export class UsersFilesController {
 		if (await this.filesService.canReadFile(banner, req.user as User))
 			return new StreamableFile(this.filesService.toReadable(banner));
 
+		// Should not happen unless the user is subscribed but not in the visibility group of subscribers
+		// -> all others options are caught by the guard
+		/* istanbul ignore next-line */
 		throw new UnauthorizedException(this.t.Errors.File.Unauthorized(banner.visibility?.name));
 	}
 }

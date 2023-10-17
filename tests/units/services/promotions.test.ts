@@ -1,7 +1,7 @@
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
 import { PromotionsService } from '@modules/promotions/promotions.service';
 
-import { moduleFixture, orm } from '../..';
+import { module_fixture, orm } from '../..';
 
 describe('PromotionsService (unit)', () => {
 	let promotionsService: PromotionsService;
@@ -9,7 +9,7 @@ describe('PromotionsService (unit)', () => {
 
 	beforeAll(() => {
 		em = orm.em.fork();
-		promotionsService = moduleFixture.get<PromotionsService>(PromotionsService);
+		promotionsService = module_fixture.get<PromotionsService>(PromotionsService);
 	});
 
 	describe('.createNewPromotion()', () => {

@@ -2,7 +2,7 @@ import { Permission } from '@modules/permissions/entities/permission.entity';
 import { PermissionsService } from '@modules/permissions/permissions.service';
 import { User } from '@modules/users/entities/user.entity';
 
-import { moduleFixture, orm } from '../..';
+import { module_fixture, orm } from '../..';
 
 describe('PermissionsService (unit)', () => {
 	let permissionsService: PermissionsService;
@@ -10,7 +10,7 @@ describe('PermissionsService (unit)', () => {
 
 	beforeAll(() => {
 		em = orm.em.fork();
-		permissionsService = moduleFixture.get<PermissionsService>(PermissionsService);
+		permissionsService = module_fixture.get<PermissionsService>(PermissionsService);
 	});
 
 	describe('.revokeExpiredPermissions()', () => {

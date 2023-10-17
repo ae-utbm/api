@@ -3,7 +3,7 @@ import { hashSync } from 'bcrypt';
 import { User } from '@modules/users/entities/user.entity';
 import { UsersDataService } from '@modules/users/services/users-data.service';
 
-import { moduleFixture, orm } from '../../..';
+import { module_fixture, orm } from '../../..';
 
 describe('UsersDataService (unit)', () => {
 	let usersDataService: UsersDataService;
@@ -11,7 +11,7 @@ describe('UsersDataService (unit)', () => {
 
 	beforeAll(() => {
 		em = orm.em.fork();
-		usersDataService = moduleFixture.get<UsersDataService>(UsersDataService);
+		usersDataService = module_fixture.get<UsersDataService>(UsersDataService);
 	});
 
 	describe('.deleteUnverifiedUsers()', () => {

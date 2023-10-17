@@ -7,7 +7,7 @@ import { TokenDTO } from '@modules/auth/dto/token.dto';
 import { PromotionPicture } from '@modules/promotions/entities/promotion-picture.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
 
-import { app, config, t, orm } from '..';
+import { server, config, t, orm } from '..';
 
 describe('Promotions (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -18,14 +18,14 @@ describe('Promotions (e2e)', () => {
 		em = orm.em.fork();
 		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
 
-		const resA: res = await request(app.getHttpServer()).post('/auth/login').send({
+		const resA: res = await request(server).post('/auth/login').send({
 			email: 'unauthorized@email.com',
 			password: 'root',
 		});
 
 		tokenUnauthorized = resA.body.token;
 
-		const resB: res = await request(app.getHttpServer()).post('/auth/login').send({
+		const resB: res = await request(server).post('/auth/login').send({
 			email: 'promos@email.com',
 			password: 'root',
 		});
@@ -36,7 +36,7 @@ describe('Promotions (e2e)', () => {
 	describe('(GET) /promotions', () => {
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/promotions');
+				const response = await request(server).get('/promotions');
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -47,9 +47,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
-					.get('/promotions')
-					.set('Authorization', `Bearer ${tokenUnauthorized}`);
+				const response = await request(server).get('/promotions').set('Authorization', `Bearer ${tokenUnauthorized}`);
 
 				expect(response.body).toEqual({
 					error: 'Forbidden',
@@ -61,7 +59,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the user is authorized and return all existing promotions', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -87,7 +85,7 @@ describe('Promotions (e2e)', () => {
 	describe('(GET) /promotions/current', () => {
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/promotions/current');
+				const response = await request(server).get('/promotions/current');
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -98,7 +96,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/current')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
@@ -112,7 +110,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the user is authorized, return the current promotions', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/current')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -137,7 +135,7 @@ describe('Promotions (e2e)', () => {
 	describe('(GET) /promotions/latest', () => {
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/promotions/latest');
+				const response = await request(server).get('/promotions/latest');
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -148,7 +146,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/latest')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
@@ -162,7 +160,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the user is authorized, return the latest promotion', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/latest')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -181,7 +179,7 @@ describe('Promotions (e2e)', () => {
 	describe('(GET) /promotions/:number', () => {
 		describe('400 : Bad Request', () => {
 			it('when the promotion number is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/invalid')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -195,7 +193,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/promotions/21');
+				const response = await request(server).get('/promotions/21');
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -206,7 +204,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/21')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
@@ -220,7 +218,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the promotion does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/999999')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -234,7 +232,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the promotion exists and return it', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/21')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -253,7 +251,7 @@ describe('Promotions (e2e)', () => {
 	describe('(GET) /promotions/:number/users', () => {
 		describe('400 : Bad Request', () => {
 			it('when the promotion number is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/invalid/users')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -267,7 +265,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/promotions/21/users');
+				const response = await request(server).get('/promotions/21/users');
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -278,7 +276,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/21/users')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
@@ -292,7 +290,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the promotion does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/999999/users')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -306,7 +304,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the promotion exists and return users', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/21/users')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -327,7 +325,7 @@ describe('Promotions (e2e)', () => {
 	describe('(GET) /promotions/:number/logo', () => {
 		describe('400 : Bad Request', () => {
 			it('when the promotion number is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/invalid/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -341,7 +339,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).get('/promotions/21/logo');
+				const response = await request(server).get('/promotions/21/logo');
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -352,7 +350,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
@@ -366,7 +364,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the promotion does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/999999/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -378,7 +376,7 @@ describe('Promotions (e2e)', () => {
 			});
 
 			it('when the promotion does not have a logo', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -413,7 +411,7 @@ describe('Promotions (e2e)', () => {
 			});
 
 			it('when the promotion exists and return the logo', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.get('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
 					.expect(200);
@@ -427,7 +425,7 @@ describe('Promotions (e2e)', () => {
 	describe('(POST) /promotions/:id/logo', () => {
 		describe('400 : Bad Request', () => {
 			it('when no file is attached', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -439,7 +437,7 @@ describe('Promotions (e2e)', () => {
 			});
 
 			it('when the file is not an image', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
 					.attach('file', './tests/files/text_file.txt');
@@ -452,7 +450,7 @@ describe('Promotions (e2e)', () => {
 			});
 
 			it('when the file is not 1:1 ratio', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
 					.attach('file', './tests/files/promo_21_not_square.png');
@@ -465,7 +463,7 @@ describe('Promotions (e2e)', () => {
 			});
 
 			it('when the promotion number is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/promotions/invalid/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
 					.attach('file', `./tests/files/promo_21.png`);
@@ -480,7 +478,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).post('/promotions/21/logo');
+				const response = await request(server).post('/promotions/21/logo');
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -491,7 +489,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
@@ -505,7 +503,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the promotion does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/promotions/999999/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
 					.attach('file', `./tests/files/promo_21.png`);
@@ -520,7 +518,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('200 : Ok', () => {
 			it('when the promotion exists and set the logo', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
 					.attach('file', `./tests/files/promo_21.png`);
@@ -553,7 +551,7 @@ describe('Promotions (e2e)', () => {
 				// Get the old logo
 				const oldLogo = await em.findOne(PromotionPicture, { picture_promotion: 21 });
 
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
 					.attach('file', `./tests/files/promo_21.png`);
@@ -592,7 +590,7 @@ describe('Promotions (e2e)', () => {
 	describe('(DELETE) /promotions/:id/logo', () => {
 		describe('400 : Bad Request', () => {
 			it('when the promotion number is invalid', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/promotions/invalid/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -606,7 +604,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(app.getHttpServer()).delete('/promotions/21/logo');
+				const response = await request(server).delete('/promotions/21/logo');
 
 				expect(response.body).toEqual({
 					statusCode: 401,
@@ -617,7 +615,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`);
 
@@ -631,7 +629,7 @@ describe('Promotions (e2e)', () => {
 
 		describe('404 : Not Found', () => {
 			it('when the promotion does not exist', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/promotions/999999/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -643,7 +641,7 @@ describe('Promotions (e2e)', () => {
 			});
 
 			it('when the promotion does not have a logo', async () => {
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/promotions/20/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
@@ -659,7 +657,7 @@ describe('Promotions (e2e)', () => {
 			let logo: PromotionPicture;
 
 			beforeAll(async () => {
-				await request(app.getHttpServer())
+				await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
 					.attach('file', `./tests/files/promo_21.png`);
@@ -669,7 +667,7 @@ describe('Promotions (e2e)', () => {
 
 			it('when the promotion exists and delete the logo', async () => {
 				// Get the logo filename
-				const response = await request(app.getHttpServer())
+				const response = await request(server)
 					.delete('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
