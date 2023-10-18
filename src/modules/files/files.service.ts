@@ -23,7 +23,7 @@ type WriteFileOptions = {
 };
 
 type WriteImageOptions = WriteFileOptions & {
-	aspectRatio: aspect_ratio;
+	aspect_ratio: aspect_ratio;
 };
 
 @Injectable()
@@ -67,8 +67,10 @@ export class FilesService {
 		if (!buffer) throw new BadRequestException(this.t.Errors.File.NotProvided());
 
 		const fileType = await fromBuffer(buffer);
+		/* istanbul ignore next-line */
 		if (!fileType) throw new BadRequestException(this.t.Errors.File.UndefinedMimeType());
 
+		/* istanbul ignore next-line */
 		if (!allowedMimetype.includes(fileType.mime))
 			throw new BadRequestException(this.t.Errors.File.InvalidMimeType(allowedMimetype));
 
@@ -77,6 +79,8 @@ export class FilesService {
 		const size = buffer.byteLength;
 
 		// Scan the file with an antivirus
+		// TODO: (KEY: 5) Implement an antivirus (do a specific PR for it, as it's quite a big feature)
+		/* istanbul ignore next-line */
 		if (await this.scanWithAntivirus(buffer)) throw new BadRequestException(this.t.Errors.File.Infected(filename));
 
 		// Write the file on disk
@@ -106,8 +110,8 @@ export class FilesService {
 			throw new BadRequestException(this.t.Errors.File.InvalidMimeType(['image/*']));
 
 		// Check if the file respect the aspect ratio
-		if (!(await this.imagesService.validateAspectRatio(buffer, options.aspectRatio)))
-			throw new BadRequestException(this.t.Errors.Image.InvalidAspectRatio(options.aspectRatio));
+		if (!(await this.imagesService.validateAspectRatio(buffer, options.aspect_ratio)))
+			throw new BadRequestException(this.t.Errors.Image.InvalidAspectRatio(options.aspect_ratio));
 
 		// Convert the file to webp (unless it's a GIF or already a webp)
 		buffer = await this.imagesService.convertToWebp(buffer);

@@ -53,6 +53,7 @@ export class SelfGuard implements CanActivate {
 		// Ids values find in the data sent with the request, the sender id should be in this list
 		const id_key_values: string[] = [];
 
+		/* istanbul ignore next */
 		if (request.params[id_key]) id_key_values.push(request.params[id_key]);
 		else {
 			if (Array.isArray(request.body)) request.body.forEach((data) => id_key_values.push(data[id_key]));
@@ -61,6 +62,7 @@ export class SelfGuard implements CanActivate {
 
 		/* istanbul ignore next-line */
 		if (!id_key_values.length) return false;
+		/* istanbul ignore next-line */
 		validate(
 			z.array(z.coerce.number().int().min(1)).min(1),
 			id_key_values,

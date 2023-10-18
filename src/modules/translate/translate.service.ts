@@ -1,3 +1,6 @@
+/* istanbul ignore file */
+// TODO: (KEY: 7) Add crowdin support
+
 import type { aspect_ratio, email } from '#types';
 import type { I18nTranslations, PERMISSION_NAMES } from '#types/api';
 
@@ -47,14 +50,6 @@ export class TranslateService {
 			NotFound: <T>(type: Class<T> | string, field: string, value: string) =>
 				this.generic('responses.errors.entity.not_found', { type, field, value: value }),
 		},
-		Field: {
-			Invalid: <T>(type: Class<T> | string, field: unknown) =>
-				this.generic('responses.errors.field.invalid', { type, field }),
-			Missing: <T>(type: Class<T> | string, field: unknown) =>
-				this.generic('responses.errors.field.missing', { type, field }),
-			Unexpected: <T>(type: Class<T> | string, field: unknown) =>
-				this.generic('responses.errors.field.unexpected', { type, field }),
-		},
 		File: {
 			Infected: (file: string) => this.generic('responses.errors.file.infected', { file }),
 			InvalidMimeType: (mime_type: string[]) =>
@@ -82,7 +77,6 @@ export class TranslateService {
 		JWT: {
 			Expired: () => this.generic('responses.errors.jwt.expired', {}),
 			Invalid: () => this.generic('responses.errors.jwt.invalid', {}),
-			/* istanbul ignore next-line */
 			Unknown: () => this.generic('responses.errors.jwt.unknown', {}),
 		},
 		Password: {

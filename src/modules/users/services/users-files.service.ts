@@ -39,7 +39,7 @@ export class UsersFilesService {
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, owner_id));
 
 		if (req_user.id === user.id && user.picture !== null) {
-			const cooldown = this.configService.get<number>('users.picture_cooldown') * 1000;
+			const cooldown = this.configService.get<number>('users.picture_cooldown');
 			const now = Date.now();
 
 			if (
@@ -56,12 +56,12 @@ export class UsersFilesService {
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
 			directory: join(this.configService.get<string>('files.users'), 'pictures'),
 			filename: user.full_name.toLowerCase().replaceAll(' ', '_'),
-			aspectRatio: '1:1',
+			aspect_ratio: '1:1',
 		});
 
 		// Remove old file if present
 		if (user.picture) {
-			// this.filesService.deleteFromDisk(user.picture);
+			this.filesService.deleteFromDisk(user.picture);
 
 			user.picture.filename = fileInfos.filename;
 			user.picture.mimetype = fileInfos.mimetype;
@@ -98,24 +98,26 @@ export class UsersFilesService {
 	}
 
 	@CreateRequestContext()
-	async deletePicture(id: number): Promise<void> {
+	async deletePicture(id: number): Promise<User> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['picture'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 		if (!user.picture) throw new NotFoundException(this.t.Errors.User.NoPicture(id));
 
 		this.filesService.deleteFromDisk(user.picture);
 		await this.orm.em.removeAndFlush(user.picture);
+
+		return user;
 	}
 
 	@CreateRequestContext()
-	async updateBanner(id: number, file: Express.Multer.File): Promise<User> {
+	async updateBanner(id: number, file: Express.Multer.File): Promise<UserBanner> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['banner'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
 			directory: join(this.configService.get<string>('files.users'), 'banners'),
 			filename: user.full_name.replaceAll(' ', '_'),
-			aspectRatio: '16:9',
+			aspect_ratio: '16:9',
 		});
 
 		// Remove old file if present
@@ -143,25 +145,28 @@ export class UsersFilesService {
 		await this.orm.em.persistAndFlush(user);
 
 		delete user.banner.banner_user; // avoid circular reference
-		return user;
+		delete user.banner.visibility;
+		return user.banner;
 	}
 
 	@CreateRequestContext()
 	async getBanner(id: number): Promise<UserBanner> {
-		const user = await this.orm.em.findOneOrFail(User, { id }, { populate: ['banner', 'banner.visibility'] });
+		const user = await this.orm.em.findOne(User, { id }, { populate: ['banner', 'banner.visibility'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
-		if (!user.picture) throw new NotFoundException(this.t.Errors.User.NoBanner(id));
+		if (!user.banner) throw new NotFoundException(this.t.Errors.User.NoBanner(id));
 
 		return user.banner;
 	}
 
 	@CreateRequestContext()
-	async deleteBanner(id: number): Promise<void> {
+	async deleteBanner(id: number): Promise<User> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['banner'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
-		if (!user.picture) throw new NotFoundException(this.t.Errors.User.NoBanner(id));
+		if (!user.banner) throw new NotFoundException(this.t.Errors.User.NoBanner(id));
 
 		this.filesService.deleteFromDisk(user.banner);
 		await this.orm.em.removeAndFlush(user.banner);
+
+		return user;
 	}
 }

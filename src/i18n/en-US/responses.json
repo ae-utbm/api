@@ -19,11 +19,6 @@
     "entity": {
       "not_found": "Entity '{type}' not found using '{field}' with value '{value}'."
     },
-    "field": {
-      "missing": "Missing required field '{field}' in type '{type}'.",
-      "unexpected": "Field '{field}' in type '{type}' is not expected.",
-      "invalid": "Field '{field}' is invalid, '{type}' expected."
-    },
     "file": {
       "infected": "The given file '{file}' is infected by a virus.",
       "invalid_mime_type": "The given file has not one of the expected mime type : '[{mime_type}]'.",

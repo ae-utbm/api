@@ -83,6 +83,7 @@ export class UsersFilesController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_USER')
 	@ApiOperation({ summary: 'Delete user profile picture' })
+	@ApiOkResponse({ type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async deletePicture(@Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
@@ -140,6 +141,7 @@ export class UsersFilesController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Delete user profile banner' })
+	@ApiOkResponse({ type: User })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
 	async deleteBanner(@Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));

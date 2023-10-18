@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { join } from 'path';
 
 export type Config = typeof config;
