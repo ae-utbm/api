@@ -5,7 +5,7 @@ import { join } from 'path';
 
 import { MikroORM } from '@mikro-orm/core';
 
-import { DatabaseSeeder } from '@database/seeders/database.seeder';
+import { TestSeeder } from '@database/seeders/tests.seeder';
 import config from '@mikro-orm.config';
 
 /**
@@ -26,7 +26,7 @@ async function setup() {
 
 	// Seed the database with some basic data
 	const seeder = orm.getSeeder();
-	await seeder.seed(DatabaseSeeder);
+	await seeder.seed(TestSeeder);
 
 	await orm.close(true);
 }

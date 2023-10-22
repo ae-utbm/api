@@ -6,8 +6,6 @@ import { hashSync } from 'bcrypt';
 import { FileVisibilityGroup } from '@modules/files/entities/file-visibility.entity';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
-import { RoleExpiration } from '@modules/roles/entities/role-expiration.entity';
-import { Role } from '@modules/roles/entities/role.entity';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
 import { User } from '@modules/users/entities/user.entity';
 
@@ -19,69 +17,30 @@ export class DatabaseSeeder extends Seeder {
 	async run(em: EntityManager): Promise<void> {
 		const promotions = this.create_promotions(em);
 		const users = this.create_users(em);
-		const roles = this.create_roles(em);
 		const visibility_groups = this.create_visibility_groups(em);
 
-		const rootUser = users.find((u) => u.email === 'ae.info@utbm.fr');
-		const logsUser = users.find((u) => u.email === 'logs@email.com');
-		const permUser = users.find((u) => u.email === 'perms@email.com');
-		const promosUser = users.find((u) => u.email === 'promos@email.com');
-		const rolesUser = users.find((u) => u.email === 'roles@email.com');
-		const subscribedUser = users.find((u) => u.email === 'subscriber@email.com');
+		const root = users.find((u) => u.email === 'ae.info@utbm.fr');
 
-		// Assign permission to users
+		// Assign permission to root
 		const perms = [
 			em.create(Permission, {
 				name: 'ROOT',
 				expires: new Date('9999-12-31'),
-				user: rootUser,
-			}),
-
-			em.create(Permission, {
-				name: 'CAN_READ_LOGS_OF_USER',
-				expires: new Date('9999-12-31'),
-				user: logsUser,
-			}),
-
-			em.create(Permission, {
-				name: 'CAN_DELETE_LOGS_OF_USER',
-				expires: new Date('9999-12-31'),
-				user: logsUser,
+				user: root,
 			}),
 		];
 
-		// Assign roles to users
-		permUser.roles.add(roles.find((r) => r.name === 'PERMISSIONS_MODERATOR'));
-		promosUser.roles.add(roles.find((r) => r.name === 'PROMOTIONS_MODERATOR'));
-		rolesUser.roles.add(roles.find((r) => r.name === 'ROLES_MODERATOR'));
+		// Assign promotion to root
+		root.promotion = promotions.find((p) => p.number === 21);
 
-		const role_expirations = [
-			em.create(RoleExpiration, {
-				user: permUser,
-				role: roles.find((r) => r.name === 'PERMISSIONS_MODERATOR'),
-				expires: new Date('9999-12-31'),
-			}),
-			em.create(RoleExpiration, {
-				user: promosUser,
-				role: roles.find((r) => r.name === 'PROMOTIONS_MODERATOR'),
-				expires: new Date('9999-12-31'),
-			}),
-			em.create(RoleExpiration, {
-				user: rolesUser,
-				role: roles.find((r) => r.name === 'ROLES_MODERATOR'),
-				expires: new Date('9999-12-31'),
-			}),
-		];
-
-		// Assign promotion to users
-		rootUser.promotion = promotions.find((p) => p.number === 21);
-
-		// Assign visibility groups to users
-		subscribedUser.files_visibility_groups.add(visibility_groups.find((v) => v.name === 'SUBSCRIBER'));
-
-		await em.persistAndFlush([...users, ...perms, ...promotions, ...roles, ...role_expirations, ...visibility_groups]);
+		await em.persistAndFlush([...users, ...perms, ...promotions, ...visibility_groups]);
 	}
 
+	/**
+	 * Create promotions present in the database by default (from 1999 to current year)
+	 * @param {EntityManager} em the entity manager
+	 * @returns List of promotions created
+	 */
 	create_promotions(em: EntityManager): Promotion[] {
 		const res: Promotion[] = [];
 		const year = new Date().getFullYear();
@@ -93,36 +52,11 @@ export class DatabaseSeeder extends Seeder {
 		return res;
 	}
 
-	create_roles(em: EntityManager): Role[] {
-		const res: Role[] = [];
-
-		const roles: Partial<Role>[] = [
-			{
-				name: 'PERMISSIONS_MODERATOR',
-				permissions: [
-					'CAN_READ_PERMISSIONS_OF_USER',
-					'CAN_EDIT_PERMISSIONS_OF_USER',
-					'CAN_READ_PERMISSIONS_OF_ROLE',
-					'CAN_EDIT_PERMISSIONS_OF_ROLE',
-				],
-			},
-			{
-				name: 'PROMOTIONS_MODERATOR',
-				permissions: ['CAN_READ_PROMOTION', 'CAN_EDIT_PROMOTION'],
-			},
-			{
-				name: 'ROLES_MODERATOR',
-				permissions: ['CAN_READ_ROLE', 'CAN_EDIT_ROLE'],
-			},
-		];
-
-		for (const role of roles) {
-			res.push(em.create(Role, role));
-		}
-
-		return res;
-	}
-
+	/**
+	 * Create users present in the database by default
+	 * @param {EntityManager} em the entity manager
+	 * @returns List of users created
+	 */
 	create_users(em: EntityManager): User[] {
 		const res: User[] = [];
 
@@ -139,83 +73,6 @@ export class DatabaseSeeder extends Seeder {
 				nickname: 'noot noot',
 				birth_date: new Date('2000-01-01'),
 			},
-			// Unverified user
-			// > Email not verified
-			{
-				email: 'unverified@email.com',
-				email_verified: false,
-				email_verification: hashSync('token67891012', 10),
-				password: hashSync('root', 10),
-				first_name: 'unverified',
-				last_name: 'user',
-				birth_date: new Date('2000-01-01'),
-			},
-			// Unauthorized user
-			// > No permissions (but email verified)
-			{
-				email: 'unauthorized@email.com',
-				email_verified: true,
-				verified: new Date('2000-01-01'),
-				password: hashSync('root', 10),
-				first_name: 'unauthorized',
-				last_name: 'user',
-				birth_date: new Date('2000-01-01'),
-			},
-			// Logs user
-			// > CAN_READ_LOGS_OF_USER & CAN_EDIT_LOGS_OF_USER permissions
-			{
-				email: 'logs@email.com',
-				email_verified: true,
-				verified: new Date('2000-01-01'),
-				password: hashSync('root', 10),
-				first_name: 'logs',
-				last_name: 'moderator',
-				birth_date: new Date('2000-01-01'),
-			},
-			// Permission moderator user
-			// > CAN_READ_PERMISSIONS_OF_USER & CAN_EDIT_PERMISSIONS_OF_USER permissions
-			{
-				email: 'perms@email.com',
-				email_verified: true,
-				verified: new Date('2000-01-01'),
-				password: hashSync('root', 10),
-				first_name: 'perms',
-				last_name: 'moderator',
-				birth_date: new Date('2000-01-01'),
-			},
-			// Promotion moderator user
-			// > CAN_READ_PROMOTION & CAN_EDIT_PROMOTION permissions
-			{
-				email: 'promos@email.com',
-				email_verified: true,
-				verified: new Date('2000-01-01'),
-				password: hashSync('root', 10),
-				first_name: 'promos',
-				last_name: 'moderator',
-				birth_date: new Date('2000-01-01'),
-			},
-			// Role moderator user
-			// > CAN_READ_ROLE & CAN_EDIT_ROLE permissions
-			{
-				email: 'roles@email.com',
-				email_verified: true,
-				verified: new Date('2000-01-01'),
-				password: hashSync('root', 10),
-				first_name: 'promos',
-				last_name: 'moderator',
-				birth_date: new Date('2000-01-01'),
-			},
-			// Subscriber
-			{
-				email: 'subscriber@email.com',
-				email_verified: true,
-				verified: new Date('2000-01-01'),
-				password: hashSync('root', 10),
-				first_name: 'subscribed',
-				last_name: 'user',
-				birth_date: new Date('2000-01-01'),
-				subscribed: true,
-			},
 		];
 
 		for (const user of users) {
@@ -227,6 +84,11 @@ export class DatabaseSeeder extends Seeder {
 		return res;
 	}
 
+	/**
+	 * Create visibility groups present in the database by default (e.g. SUBSCRIBER)
+	 * @param {EntityManager} em the entity manager
+	 * @returns List of visibility groups created
+	 */
 	create_visibility_groups(em: EntityManager): FileVisibilityGroup[] {
 		const res: FileVisibilityGroup[] = [];
 
