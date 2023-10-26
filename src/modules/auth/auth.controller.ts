@@ -1,17 +1,16 @@
-import { Controller, Post, Body, Param, Get, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
 	ApiNotFoundResponse,
 	ApiOkResponse,
 	ApiOperation,
 	ApiParam,
-	ApiResponse,
 	ApiTags,
 	ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import express from 'express';
 import { z } from 'zod';
 
+import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
 import { TranslateService } from '@modules/translate/translate.service';
 import { User } from '@modules/users/entities/user.entity';
 import { UsersDataService } from '@modules/users/services/users-data.service';
@@ -76,19 +75,11 @@ export class AuthController {
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiBadRequestResponse({ description: 'Bad request, missing id/token or email already verified' })
 	@ApiUnauthorizedResponse({ description: 'Unauthorized, invalid token' })
-	@ApiResponse({
-		status: HttpStatus.PERMANENT_REDIRECT,
-		description: 'User account validated, redirecting to ae.utbm.fr',
-	})
-	async verifyEmailAndRedirect(
-		@Res() res: express.Response,
-		@Param('user_id') user_id: number,
-		@Param('token') token: string,
-	) {
+	@ApiOkResponse({ description: 'OK', type: MessageResponseDTO })
+	async verifyEmailAndRedirect(@Param('user_id') user_id: number, @Param('token') token: string) {
 		validate(z.coerce.number().int().min(1), user_id, this.t.Errors.Id.Invalid(User, user_id));
 		validate(z.string().min(12), token, this.t.Errors.JWT.Invalid());
 
-		await this.userService.verifyEmail(user_id, token);
-		res.redirect(HttpStatus.PERMANENT_REDIRECT, 'https://ae.utbm.fr/');
+		return this.userService.verifyEmail(user_id, token);
 	}
 }

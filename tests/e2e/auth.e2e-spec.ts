@@ -299,11 +299,14 @@ describe('Auth (e2e)', () => {
 			});
 		});
 
-		describe('308 : Permanent Redirect', () => {
+		describe('200 : Ok', () => {
 			it('when user is verified', async () => {
-				const response = await request(server).get(`/auth/confirm/${user_id}/${token}`).expect(308);
+				const response = await request(server).get(`/auth/confirm/${user_id}/${token}`).expect(200);
 
-				expect((response.header as { location: string }).location).toEqual('https://ae.utbm.fr/');
+				expect(response.body).toEqual({
+					message: t.Success.Email.Verified('unverified@email.com'),
+					status_code: 200,
+				});
 
 				// Reset user email_verified to false (for other tests)
 				const user = await em.findOne(User, { id: user_id });

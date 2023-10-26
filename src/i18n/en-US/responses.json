@@ -4,13 +4,13 @@
       "invalid": "The date '{date}' is invalid, either too young or in the future."
     },
     "email": {
+      "already_verified": "{type} email is already verified.",
       "blacklisted": "Email '{email}' is blacklisted and cannot be used.",
       "malformed": "Email '{email}' is either too long (> 60) or too short (< 6)",
       "invalid": "The given email '{email}' does not respect the email format",
       "used": "Email '{email}' is already taken.",
       "are_used": "Emails '{emails}' are already taken.",
       "not_found": "{type} with email '{email}' not found.",
-      "verified": "{type} email is already verified.",
       "unverified": "{type} email is not verified.",
       "token": {
         "invalid": "Invalid email verification token."
@@ -64,6 +64,9 @@
     }
   },
   "success": {
-    "deleted": "'{type}' successfully deleted."
+    "deleted": "'{type}' successfully deleted.",
+    "email": {
+      "verified": "{type} email has been verified."
+    }
   }
 }

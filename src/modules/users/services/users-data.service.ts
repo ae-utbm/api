@@ -9,6 +9,7 @@ import { compareSync, hashSync } from 'bcrypt';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 import { z } from 'zod';
 
+import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
 import { UserPostByAdminDTO, UserPostDTO } from '@modules/auth/dto/register.dto';
 import { EmailsService } from '@modules/emails/emails.service';
 import { Permission } from '@modules/permissions/entities/permission.entity';
@@ -287,7 +288,7 @@ export class UsersDataService {
 	}
 
 	@CreateRequestContext()
-	async verifyEmail(user_id: number, token: string): Promise<User> {
+	async verifyEmail(user_id: number, token: string): Promise<MessageResponseDTO> {
 		const user = await this.findOne(user_id, false);
 		if (user.email_verified) throw new BadRequestException(this.t.Errors.Email.AlreadyVerified(User));
 
@@ -299,7 +300,10 @@ export class UsersDataService {
 		user.email_verification = null;
 
 		await this.orm.em.persistAndFlush(user);
-		return user;
+		return {
+			message: this.t.Success.Email.Verified(user.email),
+			status_code: 200,
+		};
 	}
 
 	@CreateRequestContext()

@@ -37,7 +37,8 @@ export class TranslateService {
 			AreAlreadyUsed: (emails: email[]) =>
 				this.generic('responses.errors.email.are_used', { emails: emails.sort().join(', ') }),
 			IsAlreadyUsed: (email: email) => this.generic('responses.errors.email.used', { email }),
-			AlreadyVerified: <T>(type: Class<T> | string) => this.generic('responses.errors.email.verified', { type }),
+			AlreadyVerified: <T>(type: Class<T> | string) =>
+				this.generic('responses.errors.email.already_verified', { type }),
 			Blacklisted: (email: email) => this.generic('responses.errors.email.blacklisted', { email }),
 			Invalid: (email: email) => this.generic('responses.errors.email.invalid', { email }),
 			InvalidVerificationToken: () => this.generic('responses.errors.email.token.invalid', {}),
@@ -107,6 +108,9 @@ export class TranslateService {
 	public readonly Success = {
 		Entity: {
 			Deleted: <T>(type: Class<T> | string) => this.generic('responses.success.deleted', { type }),
+		},
+		Email: {
+			Verified: (email: email) => this.generic('responses.success.email.verified', { email }),
 		},
 	};
 }
