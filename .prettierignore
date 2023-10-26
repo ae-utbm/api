@@ -1,0 +1,8 @@
+# ignore generated files
+coverage
+dist
+temp
+src/database/migrations
+src/exported/api/@types/i18n.d.ts
+pnpm-lock.yaml
+package.json

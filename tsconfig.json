@@ -1,21 +1,52 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+    "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es2017",
-    "sourceMap": true,
-    "outDir": "./dist",
-    "baseUrl": "./",
+    "alwaysStrict": true,
+    "baseUrl": ".",
+    "declaration": true,
+    "downlevelIteration": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
     "incremental": true,
+    "lib": [
+      "DOM",
+      "ES2022",
+      "ESNext.AsyncIterable"
+    ],
+    "moduleResolution": "Node",
+    "module": "CommonJS",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "outDir": "./dist",
+    "paths": {
+      "#types/api": [
+        "src/exported/api/@types/index.d.ts"
+      ],
+      "#types": [
+        "src/exported/global/@types/index.d.ts"
+      ],
+      "@*": [
+        "src/*"
+      ]
+    },
+    "resolveJsonModule": true,
+    "sourceMap": true,
     "skipLibCheck": true,
-    "strictNullChecks": false,
-    "noImplicitAny": false,
+    "strict": true,
     "strictBindCallApply": false,
-    "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "strictNullChecks": false,
+    "target": "ESNext",
+    "typeRoots": [
+      "src/exported/global/@types",
+      "src/exported/api/@types",
+      "node_modules/@types"
+    ],
+    "useDefineForClassFields": false
   }
 }

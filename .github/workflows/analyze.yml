@@ -1,0 +1,36 @@
+name: Code QL Analysis
+
+# Description:
+# - This workflow runs CodeQL analysis on the codebase.
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Init CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript # typescript is recognized as javascript
+          queries: +security-extended,security-and-quality
+
+      - name: Build CodeQL Database
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: '/language:javascript'

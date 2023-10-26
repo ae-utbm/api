@@ -1,73 +1,144 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+<img align="left" src="https://github.com/ae-utbm/api/assets/49886317/aa7a4e72-e6e4-4a70-bf70-3bb209553214" height="128">
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# AE UTBM - API
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/XK9WfPsUFm)
+[![GitHub issues](https://img.shields.io/github/issues/ae-utbm/api?style=for-the-badge)](https://GitHub.com/ae-utbm/api/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/ae-utbm/api?style=for-the-badge)](https://GitHub.com/ae-utbm/api/issues)
 
-## Description
+<br/>
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This repository contains the source code of the API used by the [Sith 4](https://github.com/ae-utbm/sith4/) to manage its members, events, etc. Feel free to contribute to this project by opening a pull request or an issue.
+
+- **This project is under the [GNU GPLv3](./LICENSE) license.**
+- You can find the contributing guidelines [here](./.github/CONTRIBUTING.md).
+
+## Table of contents
+
+- [Installation](#installation)
+	- [Project](#project)
+	- [Environment variables](#environment-variables)
+	- [Database](#database)
+		- [PostgreSQL Installation](#postgresql-installation)
+		- [Configuration](#configuration)
+		- [First time setup](#first-time-setup)
+- [Launch](#launch)
+- [Tests](#tests)
+- [Linting](#linting)
+- [Documentation](#documentation)
 
 ## Installation
 
+### Project
+
+To run this project, you will need to install [NodeJS](https://nodejs.org/en/) and [pnpm](https://pnpm.io/).
+
 ```bash
-$ pnpm install
+# install pnpm globally (npm comes with nodeJS)
+npm install -g pnpm
 ```
 
-## Running the app
+```bash
+# clone the repository
+# note: we use --recurse-submodules to clone the types repository as well
+git clone --recurse-submodules 'https://github.com/ae-utbm/api.git'
+
+# install the dependencies
+pnpm install
+```
+
+> **Note**  
+> This project use the [typings repository](https://github.com/ae-utbm/typings) as a git submodule to manage output types for all endpoints, this submodule is also present in the [Sith 4](https://github.com/ae-utbm/sith4) and allows to share the types between the two projects.
+
+### Environment variables
+
+The API can be configured trough a lot of environment variables, you can find them in the [`.env.example`](./.env.example) file. You will need to create a `.env` file and fill it with the values you want to use before running the API.
+
+### Database
+
+#### PostgreSQL Installation
+
+<h5><img src="https://upload.wikimedia.org/wikipedia/commons/a/af/Tux.png" width=10> Linux<br></h5>
+
+> Not done yet, feel free to make a PR 🎉
+
+<h5><img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" width=10> Windows<br></h5>
+
+> Not done yet, feel free to make a PR 🎉
+
+<h5><img src="https://upload.wikimedia.org/wikipedia/commons/8/84/Apple_Computer_Logo_rainbow.svg" width=10> MacOS</h5>
+
+The easiest way to install PostgreSQL is to use [Homebrew](https://brew.sh/) with:
 
 ```bash
-# development
-$ pnpm run start
+brew install postgresql@13
+brew services start postgresql@13 # start postgresql service
+```
+
+#### Configuration
+
+After the installation, you can use [pgAdmin](https://www.pgadmin.org/) to create a server with the following parameters:
+
+| `.env`               |      pgAdmin 4       | value                                                                                     |
+| :------------------: | :------------------: | :---------------------------------------------------------------------------------------- |
+|      `DB_HOST`       |         Host         | `127.0.0.1`                                                                               |
+|      `DB_PORT`       |         Port         | `5432`                                                                                    |
+|    `DB_USERNAME`     |       Username       | Should be the username you used to install postgresql or any user you have created for it |
+|    `DB_PASSWORD`     |       Password       | leave it empty, unless you have set a password for your postgresql user                   |
+|    `DB_DATABASE`     | Maintenance database | `postgres`                                                                                |
+
+> **Note**  
+> You can also use [TablePlus](https://tableplus.com/) to manage your databases as a lightweight (but more limited, in the free edition) alternative to pgAdmin.
+
+> **Note**  
+> You have to create a server before creating a database, as the database will be created in the server you have selected.
+
+#### First time setup
+
+As the database has never been used, you will need to create it and run the seeders to populate it with some base data. You can do so with the following commands:
+
+```bash
+# create the database (will drop if already exists and create it again)
+pnpm run db:create
+
+# run the seeders (to populate the database with some base data)
+pnpm run db:seed
+```
+
+## Launch
+
+The API is built with [NestJS](https://nestjs.com/) and uses [TypeScript](https://www.typescriptlang.org/). You can run it with the following commands:
+
+```bash
+# debug mode
+pnpm run start:debug
 
 # watch mode
-$ pnpm run start:dev
+pnpm run start:dev
 
 # production mode
-$ pnpm run start:prod
+pnpm run start:prod
 ```
 
-## Test
+## Tests
+Both unit and e2e tests are available and run with [Jest](https://jestjs.io/). You can run them with the following command:
 
 ```bash
 # unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+pnpm test
 ```
 
-## Support
+> After running the tests, a coverage report is generated in the `./coverage` folder.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Linting
+This project uses [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/) to lint the code. You can run the linter with the following command:
 
-## Stay in touch
+```bash
+pnpm run lint
+```
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Documentation
 
-## License
+Swagger is used to generate the documentation of the API, you can access it at the `/docs` endpoint when the app is launched.
 
-Nest is [MIT licensed](LICENSE).
+For the more in depth documentation on how to develop on this project, you can check the [wiki](https://github.com/ae-utbm/api/wiki).
