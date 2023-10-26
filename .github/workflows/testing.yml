@@ -2,7 +2,7 @@ name: Run tests
 
 # Description:
 # - This workflow runs tests on the codebase, fails if tests do not pass.
-# - Tests are run on both Windows and Ubuntu to ensure cross-platform compatibility for development.
+# - Tests are run on both Windows and Ubuntu to ensure cross-platform compatibility for developers.
 
 on:
   workflow_call:
@@ -14,16 +14,24 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
 
+    env:
+      db_name: ${{ secrets.TESTS_DB_DATABASE }}
+      db_host: ${{ secrets.TESTS_DB_HOST }}
+      db_port: ${{ secrets.TESTS_DB_PORT }}
+      db_user: ${{ secrets.TESTS_DB_USERNAME }}
+      db_pass: ${{ secrets.TESTS_DB_PASSWORD }}
+      jwt_key: ${{ secrets.TESTS_JWT_KEY }}
+
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Setup PostgresSQL
         uses: ikalnytskyi/action-setup-postgres@v4
         with:
-          database: ${{ secrets.TESTS_DB_DATABASE }}
-          port: ${{ secrets.TESTS_DB_PORT }}
-          username: ${{ secrets.TESTS_DB_USERNAME }}
-          password: ${{ secrets.TESTS_DB_PASSWORD }}
+          database: ${{ env.db_name }}
+          port: ${{ env.db_port }}
+          username: ${{ env.db_user }}
+          password: ${{ env.db_pass }}
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -47,14 +55,14 @@ jobs:
       - name: Run tests
         run: pnpm workflow:test
         env:
-          POSTGRES_DB: ${{ secrets.TESTS_DB_DATABASE }}
-          POSTGRES_HOST: ${{ secrets.TESTS_DB_HOST }}
-          POSTGRES_PORT: ${{ secrets.TESTS_DB_PORT }}
-          POSTGRES_USER: ${{ secrets.TESTS_DB_USERNAME }}
-          POSTGRES_PASSWORD: ${{ secrets.TESTS_DB_PASSWORD }}
+          POSTGRES_DB: ${{ env.db_name }}
+          POSTGRES_HOST: ${{ env.db_host }}
+          POSTGRES_PORT: ${{ env.db_port }}
+          POSTGRES_USER: ${{ env.db_user }}
+          POSTGRES_PASSWORD: ${{ env.db_pass }}
           DEBUG: true
           EMAIL_ENABLED: false
-          JWT_KEY: ${{ secrets.TESTS_JWT_KEY }}
+          JWT_KEY: ${{ env.jwt_key }}
 
       - name: Export coverage results
         uses: actions/upload-artifact@v3
