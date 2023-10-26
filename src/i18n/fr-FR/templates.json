@@ -1,0 +1,42 @@
+{
+  "common": {
+    "politeness": "Cordialement,",
+    "signature": "L'Association des étudiants UTBM",
+    "questions": "Si vous avez des questions ou si vous avez besoin d'aide, n'hésitez pas à nous contacter via notre adresse e-mail :",
+    "info": "Si vous ne pouvez pas cliquer sur le lien, vous pouvez également le copier et le coller dans la barre d'adresse de votre navigateur."
+  },
+  "email_changed": {
+    "subject": "Votre adresse e-mail a été modifiée",
+    "title": "Vous avez modifié avec succès l'adresse email associée à votre compte : {username}.",
+    "body": {
+      "text": "Votre adresse email a été changée pour {email}.",
+      "link": {
+        "text": "Confirmer ma nouvelle adresse email",
+        "href": ""
+      }
+    }
+  },
+  "register_common": {
+    "subject": "Bienvenue sur le site",
+    "title": "Bienvenue {username} !",
+    "body": {
+      "text": "Nous sommes ravis que vous ayez créé un compte sur notre site web."
+    }
+  },
+  "register_user": {
+    "body": {
+      "text": "Veuillez cliquer sur le lien ci-dessous pour confirmer votre adresse email et accéder entièrement à votre compte :",
+      "link": {
+        "text": "Confirmer mon adresse email",
+        "href": ""
+      },
+      "remark": "Veuillez noter que votre compte doit être vérifié dans les jours {days} suivant votre inscription. Si vous ne le vérifiez pas dans ce délai, votre compte sera supprimé."
+    }
+  },
+  "register_user_by_admin": {
+    "body": {
+      "text": "Veuillez trouver ci-dessous le mot de passe temporaire pour vous connecter à votre compte :",
+      "password": ""
+    }
+  }
+}

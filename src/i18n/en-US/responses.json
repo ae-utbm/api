@@ -21,10 +21,10 @@
     },
     "file": {
       "infected": "The given file '{file}' is infected by a virus.",
-      "invalid_mime_type": "The given file has not one of the expected mime type : '[{mime_type}]'.",
+      "invalid_mime_type": "The given file has not one of the expected MIME type : '[{mime_type}]'.",
       "no_file": "No file was provided.",
       "not_found_on_disk": "File '{file}' not found on disk.",
-      "undefined_mime_type": "The given file has an undefined mime type.",
+      "undefined_mime_type": "The given file has an undefined MIME type.",
       "unauthorized": "You need to be in the '{visibility_group}' visibility group to access this file."
     },
     "id": {
