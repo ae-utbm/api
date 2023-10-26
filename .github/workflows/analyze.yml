@@ -1,5 +1,8 @@
 name: Code QL Analysis
 
+# Description:
+# - This workflow runs CodeQL analysis on the codebase.
+
 on:
   workflow_call:
   workflow_dispatch:

@@ -1,5 +1,9 @@
-# https://docs.github.com/en/actions/using-workflows/reusing-workflows
 name: Code update
+
+# Description:
+# - This workflow runs linting, testing, and analysis on the codebase, fails if any of these do not pass.
+# - This workflow is triggered on pull requests and pushes to the main and develop branches.
+# see: https://docs.github.com/en/actions/using-workflows/reusing-workflows
 
 on:
   pull_request:

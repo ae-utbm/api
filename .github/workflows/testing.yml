@@ -1,5 +1,9 @@
 name: Run tests
 
+# Description:
+# - This workflow runs tests on the codebase, fails if tests do not pass.
+# - Tests are run on both Windows and Ubuntu to ensure cross-platform compatibility for development.
+
 on:
   workflow_call:
   workflow_dispatch:
@@ -16,10 +20,10 @@ jobs:
       - name: Setup PostgresSQL
         uses: ikalnytskyi/action-setup-postgres@v4
         with:
-          database: ae_test
-          port: 5432
-          username: postgres
-          password: postgres
+          database: ${{ secrets.TESTS_DB_DATABASE }}
+          port: ${{ secrets.TESTS_DB_PORT }}
+          username: ${{ secrets.TESTS_DB_USERNAME }}
+          password: ${{ secrets.TESTS_DB_PASSWORD }}
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -43,14 +47,14 @@ jobs:
       - name: Run tests
         run: pnpm workflow:test
         env:
-          POSTGRES_DB: ae_test
-          POSTGRES_HOST: '127.0.0.1'
-          POSTGRES_PORT: 5432
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ${{ secrets.TESTS_DB_DATABASE }}
+          POSTGRES_HOST: ${{ secrets.TESTS_DB_HOST }}
+          POSTGRES_PORT: ${{ secrets.TESTS_DB_PORT }}
+          POSTGRES_USER: ${{ secrets.TESTS_DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.TESTS_DB_PASSWORD }}
           DEBUG: true
           EMAIL_ENABLED: false
-          JWT_KEY: secret_jwt_key
+          JWT_KEY: ${{ secrets.TESTS_JWT_KEY }}
 
       - name: Export coverage results
         uses: actions/upload-artifact@v3

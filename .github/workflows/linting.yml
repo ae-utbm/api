@@ -1,5 +1,8 @@
 name: Code Linting
 
+# Description:
+# - This workflow runs linting on the codebase, fails if linting does not pass.
+
 on:
   workflow_call:
   workflow_dispatch:
