@@ -12,7 +12,6 @@
     "db:create": "pnpm mikro-orm schema:fresh --run",
     "db:migrate": "pnpm mikro-orm migration:up",
     "db:seed": "pnpm mikro-orm seeder:run",
-    "docker:build": "docker build -t 'ae_utbm/api' .",
     "build": "pnpm clean && nest build",
     "start:debug": "nest start --watch --debug",
     "start:dev": "nest start --watch",
