@@ -2,7 +2,7 @@ name: Run tests
 
 # Description:
 # - This workflow runs tests on the codebase, fails if tests do not pass.
-# - Tests are run on both Windows and Ubuntu to ensure cross-platform compatibility for developers.
+# - Tests are run on both Windows and Ubuntu to ensure cross-platform compatibility for development.
 
 on:
   workflow_call:
@@ -14,24 +14,16 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
 
-    env:
-      db_name: ${{ secrets.TESTS_DB_DATABASE }}
-      db_host: ${{ secrets.TESTS_DB_HOST }}
-      db_port: ${{ secrets.TESTS_DB_PORT }}
-      db_user: ${{ secrets.TESTS_DB_USERNAME }}
-      db_pass: ${{ secrets.TESTS_DB_PASSWORD }}
-      jwt_key: ${{ secrets.TESTS_JWT_KEY }}
-
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Setup PostgresSQL
         uses: ikalnytskyi/action-setup-postgres@v4
         with:
-          database: ${{ env.db_name }}
-          port: ${{ env.db_port }}
-          username: ${{ env.db_user }}
-          password: ${{ env.db_pass }}
+          database: ae_test
+          port: 5432
+          username: postgres
+          password: postgres
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -55,14 +47,14 @@ jobs:
       - name: Run tests
         run: pnpm workflow:test
         env:
-          POSTGRES_DB: ${{ env.db_name }}
-          POSTGRES_HOST: ${{ env.db_host }}
-          POSTGRES_PORT: ${{ env.db_port }}
-          POSTGRES_USER: ${{ env.db_user }}
-          POSTGRES_PASSWORD: ${{ env.db_pass }}
+          POSTGRES_DB: ae_test
+          POSTGRES_HOST: '127.0.0.1'
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
           DEBUG: true
           EMAIL_ENABLED: false
-          JWT_KEY: ${{ env.jwt_key }}
+          JWT_KEY: jwt_key
 
       - name: Export coverage results
         uses: actions/upload-artifact@v3
