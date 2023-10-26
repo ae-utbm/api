@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 /**
  * Base entity used for all entities,
- * containing the primary key and the creation and update dates
+ * - Contains the primary key, the creation and update dates
  */
 @Entity({ abstract: true })
 export abstract class BaseEntity extends BE<BaseEntity, 'id'> implements BEI {

@@ -10,15 +10,6 @@ import { UsersDataService } from '@modules/users/services/users-data.service';
 
 import { AuthService } from '../auth.service';
 
-/**
- * Check if the authenticated user has the required permissions to access the route
- * @example
- * UseGuards(PermissionGuard)
- * ApiPermissions('permission1', 'permission2')
- * async route() {
- * // ...
- * }
- */
 @Injectable()
 export class PermissionGuard implements CanActivate {
 	constructor(

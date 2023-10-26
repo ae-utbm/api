@@ -21,6 +21,12 @@ export class AuthService {
 		private readonly configService: ConfigService,
 	) {}
 
+	/**
+	 * Sign in a user and return a JWT token and the user ID
+	 * @param {email} email the user email
+	 * @param {string} pass the user password (hashed or not) @default false
+	 * @returns {Promise<TokenDTO>} The JWT token and the user ID
+	 */
 	async signIn(email: email, pass: string): Promise<TokenDTO> {
 		const user: User = await this.usersService.findOne(email, false);
 
@@ -49,6 +55,13 @@ export class AuthService {
 		return user;
 	}
 
+	/**
+	 * Verify the JWT token and return the payload if valid
+	 * @param {string} token token to verify
+	 * @returns {JWTPayload} The payload if valid
+	 *
+	 * @throws {UnauthorizedException} If the token is invalid or expired
+	 */
 	verifyJWT(token: string): JWTPayload | never {
 		const bearer = token.replace('Bearer', '').trim();
 
