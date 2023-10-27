@@ -1,11 +1,11 @@
 import type { JWTPayload } from '#types/api';
 
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { z } from 'zod';
 
+import { env } from '@env';
 import { validate } from '@utils/validate';
 
 import { AuthService } from '../auth.service';
@@ -15,12 +15,12 @@ import { AuthService } from '../auth.service';
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-	constructor(private readonly configService: ConfigService, private readonly authService: AuthService) {
+	constructor(private readonly authService: AuthService) {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 			ignoreExpiration: true,
-			secretOrKey: configService.get<string>('auth.jwtKey'),
-			signOptions: { expiresIn: configService.get<number>('auth.jwtExpirationTime') },
+			secretOrKey: env.JWT_KEY,
+			signOptions: { expiresIn: env.JWT_EXPIRATION_TIME },
 		});
 	}
 

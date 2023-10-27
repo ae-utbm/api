@@ -20,6 +20,7 @@ jobs:
       - name: Setup PostgresSQL
         uses: ikalnytskyi/action-setup-postgres@v4
         with:
+          # Should match .env.example values
           database: ae_test
           port: 5432
           username: postgres
@@ -41,20 +42,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Setup environment variables
+        run: pnpm workflow:setup_env
+
       - name: Setup database for tests
         run: pnpm workflow:init_db
 
       - name: Run tests
         run: pnpm workflow:test
-        env:
-          POSTGRES_DB: ae_test
-          POSTGRES_HOST: '127.0.0.1'
-          POSTGRES_PORT: 5432
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          DEBUG: true
-          EMAIL_ENABLED: false
-          JWT_KEY: jwt_key
 
       - name: Export coverage results
         uses: actions/upload-artifact@v3

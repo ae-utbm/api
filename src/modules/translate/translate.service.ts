@@ -1,5 +1,4 @@
 /* istanbul ignore file */
-// TODO: (KEY: 7) Add crowdin support
 
 import type { aspect_ratio, email } from '#types';
 import type { I18nTranslations, PERMISSION_NAMES } from '#types/api';

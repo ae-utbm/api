@@ -4,17 +4,14 @@ import 'tsconfig-paths/register';
 import '@exported/global/utils';
 
 import { MikroORM } from '@mikro-orm/core';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { TestingModule, Test } from '@nestjs/testing';
 
 import { AppModule } from '@app.module';
-import env from '@env';
 import { TranslateService } from '@modules/translate/translate.service';
 
 let module_fixture: TestingModule;
-let config: ConfigService;
 let jwt: JwtService;
 let app: NestExpressApplication;
 let server: Awaited<ReturnType<NestExpressApplication['listen']>>;
@@ -35,12 +32,10 @@ beforeAll(async () => {
 	}).compile();
 
 	app = module_fixture.createNestApplication();
-	app.enableCors({ origin: env().cors });
-	app.useStaticAssets(env().files.baseDir, { index: false, prefix: '/public' });
+	app.enableCors({ origin: '*' });
 
 	orm = module_fixture.get<MikroORM>(MikroORM);
 	t = module_fixture.get<TranslateService>(TranslateService);
-	config = module_fixture.get<ConfigService>(ConfigService);
 	jwt = module_fixture.get<JwtService>(JwtService);
 
 	server = await app.listen(5325);
@@ -54,4 +49,4 @@ afterAll(async () => {
 	server.close();
 });
 
-export { module_fixture, config, server, orm, t, jwt };
+export { module_fixture, server, orm, t, jwt };

@@ -2,9 +2,9 @@ import { join } from 'path';
 
 import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 
+import { env } from '@env';
 import { FilesService } from '@modules/files/files.service';
 import { TranslateService } from '@modules/translate/translate.service';
 
@@ -18,7 +18,6 @@ export class PromotionsService {
 	constructor(
 		private readonly t: TranslateService,
 		private readonly orm: MikroORM,
-		private readonly configService: ConfigService,
 		private readonly filesService: FilesService,
 	) {}
 
@@ -113,7 +112,7 @@ export class PromotionsService {
 		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
-			directory: join(this.configService.get<string>('files.promotions'), 'logo'),
+			directory: join(env.PROMOTION_BASE_PATH, 'logo'),
 			filename: `promotion_${promotion.number}`,
 			aspect_ratio: '1:1',
 		});

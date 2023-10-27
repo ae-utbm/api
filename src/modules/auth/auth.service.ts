@@ -2,10 +2,10 @@ import type { email } from '#types';
 import type { JWTPayload } from '#types/api';
 
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compareSync } from 'bcrypt';
 
+import { env } from '@env';
 import { TranslateService } from '@modules/translate/translate.service';
 import { User } from '@modules/users/entities/user.entity';
 import { UsersDataService } from '@modules/users/services/users-data.service';
@@ -18,7 +18,6 @@ export class AuthService {
 		private readonly t: TranslateService,
 		private readonly jwtService: JwtService,
 		private readonly usersService: UsersDataService,
-		private readonly configService: ConfigService,
 	) {}
 
 	/**
@@ -70,7 +69,7 @@ export class AuthService {
 		const bearer = token.replace('Bearer', '').trim();
 
 		try {
-			return this.jwtService.verify<JWTPayload>(bearer, { secret: this.configService.get<string>('auth.jwtKey') });
+			return this.jwtService.verify<JWTPayload>(bearer, { secret: env.JWT_KEY });
 		} catch (err) {
 			const error = err as Error;
 			if (error.name === 'TokenExpiredError') throw new UnauthorizedException(this.t.Errors.JWT.Expired());

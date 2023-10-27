@@ -3,11 +3,12 @@ import { join } from 'path';
 
 import request from 'supertest';
 
+import { env } from '@env';
 import { TokenDTO } from '@modules/auth/dto/token.dto';
 import { PromotionPicture } from '@modules/promotions/entities/promotion-picture.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
 
-import { server, config, t, orm } from '..';
+import { server, t, orm } from '..';
 
 describe('Promotions (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -544,11 +545,9 @@ describe('Promotions (e2e)', () => {
 				});
 
 				// expect the file to be created on disk
-				expect(
-					existsSync(
-						join(config.get<string>('files.promotions'), 'logo', (response.body as Promotion).picture.filename),
-					),
-				).toBe(true);
+				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', (response.body as Promotion).picture.filename))).toBe(
+					true,
+				);
 			});
 
 			it('when the promotion has a logo and update the logo', async () => {
@@ -579,14 +578,12 @@ describe('Promotions (e2e)', () => {
 				});
 
 				// expect the old file to be deleted from disk
-				expect(existsSync(join(config.get<string>('files.promotions'), 'logo', oldLogo.filename))).toBe(false);
+				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', oldLogo.filename))).toBe(false);
 
 				// expect the new file to be created on disk
-				expect(
-					existsSync(
-						join(config.get<string>('files.promotions'), 'logo', (response.body as Promotion).picture.filename),
-					),
-				).toBe(true);
+				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', (response.body as Promotion).picture.filename))).toBe(
+					true,
+				);
 			});
 		});
 	});
@@ -684,7 +681,7 @@ describe('Promotions (e2e)', () => {
 				});
 
 				// expect the file to be deleted from disk
-				expect(existsSync(join(config.get<string>('files.promotions'), 'logo', logo.filename))).toBe(false);
+				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', logo.filename))).toBe(false);
 				expect(await em.findOne(PromotionPicture, { picture_promotion: 21 })).toBeNull();
 			});
 		});
