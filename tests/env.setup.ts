@@ -13,6 +13,6 @@ import { Logger } from '@nestjs/common';
 		return;
 	}
 
-	copyFileSync(join(process.cwd(), '.env.example'), join(process.cwd(), '.env'));
-	Logger.log('The .env file has been created from the .env.example file', 'env.setup.ts');
+	copyFileSync(join(process.cwd(), './tests/.env.test'), join(process.cwd(), '.env'));
+	Logger.log('The .env file has been created from the .env.test file', 'env.setup.ts');
 })();

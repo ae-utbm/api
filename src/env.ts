@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 /**
  * NodeJS environment variables + API specific environment variables, validated using zod
+ * @see https://github.com/colinhacks/zod
  */
 export const env = (() => {
 	// Throw if the .env file is missing
