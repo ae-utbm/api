@@ -19,7 +19,7 @@
     "workflow:lint": "eslint \"{src,tests}/**/*.ts\" --max-warnings=0",
     "workflow:test": "jest --config jest.config.ts --forceExit",
     "workflow:init_db": "pnpm ts-node tests/database.setup.ts",
-    "workflow:init_env": "pnpm ts-node tests/env.setup.ts"
+    "workflow:setup_env": "pnpm ts-node tests/env.setup.ts"
   },
   "dependencies": {
     "@ae_utbm/typings": "file:src/exported",
