@@ -1,11 +1,9 @@
-/* eslint-disable no-console */
+import 'tsconfig-paths/register';
 
 import { copyFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 import { Logger } from '@nestjs/common';
-
-import 'tsconfig-paths/register';
 
 (() => {
 	Logger.log('Setting up the environment variables...', 'env.setup.ts');
