@@ -14,7 +14,9 @@ import pkg from '../package.json';
  */
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule);
-	app.enableCors({ origin: env.CORS_ORIGIN_WHITELIST.split(';') });
+	const cors_urls = env.CORS_ORIGIN_WHITELIST.split(';');
+
+	app.enableCors({ origin: cors_urls.includes('*') ? '*' : cors_urls });
 	app.useStaticAssets('./src/swagger', { index: false, prefix: '/public' });
 
 	const config = new DocumentBuilder()
