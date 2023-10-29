@@ -7,11 +7,11 @@ import { User } from '@modules/users/entities/user.entity';
 import { server, t } from '..';
 
 describe('Logs (e2e)', () => {
-	let tokenUnverified: string;
-	let userIdUnverified: number;
-
 	let tokenUnauthorized: string;
 	let userIdUnauthorized: number;
+
+	let tokenVerified: string;
+	let userIdVerified: number;
 
 	let tokenLogModerator: string;
 	let userIdLogModerator: number;
@@ -20,15 +20,15 @@ describe('Logs (e2e)', () => {
 		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
 
 		const responseA: res = await request(server).post('/auth/login').send({
-			email: 'unverified@email.com',
+			email: 'promos@email.com',
 			password: 'root',
 		});
 
-		tokenUnverified = responseA.body.token;
-		userIdUnverified = responseA.body.user_id;
+		tokenVerified = responseA.body.token;
+		userIdVerified = responseA.body.user_id;
 
 		const responseB: res = await request(server).post('/auth/login').send({
-			email: 'unauthorized@email.com',
+			email: 'promos@email.com',
 			password: 'root',
 		});
 
@@ -71,26 +71,13 @@ describe('Logs (e2e)', () => {
 					message: 'Unauthorized',
 				});
 			});
-
-			it('when user is not verified', async () => {
-				const response = await request(server)
-					.get(`/logs/user/${userIdUnverified}`)
-					.set('Authorization', `Bearer ${tokenUnverified}`)
-					.expect(401);
-
-				expect(response.body).toEqual({
-					statusCode: 401,
-					message: t.Errors.Email.NotVerified(User),
-					error: 'Unauthorized',
-				});
-			});
 		});
 
 		describe('403 : Forbidden', () => {
 			it('when the user is not the same as the user ID in the request', async () => {
 				const response = await request(server)
-					.get(`/logs/user/${userIdUnverified}`)
-					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.get(`/logs/user/${userIdLogModerator}`)
+					.set('Authorization', `Bearer ${tokenVerified}`)
 					.expect(403);
 
 				expect(response.body).toEqual({
@@ -103,7 +90,7 @@ describe('Logs (e2e)', () => {
 			it('when user is asking for another user without the permission', async () => {
 				const response = await request(server)
 					.get(`/logs/user/${userIdLogModerator}`)
-					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.set('Authorization', `Bearer ${tokenVerified}`)
 					.expect(403);
 
 				expect(response.body).toEqual({
@@ -134,8 +121,8 @@ describe('Logs (e2e)', () => {
 		describe('200 : Ok', () => {
 			it('when user is asking for himself', async () => {
 				const response = await request(server)
-					.get(`/logs/user/${userIdUnauthorized}`)
-					.set('Authorization', `Bearer ${tokenUnauthorized}`)
+					.get(`/logs/user/${userIdVerified}`)
+					.set('Authorization', `Bearer ${tokenVerified}`)
 					.expect(200);
 
 				// Expect that all elements in the array have the same type
@@ -212,9 +199,9 @@ describe('Logs (e2e)', () => {
 		});
 
 		describe('403 : Forbidden', () => {
-			it('the user is not authorized', async () => {
+			it('when the user is not authorized', async () => {
 				const response = await request(server)
-					.get(`/logs/user/${userIdUnverified}`)
+					.get(`/logs/user/${userIdLogModerator}`)
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
 					.expect(403);
 

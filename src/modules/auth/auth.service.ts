@@ -1,7 +1,7 @@
 import type { email } from '#types';
 import type { JWTPayload } from '#types/api';
 
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { compareSync } from 'bcrypt';
@@ -32,6 +32,10 @@ export class AuthService {
 
 		if (user.password !== pass && !compareSync(pass, user.password)) {
 			throw new UnauthorizedException(this.t.Errors.Password.Mismatch());
+		}
+
+		if (!user.verified) {
+			throw new ForbiddenException(this.t.Errors.Email.NotVerified(User));
 		}
 
 		const payload = { sub: user.id, email: user.email };
