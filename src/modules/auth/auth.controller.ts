@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Param, Get } from '@nestjs/common';
 import {
 	ApiBadRequestResponse,
+	ApiForbiddenResponse,
 	ApiNotFoundResponse,
 	ApiOkResponse,
 	ApiOperation,
@@ -33,6 +34,7 @@ export class AuthController {
 	@Post('login')
 	@ApiOperation({ summary: 'Sign in a user with email and password' })
 	@ApiUnauthorizedResponse({ description: 'Unauthorized, password invalid' })
+	@ApiForbiddenResponse({ description: 'Forbidden, email not verified' })
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiOkResponse({ description: 'OK', type: TokenDTO })
 	async login(@Body() signInDto: UserSignInDTO): Promise<TokenDTO> {
