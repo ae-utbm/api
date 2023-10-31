@@ -3,7 +3,7 @@ import { accessSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { Readable } from 'stream';
 
-import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext, Loaded } from '@mikro-orm/core';
 import { Injectable, StreamableFile } from '@nestjs/common';
 import { fromBuffer, MimeType } from 'file-type';
 
@@ -12,7 +12,7 @@ import { User } from '@modules/users/entities/user.entity';
 import { UsersDataService } from '@modules/users/services/users-data.service';
 
 import { FileVisibilityGroup } from './entities/file-visibility.entity';
-import { File } from './entities/file.entity';
+import { File, FileKind } from './entities/file.entity';
 
 export type WriteFileOptions = {
 	directory: string;
@@ -37,6 +37,13 @@ export class FilesService {
 			});
 
 		return new StreamableFile(this.toReadable(file));
+	}
+
+	async findOne(id: number): Promise<FileKind> {
+		const file = (await this.orm.em.findOne(File, { id })) as unknown as Loaded<FileKind, string>;
+		if (!file) throw new i18nNotFoundException('validations.file.invalid.not_found', { id });
+
+		return file;
 	}
 
 	/**
@@ -135,7 +142,7 @@ export class FilesService {
 	 * @param {File} file The file to delete
 	 * @param {boolean} silent If true, the function will not throw an error if the file doesn't exist
 	 */
-	deleteFromDisk(file: File<unknown>, silent: boolean = true) {
+	deleteFromDisk<T>(file: File<T>, silent: boolean = true) {
 		try {
 			accessSync(file.path);
 		} catch {
