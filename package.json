@@ -18,7 +18,8 @@
     "start:prod": "pnpm db:migrate && node dist/src/main.js",
     "workflow:lint": "eslint \"{src,tests}/**/*.ts\" --max-warnings=0",
     "workflow:test": "jest --config jest.config.ts --forceExit",
-    "workflow:init_db": "pnpm ts-node tests/database.setup.ts"
+    "workflow:init_db": "pnpm ts-node tests/database.setup.ts",
+    "workflow:setup_env": "pnpm ts-node tests/env.setup.ts"
   },
   "dependencies": {
     "@ae_utbm/typings": "file:src/exported",
@@ -74,7 +75,7 @@
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.28.1",
     "eslint-plugin-prettier": "^4.2.1",
-    "jest": "29.6.1",
+    "jest": "^29.7.0",
     "jest-extended": "^4.0.2",
     "prettier": "^2.8.8",
     "source-map-support": "^0.5.21",

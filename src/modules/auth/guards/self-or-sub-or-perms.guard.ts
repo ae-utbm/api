@@ -1,5 +1,4 @@
 import { CanActivate, ExecutionContext } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 
@@ -14,12 +13,11 @@ export class SelfOrPermsOrSubGuard extends SelfOrPermissionGuard implements CanA
 	constructor(
 		override readonly t: TranslateService,
 		override readonly jwtService: JwtService,
-		override readonly configService: ConfigService,
 		override readonly userService: UsersDataService,
 		override readonly reflector: Reflector,
 		override readonly authService: AuthService,
 	) {
-		super(t, jwtService, configService, userService, reflector, authService);
+		super(t, jwtService, userService, reflector, authService);
 	}
 
 	override async canActivate(context: ExecutionContext) {

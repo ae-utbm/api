@@ -3,12 +3,12 @@ import type { I18nTranslations, PERMISSION_NAMES } from '#types/api';
 
 import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { compareSync, hashSync } from 'bcrypt';
 import { I18nContext, I18nService } from 'nestjs-i18n';
 import { z } from 'zod';
 
+import { env } from '@env';
 import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
 import { UserPostByAdminDTO, UserPostDTO } from '@modules/auth/dto/register.dto';
 import { EmailsService } from '@modules/emails/emails.service';
@@ -32,7 +32,6 @@ export class UsersDataService {
 		private readonly orm: MikroORM,
 		private readonly i18n: I18nService<I18nTranslations>,
 		private readonly emailsService: EmailsService,
-		private readonly configService: ConfigService,
 	) {}
 
 	/**
@@ -45,7 +44,7 @@ export class UsersDataService {
 	async deleteUnverifiedUsers() {
 		const users = await this.orm.em.find(User, {
 			verified: null,
-			created: { $lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+			created: { $lt: new Date(Date.now() - env.USERS_VERIFICATION_DELAY) },
 		});
 
 		for (const user of users) {
@@ -227,8 +226,8 @@ export class UsersDataService {
 				subject: this.i18n.t('templates.register_common.subject', { lang: I18nContext.current().lang }),
 				html: getTemplate('emails/register_user', this.i18n, {
 					username: user.full_name,
-					link: `${this.configService.get<string>('api_url')}/auth/confirm/${user.id}/${encodeURI(email_token)}`,
-					days: this.configService.get<number>('users.verification_token_validity'),
+					link: `${env.API_URL}/auth/confirm/${user.id}/${encodeURI(email_token)}`,
+					days: env.USERS_VERIFICATION_DELAY / (1000 * 60 * 60 * 24),
 				}),
 			});
 		// Email change -> email changed template
@@ -238,7 +237,7 @@ export class UsersDataService {
 				subject: this.i18n.t('templates.email_changed.subject', { lang: I18nContext.current().lang }),
 				html: getTemplate('emails/email_changed', this.i18n, {
 					username: user.full_name,
-					link: `${this.configService.get<string>('api_url')}/auth/confirm/${user.id}/${encodeURI(email_token)}`,
+					link: `${env.API_URL}/auth/confirm/${user.id}/${encodeURI(email_token)}`,
 				}),
 			});
 		}

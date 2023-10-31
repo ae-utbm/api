@@ -6,7 +6,7 @@ import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import { Logger } from '@nestjs/common';
 
-import 'dotenv/config';
+import { env } from '@env';
 
 const logger = new Logger('MikroORM');
 
@@ -15,12 +15,12 @@ const logger = new Logger('MikroORM');
  */
 const config: Partial<MikroORMOptions<IDatabaseDriver<Connection>>> = {
 	driver: PostgreSqlDriver,
-	dbName: process.env['POSTGRES_DB'] ?? 'ae_test',
-	port: parseInt(process.env['POSTGRES_PORT'], 10) ?? 5432,
-	host: process.env['POSTGRES_HOST'] ?? '127.0.0.1',
-	user: process.env['POSTGRES_USER'] ?? 'postgres',
-	password: process.env['POSTGRES_PASSWORD'] ?? 'postgres',
-	debug: (process.env['DEBUG'] ?? 'true') === 'true',
+	dbName: env.POSTGRES_DB,
+	port: env.POSTGRES_PORT,
+	host: env.POSTGRES_HOST,
+	user: env.POSTGRES_USER,
+	password: env.POSTGRES_PASSWORD,
+	debug: env.DEBUG,
 	entities: ['./dist/src/modules/**/entities/*.entity.js'],
 	entitiesTs: ['./src/modules/**/entities/*.entity.ts'],
 	highlighter: new SqlHighlighter(),

@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-import env from '@env';
+import { env } from '@env';
 import '@exported/global/utils';
 
 import { AppModule } from './app.module';
@@ -14,8 +14,9 @@ import pkg from '../package.json';
  */
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule);
-	app.enableCors({ origin: env().cors });
-	app.useStaticAssets(env().files.baseDir, { index: false, prefix: '/public' });
+	const cors_urls = env.CORS_ORIGIN_WHITELIST.split(';');
+
+	app.enableCors({ origin: cors_urls.includes('*') ? '*' : cors_urls });
 	app.useStaticAssets('./src/swagger', { index: false, prefix: '/public' });
 
 	const config = new DocumentBuilder()
@@ -39,9 +40,9 @@ async function bootstrap() {
 		},
 	});
 
-	await app.listen(env().port);
+	await app.listen(env.API_PORT);
 
-	Logger.log(`Server running on http://localhost:${env().port}`, 'Swagger');
+	Logger.log(`Server running on http://localhost:${env.API_PORT}`, 'Swagger');
 }
 
 bootstrap()

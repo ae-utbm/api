@@ -2,12 +2,11 @@
 // TODO: (KEY: 3) Find a way to test emails (sending / receiving)
 
 import type { email } from '#types';
-import type { Config } from '@env';
 
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Transporter, createTransport } from 'nodemailer';
 
+import { env } from '@env';
 import { TranslateService } from '@modules/translate/translate.service';
 
 interface EmailOptions {
@@ -21,17 +20,17 @@ interface EmailOptions {
 export class EmailsService {
 	readonly transporter?: Transporter;
 
-	constructor(private readonly configService: ConfigService, private readonly t: TranslateService) {
+	constructor(private readonly t: TranslateService) {
 		this.transporter =
-			this.configService.get<boolean>('email.enabled') === false
+			env.EMAIL_ENABLED === false
 				? undefined
 				: createTransport({
-						host: this.configService.get<string>('email.host'),
-						port: this.configService.get<number>('email.port'),
-						secure: this.configService.get<boolean>('email.secure'),
+						host: env.EMAIL_HOST,
+						port: env.EMAIL_PORT,
+						secure: env.EMAIL_SECURE,
 						auth: {
-							user: this.configService.get<string>('email.auth.user'),
-							pass: this.configService.get<string>('email.auth.pass'),
+							user: env.EMAIL_AUTH_USER,
+							pass: env.EMAIL_AUTH_PASS,
 						},
 				  });
 	}
@@ -48,8 +47,15 @@ export class EmailsService {
 
 		if (email.length > 60 || email.length < 6) throw new BadRequestException(this.t.Errors.Email.Malformed(email));
 
-		const whitelisted = this.configService.get<ReturnType<Config>['email']['whitelist']>('email.whitelist');
-		const blacklisted = this.configService.get<ReturnType<Config>['email']['blacklist']>('email.blacklist');
+		const whitelisted = {
+			hosts: env.WHITELISTED_HOSTS.split(';'),
+			emails: env.WHITELISTED_EMAILS.split(';'),
+		};
+
+		const blacklisted = {
+			hosts: env.BLACKLISTED_HOSTS.split(';'),
+			emails: env.BLACKLISTED_EMAILS.split(';'),
+		};
 
 		if (whitelisted.hosts.some((host) => email.endsWith(host)) || whitelisted.emails.includes(email)) return;
 		if (blacklisted.hosts.some((host) => email.endsWith(host)) || blacklisted.emails.includes(email))
@@ -62,7 +68,7 @@ export class EmailsService {
 	}
 
 	async sendEmail(options: EmailOptions) {
-		if (!this.transporter || this.configService.get<boolean>('email.enabled') === false) return;
+		if (!this.transporter || env.EMAIL_ENABLED === false) return;
 
 		await this.transporter.sendMail({
 			from: options.from ?? `noreply@ae.utbm.fr`,

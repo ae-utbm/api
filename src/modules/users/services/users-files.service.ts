@@ -2,8 +2,8 @@ import { join } from 'path';
 
 import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
+import { env } from '@env';
 import { FilesService } from '@modules/files/files.service';
 import { TranslateService } from '@modules/translate/translate.service';
 
@@ -18,7 +18,6 @@ export class UsersFilesService {
 		private readonly t: TranslateService,
 		private readonly orm: MikroORM,
 		private readonly filesService: FilesService,
-		private readonly configService: ConfigService,
 		private readonly dataService: UsersDataService,
 	) {}
 
@@ -39,7 +38,7 @@ export class UsersFilesService {
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, owner_id));
 
 		if (req_user.id === user.id && user.picture !== null) {
-			const cooldown = this.configService.get<number>('users.picture_cooldown');
+			const cooldown = env.USERS_PICTURES_DELAY;
 			const now = Date.now();
 
 			if (
@@ -54,7 +53,7 @@ export class UsersFilesService {
 		}
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
-			directory: join(this.configService.get<string>('files.users'), 'pictures'),
+			directory: join(env.USERS_BASE_PATH, 'pictures'),
 			filename: user.full_name.toLowerCase().replaceAll(' ', '_'),
 			aspect_ratio: '1:1',
 		});
@@ -115,7 +114,7 @@ export class UsersFilesService {
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 
 		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
-			directory: join(this.configService.get<string>('files.users'), 'banners'),
+			directory: join(env.USERS_BASE_PATH, 'banners'),
 			filename: user.full_name.replaceAll(' ', '_'),
 			aspect_ratio: '16:9',
 		});

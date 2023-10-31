@@ -1,5 +1,4 @@
 import { CanActivate, ExecutionContext } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 
@@ -14,12 +13,11 @@ export class SelfOrSubscribedGuard extends SubscribedGuard implements CanActivat
 	constructor(
 		private readonly t: TranslateService,
 		override readonly jwtService: JwtService,
-		override readonly configService: ConfigService,
 		override readonly userService: UsersDataService,
 		override readonly reflector: Reflector,
 		override readonly authService: AuthService,
 	) {
-		super(jwtService, configService, userService, reflector, authService);
+		super(jwtService, userService, reflector, authService);
 	}
 
 	override async canActivate(context: ExecutionContext) {

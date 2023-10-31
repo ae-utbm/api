@@ -173,7 +173,7 @@ export class FilesService {
 
 		const readable = new Readable({
 			read() {
-				const data = readFileSync(file.path, 'utf-8');
+				const data = readFileSync(file.path);
 				this.push(data);
 				this.push(null); // Signal the end of the stream
 			},
