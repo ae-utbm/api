@@ -3,5 +3,7 @@ import { SetMetadata } from '@nestjs/common';
 /**
  * Set up the name of the parameter that contains the user id concerned by the route
  * @param {string} param The name of the parameter that contains the user id
+ *
+ * TODO: (KEY: 2) Make a PR to implement subscriptions in the API
  */
 export const GuardSelfOrSubscribed = (param: string) => SetMetadata('guard_self_param_key', param);

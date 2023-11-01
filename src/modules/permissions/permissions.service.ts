@@ -77,11 +77,12 @@ export class PermissionsService {
 	 * @returns {Promise<Permission[]>} The permissions of the user
 	 */
 	@CreateRequestContext()
-	async getPermissionsOfUser(id: number): Promise<Permission[]> {
+	async getPermissionsOfUser(id: number): Promise<PermissionGetDTO[]> {
 		const user = await this.orm.em.findOne(User, { id });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 
-		return user.permissions.loadItems();
+		const permissions = await user.permissions.loadItems();
+		return permissions.map((p) => ({ ...p, user: user.id }));
 	}
 
 	@CreateRequestContext()

@@ -4,11 +4,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsInt } from 'class-validator';
 
 export class ErrorResponseDTO implements IErrorResponseDTO {
-	@ApiProperty()
+	@ApiProperty({ example: 'Bad Request' })
 	@IsString()
 	error: string;
 
-	@ApiProperty()
+	@ApiProperty({ required: false })
 	@IsString()
 	message: string;
 

@@ -1,12 +1,10 @@
-import type { RequestWithUser } from '#types/api';
-
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 
 import { USER_GENDER } from '@exported/api/constants/genders';
-import { ErrorResponseDTO } from '@modules/_mixin/dto/error.dto';
+import { ApiNotOkResponses } from '@modules/_mixin/decorators/error.decorator';
 import { MessageResponseDTO } from '@modules/_mixin/dto/message.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
@@ -24,7 +22,7 @@ import { validate } from '@utils/validate';
 import { BaseUserResponseDTO } from '../dto/base-user.dto';
 import { UserGetDTO, UserRoleGetDTO, UserVisibilityGetDTO } from '../dto/get.dto';
 import { UserPatchDTO, UserVisibilityPatchDTO } from '../dto/patch.dto';
-import { User } from '../entities/user.entity';
+import { Request, User } from '../entities/user.entity';
 import { UsersDataService } from '../services/users-data.service';
 
 @ApiTags('Users')
@@ -39,8 +37,7 @@ export class UsersDataController {
 	@GuardPermissions('CAN_EDIT_USER')
 	@ApiOperation({ summary: 'Creates new users' })
 	@ApiOkResponse({ description: 'The created user', type: [BaseUserResponseDTO] })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
-	@ApiBody({ type: [CreateUserDTO] })
+	@ApiNotOkResponses({ 400: 'Invalid input', 401: 'Insufficient permission' })
 	async create(@Body() input: CreateUserDTO[]): Promise<BaseUserResponseDTO[]> {
 		const schema = z
 			.object({
@@ -61,9 +58,8 @@ export class UsersDataController {
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Update users data' })
 	@ApiOkResponse({ description: 'The updated users', type: UserGetDTO })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
-	@ApiBody({ type: [UserPatchDTO] })
-	async update(@Req() req: RequestWithUser, @Body() input: UserPatchDTO[]): Promise<UserGetDTO[]> {
+	@ApiNotOkResponses({ 400: 'Invalid input', 404: 'User(s) not found' })
+	async update(@Req() req: Request, @Body() input: UserPatchDTO[]): Promise<UserGetDTO[]> {
 		const schema = z
 			.object({
 				id: z.coerce.number(),
@@ -93,8 +89,9 @@ export class UsersDataController {
 	@UseGuards(SelfGuard)
 	@GuardSelfParam('id')
 	@ApiOperation({ summary: 'Delete your account' })
+	@ApiParam({ name: 'id', description: 'Your user ID' })
 	@ApiOkResponse({ description: 'User deleted', type: MessageResponseDTO })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiNotOkResponses({ 400: 'Invalid ID', 404: 'User not found' })
 	async delete(@Param('id') id: number): Promise<MessageResponseDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
@@ -105,8 +102,9 @@ export class UsersDataController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PRIVATE'])
 	@ApiOperation({ summary: 'Get all information of a user' })
+	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOkResponse({ description: 'User data', type: UserGetDTO })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiNotOkResponses({ 400: 'Invalid ID', 404: 'User not found' })
 	async getPrivate(@Param('id') id: number): Promise<UserGetDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
@@ -117,8 +115,9 @@ export class UsersDataController {
 	@UseGuards(SelfOrPermsOrSubGuard)
 	@GuardSelfOrPermsOrSub('id', ['CAN_READ_USER'])
 	@ApiOperation({ summary: 'Get publicly available information of a user' })
+	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOkResponse({ description: 'User data, excepted privates fields (set in the visibility table)', type: UserGetDTO })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiNotOkResponses({ 400: 'Invalid ID', 404: 'User not found' })
 	async getPublic(@Param('id') id: number): Promise<UserGetDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
@@ -129,8 +128,9 @@ export class UsersDataController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PRIVATE'])
 	@ApiOperation({ summary: 'Get visibility settings of a user' })
+	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOkResponse({ description: 'User data', type: UserVisibilityGetDTO })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiNotOkResponses({ 400: 'Invalid ID', 404: 'User not found' })
 	async getVisibility(@Param('id') id: number): Promise<UserVisibilityGetDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
@@ -141,8 +141,9 @@ export class UsersDataController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Update visibility settings of a user' })
+	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOkResponse({ description: 'User data', type: UserVisibilityGetDTO })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiNotOkResponses({ 400: 'Invalid ID or input', 404: 'User not found' })
 	async updateVisibility(
 		@Param('id') id: number,
 		@Body() input: UserVisibilityPatchDTO,
@@ -170,8 +171,9 @@ export class UsersDataController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER', 'CAN_READ_ROLE'])
 	@ApiOperation({ summary: 'Get roles of a user' })
+	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOkResponse({ description: 'Roles of the user', type: [UserRoleGetDTO] })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiNotOkResponses({ 400: 'Invalid ID', 404: 'User not found' })
 	async getUserRoles(@Param('id') id: number): Promise<UserRoleGetDTO[]> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
@@ -182,8 +184,9 @@ export class UsersDataController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER', 'CAN_READ_PERMISSIONS_OF_USER'])
 	@ApiOperation({ summary: 'Get permissions of a user' })
+	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOkResponse({ description: 'Permissions of the user', type: [PermissionGetDTO] })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiNotOkResponses({ 400: 'Invalid ID', 404: 'User not found' })
 	async getUserPermissions(@Param('id') id: number): Promise<PermissionGetDTO[]> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 

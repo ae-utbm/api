@@ -1,17 +1,9 @@
 import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import {
-	ApiTags,
-	ApiBearerAuth,
-	ApiNotFoundResponse,
-	ApiBadRequestResponse,
-	ApiOkResponse,
-	ApiParam,
-	ApiOperation,
-} from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiOkResponse, ApiParam, ApiOperation } from '@nestjs/swagger';
 import { z } from 'zod';
 
-import { ErrorResponseDTO } from '@modules/_mixin/dto/error.dto';
+import { ApiNotOkResponses } from '@modules/_mixin/decorators/error.decorator';
 import { MessageResponseDTO } from '@modules/_mixin/dto/message.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
@@ -34,12 +26,11 @@ export class LogsController {
 	@Get('user/:user_id')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('user_id', ['CAN_READ_LOGS_OF_USER'])
-	@ApiNotFoundResponse({ description: 'User not found', type: ErrorResponseDTO })
-	@ApiBadRequestResponse({ description: 'Invalid user ID', type: ErrorResponseDTO })
-	@ApiOkResponse({ description: 'User logs retrieved', type: [LogDTO] })
-	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOperation({ summary: 'Get all logs of a user' })
-	getUserLogs(@Param('user_id') id: number) {
+	@ApiParam({ name: 'id', description: 'The user ID' })
+	@ApiOkResponse({ description: 'User logs retrieved', type: [LogDTO] })
+	@ApiNotOkResponses({ 400: 'Invalid user ID', 404: 'User not found' })
+	async getUserLogs(@Param('user_id') id: number): Promise<LogDTO[]> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.logsService.getUserLogs(id);
@@ -48,12 +39,11 @@ export class LogsController {
 	@Delete('user/:user_id')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_DELETE_LOGS_OF_USER')
-	@ApiNotFoundResponse({ description: 'User not found', type: ErrorResponseDTO })
-	@ApiBadRequestResponse({ description: 'Invalid user ID', type: ErrorResponseDTO })
-	@ApiOkResponse({ description: 'User logs deleted', type: MessageResponseDTO })
-	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOperation({ summary: 'Delete all logs of a user' })
-	deleteUserLogs(@Param('user_id') id: number) {
+	@ApiParam({ name: 'id', description: 'The user ID' })
+	@ApiOkResponse({ description: 'User logs deleted', type: MessageResponseDTO })
+	@ApiNotOkResponses({ 400: 'Invalid user ID', 404: 'User not found' })
+	async deleteUserLogs(@Param('user_id') id: number): Promise<MessageResponseDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.logsService.deleteUserLogs(id);

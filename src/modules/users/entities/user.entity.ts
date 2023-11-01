@@ -20,7 +20,7 @@ export type UserPrivateKeys = Omit<UserVisibility, 'user' | keyof BaseEntity>;
 export type UserPrivate = User;
 export type UserPublic = Omit<User, keyof UserPrivateKeys> & Pick<User, keyof UserPrivateKeys>;
 
-export type RequestWithUser = Request & {
+export type Request = Express.Request & {
 	user: User;
 };
 
