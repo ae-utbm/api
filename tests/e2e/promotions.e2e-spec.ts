@@ -4,7 +4,7 @@ import { join } from 'path';
 import request from 'supertest';
 
 import { env } from '@env';
-import { TokenDTO } from '@modules/auth/dto/token.dto';
+import { TokenDTO } from '@modules/auth/dto/get.dto';
 import { PromotionPicture } from '@modules/promotions/entities/promotion-picture.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
 

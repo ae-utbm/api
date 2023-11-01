@@ -1,5 +1,3 @@
-import type { RequestWithUser } from '#types/api';
-
 import {
 	BadRequestException,
 	Controller,
@@ -27,6 +25,8 @@ import {
 } from '@nestjs/swagger';
 import { z } from 'zod';
 
+import { ErrorResponseDTO } from '@modules/_mixin/dto/error.dto';
+import { MessageResponseDTO } from '@modules/_mixin/dto/message.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { GuardSelfOrPermsOrSub } from '@modules/auth/decorators/self-or-sub-perms.decorator';
@@ -37,9 +37,8 @@ import { FilesService } from '@modules/files/files.service';
 import { TranslateService } from '@modules/translate/translate.service';
 import { validate } from '@utils/validate';
 
-import { UserBanner } from '../entities/user-banner.entity';
-import { UserPicture } from '../entities/user-picture.entity';
-import { User } from '../entities/user.entity';
+import { UserGetBannerDTO, UserGetPictureDTO } from '../dto/get.dto';
+import { RequestWithUser, User } from '../entities/user.entity';
 import { UsersFilesService } from '../services/users-files.service';
 
 @ApiTags('Users Files')
@@ -57,8 +56,8 @@ export class UsersFilesController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Update user profile picture' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiOkResponse({ description: 'The updated user picture', type: UserPicture })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiOkResponse({ description: 'The updated user picture', type: UserGetPictureDTO })
 	@ApiConsumes('multipart/form-data')
 	@ApiBody({
 		schema: {
@@ -72,20 +71,24 @@ export class UsersFilesController {
 		},
 	})
 	@UseInterceptors(FileInterceptor('file'))
-	async editPicture(@Req() req: RequestWithUser, @UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
+	async editPicture(
+		@Req() req: RequestWithUser,
+		@UploadedFile() file: Express.Multer.File,
+		@Param('id') id: number,
+	): Promise<UserGetPictureDTO> {
 		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
 		validate(z.coerce.number().int().min(1), id);
 
-		return this.usersFilesService.updatePicture(req.user as User, id, file);
+		return this.usersFilesService.updatePicture(req.user, id, file);
 	}
 
 	@Delete(':id/picture')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_USER')
 	@ApiOperation({ summary: 'Delete user profile picture' })
-	@ApiOkResponse({ type: User })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async deletePicture(@Param('id') id: number) {
+	@ApiOkResponse({ type: MessageResponseDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	async deletePicture(@Param('id') id: number): Promise<MessageResponseDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.usersFilesService.deletePicture(id);
@@ -95,14 +98,15 @@ export class UsersFilesController {
 	@UseGuards(SelfOrPermsOrSubGuard)
 	@GuardSelfOrPermsOrSub('id', ['CAN_READ_USER'])
 	@ApiOperation({ summary: 'Get user profile picture' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiOkResponse({ description: 'The user picture', type: ArrayBuffer })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
 	async getPicture(@Req() req: RequestWithUser, @Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id);
 
 		const picture = await this.usersFilesService.getPicture(id);
 		await picture.visibility?.init();
 
-		if (await this.filesService.canReadFile(picture, req.user as User))
+		if (await this.filesService.canReadFile(picture, req.user))
 			return new StreamableFile(this.filesService.toReadable(picture));
 
 		// Should not happen unless the user is subscribed but not in the visibility group of subscribers
@@ -115,8 +119,8 @@ export class UsersFilesController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Update user profile banner' })
-	@ApiOkResponse({ description: 'The updated user banner', type: UserBanner })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiOkResponse({ description: 'The updated user banner', type: UserGetBannerDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
 	@ApiConsumes('multipart/form-data')
 	@ApiBody({
 		schema: {
@@ -130,7 +134,7 @@ export class UsersFilesController {
 		},
 	})
 	@UseInterceptors(FileInterceptor('file'))
-	async editBanner(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
+	async editBanner(@UploadedFile() file: Express.Multer.File, @Param('id') id: number): Promise<UserGetBannerDTO> {
 		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
 		validate(z.coerce.number().int().min(1), id);
 
@@ -141,9 +145,9 @@ export class UsersFilesController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Delete user profile banner' })
-	@ApiOkResponse({ type: User })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async deleteBanner(@Param('id') id: number) {
+	@ApiOkResponse({ type: MessageResponseDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	async deleteBanner(@Param('id') id: number): Promise<MessageResponseDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.usersFilesService.deleteBanner(id);
@@ -153,14 +157,15 @@ export class UsersFilesController {
 	@UseGuards(SelfOrPermsOrSubGuard)
 	@GuardSelfOrPermsOrSub('id', ['CAN_READ_USER'])
 	@ApiOperation({ summary: 'Get user profile banner' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiOkResponse({ description: 'The user banner', type: ArrayBuffer })
 	async getBanner(@Req() req: RequestWithUser, @Param('id') id: number) {
 		validate(z.coerce.number().int().min(1), id);
 
 		const banner = await this.usersFilesService.getBanner(id);
 		await banner.visibility?.init();
 
-		if (await this.filesService.canReadFile(banner, req.user as User))
+		if (await this.filesService.canReadFile(banner, req.user))
 			return new StreamableFile(this.filesService.toReadable(banner));
 
 		// Should not happen unless the user is subscribed but not in the visibility group of subscribers

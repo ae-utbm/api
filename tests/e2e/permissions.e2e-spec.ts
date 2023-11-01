@@ -1,6 +1,6 @@
 import request from 'supertest';
 
-import { TokenDTO } from '@modules/auth/dto/token.dto';
+import { TokenDTO } from '@modules/auth/dto/get.dto';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { User } from '@modules/users/entities/user.entity';
 

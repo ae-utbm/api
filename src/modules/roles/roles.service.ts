@@ -10,8 +10,8 @@ import { BaseUserResponseDTO } from '@modules/users/dto/base-user.dto';
 import { User } from '@modules/users/entities/user.entity';
 import { UsersDataService } from '@modules/users/services/users-data.service';
 
+import { RoleGetDTO, RoleUsersResponseDTO } from './dto/get.dto';
 import { RolePatchDTO } from './dto/patch.dto';
-import { RoleUsersResponseDTO } from './dto/users.dto';
 import { RoleExpiration } from './entities/role-expiration.entity';
 import { Role } from './entities/role.entity';
 
@@ -47,13 +47,13 @@ export class RolesService {
 	 * @returns the array of all roles
 	 */
 	@CreateRequestContext()
-	async getAllRoles(): Promise<(Omit<Role, 'users'> & { users: number })[]> {
+	async getAllRoles(): Promise<RoleGetDTO[]> {
 		const roles = await this.orm.em.find(Role, {}, { populate: ['users'] });
 		return roles.map((r) => ({ ...r, users: r.users.count() }));
 	}
 
 	@CreateRequestContext()
-	async getRole(id: number): Promise<Omit<Role, 'users'> & { users: number }> {
+	async getRole(id: number): Promise<RoleGetDTO> {
 		const role = await this.orm.em.findOne(Role, { id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(this.t.Errors.Id.NotFound(Role, id));
 
@@ -61,7 +61,7 @@ export class RolesService {
 	}
 
 	@CreateRequestContext()
-	async createRole(name: string, permissions: PERMISSION_NAMES[]): Promise<Omit<Role, 'users'>> {
+	async createRole(name: string, permissions: PERMISSION_NAMES[]): Promise<RoleGetDTO> {
 		const roleName = name.toUpperCase();
 
 		if (await this.orm.em.findOne(Role, { name: roleName }))
@@ -78,11 +78,11 @@ export class RolesService {
 		await this.orm.em.persistAndFlush(role);
 
 		delete role.users;
-		return role;
+		return { ...role, users: 0 };
 	}
 
 	@CreateRequestContext()
-	async editRole(input: RolePatchDTO): Promise<Omit<Role, 'users'> & { users: number }> {
+	async editRole(input: RolePatchDTO): Promise<RoleGetDTO> {
 		const role = await this.orm.em.findOne(Role, { id: input.id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(this.t.Errors.Id.NotFound(Role, input.id));
 

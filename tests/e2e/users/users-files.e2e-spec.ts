@@ -3,7 +3,7 @@ import { join } from 'path';
 
 import request from 'supertest';
 
-import { TokenDTO } from '@modules/auth/dto/token.dto';
+import { TokenDTO } from '@modules/auth/dto/get.dto';
 import { FileVisibilityGroup } from '@modules/files/entities/file-visibility.entity';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';

@@ -3,17 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
 import { TranslateService } from '@modules/translate/translate.service';
-import { UsersDataService } from '@modules/users/services/users-data.service';
 
+import { LogDTO } from './dto/get.dto';
 import { Log } from './entities/log.entity';
 
 @Injectable()
 export class LogsService {
-	constructor(
-		private readonly orm: MikroORM,
-		private readonly t: TranslateService,
-		private readonly usersService: UsersDataService,
-	) {}
+	constructor(private readonly orm: MikroORM, private readonly t: TranslateService) {}
 
 	/**
 	 * Remove all logs that are older than 2 months each day at 7am
@@ -24,18 +20,12 @@ export class LogsService {
 		await this.orm.em.nativeDelete(Log, { created: { $lt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60) } });
 	}
 
-	async getUserLogs(id: number): Promise<(Omit<Log, 'user'> & { user: number })[]> {
-		const user = await this.usersService.findOne(id, false);
-		const logs = (await user.logs.loadItems()).map((log) => ({ ...log, user: log.user.id }));
-
-		return logs;
+	async getUserLogs(id: number): Promise<LogDTO[]> {
+		return (await this.orm.em.find(Log, { user: id })).map((log) => ({ ...log, user: log.user.id }));
 	}
 
 	async deleteUserLogs(id: number) {
-		const user = await this.usersService.findOne(id, false);
-		await user.logs.init();
-		user.logs.removeAll();
-
+		await this.orm.em.nativeDelete(Log, { user: id });
 		return { message: this.t.Success.Entity.Deleted(Log), statusCode: 200 };
 	}
 }

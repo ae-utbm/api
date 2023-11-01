@@ -1,5 +1,3 @@
-import type { PermissionEntity } from '#types/api';
-
 import { Body, Controller, Get, Param, Post, UseGuards, Patch } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -13,6 +11,7 @@ import {
 } from '@nestjs/swagger';
 import { z } from 'zod';
 
+import { ErrorResponseDTO } from '@modules/_mixin/dto/error.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
@@ -21,9 +20,9 @@ import { TranslateService } from '@modules/translate/translate.service';
 import { User } from '@modules/users/entities/user.entity';
 import { validate } from '@utils/validate';
 
+import { PermissionGetDTO } from './dto/get.dto';
 import { PermissionPatchDTO } from './dto/patch.dto';
 import { PermissionPostDTO } from './dto/post.dto';
-import { Permission } from './entities/permission.entity';
 import { PermissionsService } from './permissions.service';
 
 @Controller('permissions')
@@ -37,10 +36,10 @@ export class PermissionsController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PERMISSIONS_OF_USER')
 	@ApiOperation({ summary: 'Add a permission to a user' })
-	@ApiOkResponse({ description: 'The added permission', type: Permission })
-	@ApiNotFoundResponse({ description: 'User not found' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	addToUser(@Body() body: PermissionPostDTO): Promise<PermissionEntity<number>> {
+	@ApiOkResponse({ description: 'The added permission', type: PermissionGetDTO })
+	@ApiNotFoundResponse({ description: 'User not found', type: ErrorResponseDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	addToUser(@Body() body: PermissionPostDTO) {
 		const schema = z
 			.object({
 				expires: z.string().datetime(),
@@ -57,9 +56,9 @@ export class PermissionsController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PERMISSIONS_OF_USER')
 	@ApiOperation({ summary: 'Edit permission of a user' })
-	@ApiNotFoundResponse({ description: 'User not found' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiOkResponse({ description: 'The modified user permission', type: Permission })
+	@ApiNotFoundResponse({ description: 'User not found', type: ErrorResponseDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiOkResponse({ description: 'The modified user permission', type: PermissionGetDTO })
 	editPermissionFromUser(@Body() body: PermissionPatchDTO) {
 		const schema = z
 			.object({
@@ -84,7 +83,7 @@ export class PermissionsController {
 	@ApiOperation({ summary: 'Get all permissions of a user (active, revoked and expired)' })
 	@ApiNotFoundResponse({ description: 'User not found' })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiOkResponse({ description: 'User permission(s) retrieved', type: [Permission] })
+	@ApiOkResponse({ description: 'User permission(s) retrieved', type: [PermissionGetDTO] })
 	@ApiParam({ name: 'user_id', description: 'The user ID' })
 	getUserPermissions(@Param('user_id') id: number) {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));

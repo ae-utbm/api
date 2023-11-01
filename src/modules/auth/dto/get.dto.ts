@@ -1,9 +1,9 @@
-import type { UserTokenDto } from '#types/api';
+import type { ITokenDTO } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsString } from 'class-validator';
 
-export class TokenDTO implements UserTokenDto {
+export class TokenDTO implements ITokenDTO {
 	@ApiProperty({ example: 'xxxxx.yyyyy.zzzzz' })
 	@IsString()
 	token: string;

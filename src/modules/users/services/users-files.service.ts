@@ -4,10 +4,12 @@ import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 
 import { env } from '@env';
+import { MessageResponseDTO } from '@modules/_mixin/dto/message.dto';
 import { FilesService } from '@modules/files/files.service';
 import { TranslateService } from '@modules/translate/translate.service';
 
 import { UsersDataService } from './users-data.service';
+import { UserGetBannerDTO, UserGetPictureDTO } from '../dto/get.dto';
 import { UserBanner } from '../entities/user-banner.entity';
 import { UserPicture } from '../entities/user-picture.entity';
 import { User } from '../entities/user.entity';
@@ -23,17 +25,13 @@ export class UsersFilesService {
 
 	/**
 	 * Edit user profile picture
-	 * @param {User} req_id User making the request
+	 * @param {User} req_user User making the request
 	 * @param {number} owner_id User id to whom the picture belongs
 	 * @param {Express.Multer.File} file The picture file
 	 * @returns {Promise<User>} The updated user
 	 */
 	@CreateRequestContext()
-	async updatePicture(
-		req_user: User,
-		owner_id: number,
-		file: Express.Multer.File,
-	): Promise<Omit<UserPicture, 'picture_user' | 'visibility'>> {
+	async updatePicture(req_user: User, owner_id: number, file: Express.Multer.File): Promise<UserGetPictureDTO> {
 		const user = await this.orm.em.findOne(User, { id: owner_id }, { populate: ['picture'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, owner_id));
 
@@ -84,7 +82,8 @@ export class UsersFilesService {
 
 		delete user.picture.picture_user; // avoid circular reference
 		delete user.picture.visibility;
-		return user.picture;
+
+		return { ...user.picture, picture_user: user.id, visibility: user.picture.visibility.id };
 	}
 
 	@CreateRequestContext()
@@ -97,7 +96,7 @@ export class UsersFilesService {
 	}
 
 	@CreateRequestContext()
-	async deletePicture(id: number): Promise<User> {
+	async deletePicture(id: number): Promise<MessageResponseDTO> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['picture'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 		if (!user.picture) throw new NotFoundException(this.t.Errors.User.NoPicture(id));
@@ -105,11 +104,11 @@ export class UsersFilesService {
 		this.filesService.deleteFromDisk(user.picture);
 		await this.orm.em.removeAndFlush(user.picture);
 
-		return user;
+		return { message: this.t.Success.Entity.Deleted(UserPicture), statusCode: 200 };
 	}
 
 	@CreateRequestContext()
-	async updateBanner(id: number, file: Express.Multer.File): Promise<UserBanner> {
+	async updateBanner(id: number, file: Express.Multer.File): Promise<UserGetBannerDTO> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['banner'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 
@@ -145,7 +144,7 @@ export class UsersFilesService {
 
 		delete user.banner.banner_user; // avoid circular reference
 		delete user.banner.visibility;
-		return user.banner;
+		return { ...user.banner, banner_user: user.id, visibility: user.banner.visibility.id };
 	}
 
 	@CreateRequestContext()
@@ -158,7 +157,7 @@ export class UsersFilesService {
 	}
 
 	@CreateRequestContext()
-	async deleteBanner(id: number): Promise<User> {
+	async deleteBanner(id: number): Promise<MessageResponseDTO> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['banner'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 		if (!user.banner) throw new NotFoundException(this.t.Errors.User.NoBanner(id));
@@ -166,6 +165,6 @@ export class UsersFilesService {
 		this.filesService.deleteFromDisk(user.banner);
 		await this.orm.em.removeAndFlush(user.banner);
 
-		return user;
+		return { message: this.t.Success.Entity.Deleted(UserBanner), statusCode: 200 };
 	}
 }

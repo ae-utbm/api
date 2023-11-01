@@ -9,10 +9,10 @@ import { I18nContext, I18nService } from 'nestjs-i18n';
 import { z } from 'zod';
 
 import { env } from '@env';
-import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
-import { UserPostByAdminDTO, UserPostDTO } from '@modules/auth/dto/register.dto';
+import { MessageResponseDTO } from '@modules/_mixin/dto/message.dto';
+import { CreateUserDTO, UserPostDTO } from '@modules/auth/dto/post.dto';
 import { EmailsService } from '@modules/emails/emails.service';
-import { Permission } from '@modules/permissions/entities/permission.entity';
+import { PermissionGetDTO } from '@modules/permissions/dto/get.dto';
 import { RoleExpiration } from '@modules/roles/entities/role-expiration.entity';
 import { TranslateService } from '@modules/translate/translate.service';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
@@ -22,7 +22,7 @@ import { checkPasswordStrength, generateRandomPassword } from '@utils/password';
 import { getTemplate } from '@utils/template';
 
 import { BaseUserResponseDTO } from '../dto/base-user.dto';
-import { UserRolesGetDTO } from '../dto/get.dto';
+import { UserGetDTO, UserRoleGetDTO, UserVisibilityGetDTO } from '../dto/get.dto';
 import { UserPatchDTO, UserVisibilityPatchDTO } from '../dto/patch.dto';
 
 @Injectable()
@@ -63,7 +63,7 @@ export class UsersDataService {
 
 		const visibilities = await this.findVisibilities(users.map((u) => u.id));
 		visibilities.forEach((v) => {
-			const user = users.find((u) => u.id === v.user.id);
+			const user = users.find((u) => u.id === v.user);
 
 			Object.entries(v).forEach(([key, value]) => {
 				// FIXME: Element implicitly has an 'any' type because expression of type 'string'
@@ -139,23 +139,29 @@ export class UsersDataService {
 		return filter ? (await this.removePrivateFields([user]))[0] : user;
 	}
 
+	async findOneAsDTO(id_or_email: number | email, filter: boolean = true): Promise<UserGetDTO> {
+		const user = await this.findOne(id_or_email, filter as false);
+		return { ...user, picture: user.picture?.id, banner: user.banner?.id, promotion: user.promotion?.id };
+	}
+
 	/**
-	 * Return the visibility parameters of a user
+	 * Return the visibility parameters of given users
 	 * @param {number} ids The ids of the users
-	 * @returns {Promise<UserVisibility[]>} The visibility parameters of each user
+	 * @returns {Promise<UserVisibilityGetDTO[]>} The visibility parameters of each user
 	 */
 	@CreateRequestContext()
-	async findVisibilities(ids: number[] | number): Promise<UserVisibility[]> {
+	async findVisibilities(ids: number[] | number): Promise<UserVisibilityGetDTO[]> {
 		if (!Array.isArray(ids)) ids = [ids];
 
 		const users = await this.orm.em.find(User, { id: { $in: ids } });
 		if (!users || users.length === 0) throw new NotFoundException(this.t.Errors.Id.NotFounds(User, ids));
 
-		return await this.orm.em.find(UserVisibility, { user: { $in: users } });
+		const visibilities = await this.orm.em.find(UserVisibility, { user: { $in: users } });
+		return visibilities.map((v) => ({ ...v, user: v.user.id }));
 	}
 
 	@CreateRequestContext()
-	async updateVisibility(id: number, input: UserVisibilityPatchDTO): Promise<UserVisibility> {
+	async updateVisibility(id: number, input: UserVisibilityPatchDTO): Promise<UserVisibilityGetDTO> {
 		const user = await this.orm.em.findOne(User, { id });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 
@@ -167,11 +173,11 @@ export class UsersDataService {
 		Object.assign(visibility, input);
 		await this.orm.em.persistAndFlush(visibility);
 
-		return visibility;
+		return { ...visibility, user: visibility.user.id };
 	}
 
 	@CreateRequestContext()
-	async register(input: UserPostDTO): Promise<User> {
+	async register(input: UserPostDTO): Promise<MessageResponseDTO> {
 		Object.entries(input).forEach(([key, value]) => {
 			if (typeof value === 'string') {
 				// @ts-ignore
@@ -200,7 +206,7 @@ export class UsersDataService {
 		// Save changes to the database & create the user's visibility parameters
 		this.orm.em.create(UserVisibility, { user });
 
-		return user;
+		return { message: 'this.t.Success.User.Register(registerDto.email)', statusCode: 200 };
 	}
 
 	@CreateRequestContext()
@@ -244,7 +250,7 @@ export class UsersDataService {
 	}
 
 	@CreateRequestContext()
-	async registerByAdmin(inputs: UserPostByAdminDTO[]): Promise<User[]> {
+	async registerByAdmin(inputs: CreateUserDTO[]): Promise<BaseUserResponseDTO[]> {
 		const existing_users = await this.orm.em.find(User, { email: { $in: inputs.map((i) => i.email) } });
 		if (existing_users.length > 0)
 			throw new BadRequestException(
@@ -283,7 +289,7 @@ export class UsersDataService {
 			await this.orm.em.persistAndFlush(user);
 		}
 
-		return users;
+		return this.asBaseUsers(users);
 	}
 
 	@CreateRequestContext()
@@ -301,12 +307,12 @@ export class UsersDataService {
 		await this.orm.em.persistAndFlush(user);
 		return {
 			message: this.t.Success.Email.Verified(user.email),
-			status_code: 200,
+			statusCode: 200,
 		};
 	}
 
 	@CreateRequestContext()
-	async update(requestUserId: number, inputs: UserPatchDTO[]) {
+	async update(requestUserId: number, inputs: UserPatchDTO[]): Promise<UserGetDTO[]> {
 		const users: User[] = [];
 
 		for (const input of inputs) {
@@ -331,11 +337,11 @@ export class UsersDataService {
 			users.push(user);
 		}
 
-		return users;
+		return users.map((u) => ({ ...u, picture: u.picture?.id, banner: u.banner?.id, promotion: u.promotion?.id }));
 	}
 
 	@CreateRequestContext()
-	async delete(id: number) {
+	async delete(id: number): Promise<MessageResponseDTO> {
 		const user = await this.orm.em.findOne(User, { id });
 		await this.orm.em.removeAndFlush(user);
 
@@ -343,7 +349,7 @@ export class UsersDataService {
 	}
 
 	@CreateRequestContext()
-	async getUserRoles(id: number, input: { show_expired: boolean; show_revoked: boolean }): Promise<UserRolesGetDTO[]> {
+	async getUserRoles(id: number, input: { show_expired: boolean; show_revoked: boolean }): Promise<UserRoleGetDTO[]> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['roles'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 
@@ -368,7 +374,10 @@ export class UsersDataService {
 	}
 
 	@CreateRequestContext()
-	async getUserPermissions(id: number, input: { show_expired: boolean; show_revoked: boolean }): Promise<Permission[]> {
+	async getUserPermissions(
+		id: number,
+		input: { show_expired: boolean; show_revoked: boolean },
+	): Promise<PermissionGetDTO[]> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['permissions'] });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 
@@ -377,7 +386,7 @@ export class UsersDataService {
 		if (!input.show_expired) permissions.filter((p) => p.expires > new Date());
 		if (!input.show_revoked) permissions.filter((p) => p.revoked === false);
 
-		return permissions;
+		return permissions.map((p) => ({ ...p, user: id }));
 	}
 
 	/**

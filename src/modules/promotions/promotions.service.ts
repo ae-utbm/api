@@ -5,10 +5,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
 import { env } from '@env';
+import { MessageResponseDTO } from '@modules/_mixin/dto/message.dto';
 import { FilesService } from '@modules/files/files.service';
 import { TranslateService } from '@modules/translate/translate.service';
 
-import { PromotionResponseDTO } from './dto/promotion.dto';
+import { PromotionPictureResponseDTO, PromotionResponseDTO } from './dto/get.dto';
 import { PromotionPicture } from './entities/promotion-picture.entity';
 import { Promotion } from './entities/promotion.entity';
 import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
@@ -39,7 +40,7 @@ export class PromotionsService {
 		const res: PromotionResponseDTO[] = [];
 
 		for (const promotion of promotions) {
-			res.push({ ...promotion, users: promotion.users.count() });
+			res.push({ ...promotion, users: promotion.users.count(), picture: promotion.picture?.id });
 		}
 
 		return res;
@@ -54,6 +55,7 @@ export class PromotionsService {
 		return {
 			...promotion,
 			users: promotion.users.count(),
+			picture: promotion.picture?.id,
 		};
 	}
 
@@ -67,7 +69,7 @@ export class PromotionsService {
 		const res: PromotionResponseDTO[] = [];
 
 		for (const promotion of promotions) {
-			res.push({ ...promotion, users: promotion.users.count() });
+			res.push({ ...promotion, users: promotion.users.count(), picture: promotion.picture?.id });
 		}
 
 		return res;
@@ -81,6 +83,7 @@ export class PromotionsService {
 		return {
 			...promotion,
 			users: promotion.users.count(),
+			picture: promotion.picture?.id,
 		};
 	}
 
@@ -106,7 +109,7 @@ export class PromotionsService {
 	}
 
 	@CreateRequestContext()
-	async updateLogo(number: number, file: Express.Multer.File): Promise<Promotion> {
+	async updateLogo(number: number, file: Express.Multer.File): Promise<PromotionPictureResponseDTO> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
 
 		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
@@ -137,11 +140,7 @@ export class PromotionsService {
 
 		await this.orm.em.persistAndFlush(promotion);
 
-		// Fix issue with the picture not being populated
-		// -> happens when the picture is updated
-		const out = await this.orm.em.findOne(Promotion, { number }, { fields: ['*'], populate: ['picture'] });
-		delete out.picture.picture_promotion; // avoid circular reference
-		return out;
+		return { ...promotion.picture, picture_promotion: promotion.number, visibility: promotion.picture.visibility?.id };
 	}
 
 	@CreateRequestContext()
@@ -156,7 +155,7 @@ export class PromotionsService {
 	}
 
 	@CreateRequestContext()
-	async deleteLogo(number: number): Promise<Promotion> {
+	async deleteLogo(number: number): Promise<MessageResponseDTO> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
 		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
 
@@ -165,6 +164,6 @@ export class PromotionsService {
 		this.filesService.deleteFromDisk(promotion.picture);
 		await this.orm.em.removeAndFlush(promotion.picture);
 
-		return promotion;
+		return { message: this.t.Success.Entity.Deleted(PromotionPicture), statusCode: 200 };
 	}
 }

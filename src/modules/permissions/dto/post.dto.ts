@@ -1,11 +1,11 @@
-import type { PERMISSION_NAMES, PermissionsPostDto } from '#types/api';
+import type { PERMISSION_NAMES, PermissionPostDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsDate, IsInt, IsString } from 'class-validator';
+import { IsDate, IsInt, IsString } from 'class-validator';
 
 import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
 
-export class PermissionPostDTO implements PermissionsPostDto {
+export class PermissionPostDTO implements PermissionPostDto {
 	@ApiProperty()
 	@IsInt()
 	id: number;
@@ -17,14 +17,4 @@ export class PermissionPostDTO implements PermissionsPostDto {
 	@ApiProperty()
 	@IsDate()
 	expires: Date;
-}
-
-export class RolePermissionsDto implements RolePermissionsDto {
-	@ApiProperty()
-	@IsInt()
-	id: number;
-
-	@ApiProperty({ enum: PERMISSIONS_NAMES, isArray: true })
-	@IsArray()
-	permissions: PERMISSION_NAMES[];
 }

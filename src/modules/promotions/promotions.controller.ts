@@ -26,13 +26,15 @@ import {
 } from '@nestjs/swagger';
 import { z } from 'zod';
 
+import { ErrorResponseDTO } from '@modules/_mixin/dto/error.dto';
+import { MessageResponseDTO } from '@modules/_mixin/dto/message.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { FilesService } from '@modules/files/files.service';
 import { TranslateService } from '@modules/translate/translate.service';
 import { validate } from '@utils/validate';
 
-import { PromotionResponseDTO } from './dto/promotion.dto';
+import { PromotionResponseDTO } from './dto/get.dto';
 import { Promotion } from './entities/promotion.entity';
 import { PromotionsService } from './promotions.service';
 import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
@@ -63,7 +65,7 @@ export class PromotionsController {
 	@GuardPermissions('CAN_READ_PROMOTION')
 	@ApiOkResponse({ type: PromotionResponseDTO })
 	@ApiOperation({ summary: 'Get the latest promotion' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
 	async getLatest() {
 		return this.promotionsService.findLatest();
 	}
@@ -71,9 +73,9 @@ export class PromotionsController {
 	@Get('current')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiOkResponse({ type: [PromotionResponseDTO] })
 	@ApiOperation({ summary: 'Get promotions currently active' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiOkResponse({ type: [PromotionResponseDTO] })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
 	async getCurrent() {
 		return this.promotionsService.findCurrent();
 	}
@@ -84,10 +86,10 @@ export class PromotionsController {
 	@ApiConsumes('multipart/form-data')
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Update the promotion logo' })
-	@ApiNotFoundResponse({ description: 'Promotion not found' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiBadRequestResponse({ description: 'Invalid file' })
-	@ApiOkResponse({ type: Promotion })
+	@ApiNotFoundResponse({ description: 'Promotion not found', type: ErrorResponseDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiBadRequestResponse({ description: 'Invalid file', type: ErrorResponseDTO })
+	@ApiOkResponse({ type: PromotionResponseDTO })
 	@ApiBody({
 		schema: {
 			type: 'object',
@@ -112,9 +114,8 @@ export class PromotionsController {
 	@GuardPermissions('CAN_READ_PROMOTION')
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Get the promotion logo' })
-	@ApiNotFoundResponse({ description: 'Promotion not found' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiNotFoundResponse({ description: 'Promotion not found or promotion has no logo' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiNotFoundResponse({ description: 'Promotion not found or promotion has no logo', type: ErrorResponseDTO })
 	async getLogo(@Param('number') number: number) {
 		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
 
@@ -127,9 +128,9 @@ export class PromotionsController {
 	@GuardPermissions('CAN_EDIT_PROMOTION')
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Delete the promotion logo' })
-	@ApiNotFoundResponse({ description: 'Promotion not found' })
-	@ApiOkResponse({ type: Promotion })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiOkResponse({ type: MessageResponseDTO })
+	@ApiNotFoundResponse({ description: 'Promotion not found', type: ErrorResponseDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
 	async deleteLogo(@Param('number') number: number) {
 		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
 
@@ -139,11 +140,11 @@ export class PromotionsController {
 	@Get(':number')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiOkResponse({ type: PromotionResponseDTO })
-	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Get the specified promotion' })
-	@ApiNotFoundResponse({ description: 'Promotion not found' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
+	@ApiOkResponse({ type: PromotionResponseDTO })
+	@ApiNotFoundResponse({ description: 'Promotion not found', type: ErrorResponseDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
 	async get(@Param('number') number: number) {
 		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
 
@@ -153,11 +154,11 @@ export class PromotionsController {
 	@Get(':number/users')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiOkResponse({ type: [BaseUserResponseDTO] })
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Get users of the specified promotions' })
-	@ApiNotFoundResponse({ description: 'Promotion not found' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiOkResponse({ type: [BaseUserResponseDTO] })
+	@ApiNotFoundResponse({ description: 'Promotion not found', type: ErrorResponseDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
 	async getUsers(@Param('number') number: number) {
 		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
 

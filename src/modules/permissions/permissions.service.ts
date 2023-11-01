@@ -1,5 +1,3 @@
-import type { PermissionEntity } from '#types/api';
-
 import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
@@ -7,6 +5,7 @@ import { Cron } from '@nestjs/schedule';
 import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
 import { TranslateService } from '@modules/translate/translate.service';
 
+import { PermissionGetDTO } from './dto/get.dto';
 import { PermissionPatchDTO } from './dto/patch.dto';
 import { PermissionPostDTO } from './dto/post.dto';
 import { Permission } from './entities/permission.entity';
@@ -37,11 +36,11 @@ export class PermissionsService {
 
 	/**
 	 * Add a permission to a user
-	 * @param {PermissionPatchDTO} data The permission data to add
-	 * @returns {Promise<PermissionEntity<number>>} The created permission
+	 * @param data The permission data to add
+	 * @returns The created permission
 	 */
 	@CreateRequestContext()
-	async addPermissionToUser(data: PermissionPostDTO): Promise<PermissionEntity<number>> {
+	async addPermissionToUser(data: PermissionPostDTO): Promise<PermissionGetDTO> {
 		// Check if the permission is valid
 		if (!PERMISSIONS_NAMES.includes(data.permission))
 			throw new BadRequestException(this.t.Errors.Permission.Invalid(data.permission));
@@ -69,7 +68,7 @@ export class PermissionsService {
 
 		// Save it & return it
 		await this.orm.em.persistAndFlush(permission);
-		return { ...permission, user: user.id };
+		return { ...permission, user: user.id } as PermissionGetDTO;
 	}
 
 	/**
@@ -86,11 +85,11 @@ export class PermissionsService {
 	}
 
 	@CreateRequestContext()
-	async editPermissionOfUser(data: PermissionPatchDTO): Promise<Permission> {
+	async editPermissionOfUser(data: PermissionPatchDTO): Promise<PermissionGetDTO> {
 		const user = await this.orm.em.findOne(User, { id: data.user_id });
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, data.user_id));
 
-		const perm = await this.orm.em.findOne(Permission, { id: data.id, user });
+		const perm = await this.orm.em.findOne(Permission, { id: data.id, user: data.user_id });
 		if (!perm) throw new NotFoundException(this.t.Errors.Permission.NotFoundOnUser(data.name, user.full_name));
 
 		if (data.name) perm.name = data.name;
@@ -98,6 +97,6 @@ export class PermissionsService {
 		if (data.revoked !== undefined) perm.revoked = data.revoked;
 
 		await this.orm.em.persistAndFlush(perm);
-		return perm;
+		return { ...perm, user: user.id };
 	}
 }

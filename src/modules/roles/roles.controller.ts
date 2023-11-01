@@ -12,14 +12,15 @@ import {
 } from '@nestjs/swagger';
 import { z } from 'zod';
 
+import { ErrorResponseDTO } from '@modules/_mixin/dto/error.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { TranslateService } from '@modules/translate/translate.service';
 import { validate } from '@utils/validate';
 
+import { RoleGetDTO, RoleUsersResponseDTO } from './dto/get.dto';
 import { RoleEditUserDTO, RolePatchDTO } from './dto/patch.dto';
 import { RolePostDTO } from './dto/post.dto';
-import { RoleUsersResponseDTO } from './dto/users.dto';
 import { Role } from './entities/role.entity';
 import { RolesService } from './roles.service';
 
@@ -34,9 +35,9 @@ export class RolesController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_ROLE')
 	@ApiOperation({ summary: 'Create a new role' })
-	@ApiOkResponse({ type: Role })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiBadRequestResponse({ description: 'Role name is not uppercase or already exists' })
+	@ApiOkResponse({ type: RoleGetDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiBadRequestResponse({ description: 'Role name is not uppercase or already exists', type: ErrorResponseDTO })
 	async createRole(@Body() body: RolePostDTO) {
 		const schema = z
 			.object({
@@ -53,10 +54,10 @@ export class RolesController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_ROLE')
 	@ApiOperation({ summary: 'Update an existing role' })
-	@ApiOkResponse({ type: Role })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiBadRequestResponse({ description: 'Role name is not uppercase' })
-	@ApiNotFoundResponse({ description: 'Role not found' })
+	@ApiOkResponse({ type: RoleGetDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiBadRequestResponse({ description: 'Role name is not uppercase', type: ErrorResponseDTO })
+	@ApiNotFoundResponse({ description: 'Role not found', type: ErrorResponseDTO })
 	async editRole(@Body() body: RolePatchDTO) {
 		const schema = z
 			.object({
@@ -77,8 +78,8 @@ export class RolesController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_ROLE')
 	@ApiOperation({ summary: 'Get all existing roles' })
-	@ApiOkResponse({ type: [Role] })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiOkResponse({ type: [RoleGetDTO] })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
 	async getAllRoles() {
 		return this.rolesService.getAllRoles();
 	}
@@ -87,9 +88,9 @@ export class RolesController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_ROLE')
 	@ApiOperation({ summary: 'Get the specified role' })
-	@ApiOkResponse({ type: Role })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiNotFoundResponse({ description: 'Role not found' })
+	@ApiOkResponse({ type: RoleGetDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiNotFoundResponse({ description: 'Role not found', type: ErrorResponseDTO })
 	async getRole(@Param('role_id') id: number) {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(Role, id));
 
@@ -101,8 +102,8 @@ export class RolesController {
 	@GuardPermissions('CAN_READ_ROLE')
 	@ApiOperation({ summary: 'Get user(s) of the specified role' })
 	@ApiOkResponse({ type: [RoleUsersResponseDTO] })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiNotFoundResponse({ description: 'Role not found' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiNotFoundResponse({ description: 'Role not found', type: ErrorResponseDTO })
 	async getRoleUsers(@Param('role_id') id: number) {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(Role, id));
 
@@ -114,8 +115,8 @@ export class RolesController {
 	@GuardPermissions('CAN_EDIT_ROLE')
 	@ApiOperation({ summary: 'Add user(s) to the role' })
 	@ApiOkResponse({ type: [RoleUsersResponseDTO] })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiNotFoundResponse({ description: 'Role not found' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiNotFoundResponse({ description: 'Role not found', type: ErrorResponseDTO })
 	@ApiBody({ type: [RoleEditUserDTO] })
 	async addUsersToRole(@Param('role_id') role_id: number, @Body() body: RoleEditUserDTO[]) {
 		validate(z.coerce.number().int().min(1), role_id, this.t.Errors.Id.Invalid(Role, role_id));
@@ -136,8 +137,8 @@ export class RolesController {
 	@GuardPermissions('CAN_EDIT_ROLE')
 	@ApiOperation({ summary: 'Remove user(s) from the role' })
 	@ApiOkResponse({ type: [RoleUsersResponseDTO] })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiNotFoundResponse({ description: 'Role not found' })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiNotFoundResponse({ description: 'Role not found', type: ErrorResponseDTO })
 	@ApiBody({ type: [Number] })
 	async removeUsersToRole(@Param('role_id') role_id: number, @Body('') body: number[]) {
 		validate(z.coerce.number().int().min(1), role_id, this.t.Errors.Id.Invalid(Role, role_id));

@@ -1,11 +1,11 @@
-import type { PERMISSION_NAMES, PermissionPatchDto } from '#types/api';
+import type { PERMISSION_NAMES, IPermissionPatchDTO } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsString, IsDate, IsBoolean } from 'class-validator';
 
 import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
 
-export class PermissionPatchDTO implements PermissionPatchDto {
+export class PermissionPatchDTO implements IPermissionPatchDTO {
 	@ApiProperty({ required: true, minimum: 1 })
 	@IsInt()
 	id: number;

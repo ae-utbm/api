@@ -4,7 +4,7 @@ import { hashSync } from 'bcrypt';
 import request from 'supertest';
 
 import { USER_GENDER } from '@exported/api/constants/genders';
-import { UserPostDTO } from '@modules/auth/dto/register.dto';
+import { UserPostDTO } from '@modules/auth/dto/post.dto';
 import { User } from '@modules/users/entities/user.entity';
 import { generateRandomPassword } from '@utils/password';
 

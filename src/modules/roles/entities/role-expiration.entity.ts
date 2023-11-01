@@ -8,15 +8,12 @@ import { Role } from './role.entity';
 
 @Entity({ tableName: 'roles_expirations' })
 export class RoleExpiration extends BaseEntity {
-	/** Specify which user is attached to that role */
 	@ManyToOne(() => User)
 	user: User;
 
-	/** Specify which role is attached to that user */
 	@ManyToOne(() => Role)
 	role: Role;
 
-	/** Specify when the role should expires */
 	@Property({ name: 'expires_at' })
 	@ApiProperty()
 	expires: Date;

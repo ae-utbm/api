@@ -10,7 +10,7 @@ import { TranslateService } from '@modules/translate/translate.service';
 import { User } from '@modules/users/entities/user.entity';
 import { UsersDataService } from '@modules/users/services/users-data.service';
 
-import { TokenDTO } from './dto/token.dto';
+import { TokenDTO } from './dto/get.dto';
 
 @Injectable()
 export class AuthService {

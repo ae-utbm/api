@@ -3,7 +3,7 @@ import type { email } from '#types';
 import request from 'supertest';
 
 import { USER_GENDER } from '@exported/api/constants/genders';
-import { TokenDTO } from '@modules/auth/dto/token.dto';
+import { TokenDTO } from '@modules/auth/dto/get.dto';
 import { User } from '@modules/users/entities/user.entity';
 
 import { orm, t, server } from '../..';

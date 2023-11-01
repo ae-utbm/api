@@ -6,23 +6,24 @@ import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiOperation, ApiTags, ApiUnauth
 import { z } from 'zod';
 
 import { USER_GENDER } from '@exported/api/constants/genders';
-import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
+import { ErrorResponseDTO } from '@modules/_mixin/dto/error.dto';
+import { MessageResponseDTO } from '@modules/_mixin/dto/message.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { GuardSelfOrPermsOrSub } from '@modules/auth/decorators/self-or-sub-perms.decorator';
 import { GuardSelfParam } from '@modules/auth/decorators/self.decorator';
-import { UserPostByAdminDTO } from '@modules/auth/dto/register.dto';
+import { CreateUserDTO } from '@modules/auth/dto/post.dto';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
 import { SelfOrPermsOrSubGuard } from '@modules/auth/guards/self-or-sub-or-perms.guard';
 import { SelfGuard } from '@modules/auth/guards/self.guard';
-import { Permission } from '@modules/permissions/entities/permission.entity';
+import { PermissionGetDTO } from '@modules/permissions/dto/get.dto';
 import { TranslateService } from '@modules/translate/translate.service';
 import { validate } from '@utils/validate';
 
-import { UserRolesGetDTO } from '../dto/get.dto';
+import { BaseUserResponseDTO } from '../dto/base-user.dto';
+import { UserGetDTO, UserRoleGetDTO, UserVisibilityGetDTO } from '../dto/get.dto';
 import { UserPatchDTO, UserVisibilityPatchDTO } from '../dto/patch.dto';
-import { UserVisibility } from '../entities/user-visibility.entity';
 import { User } from '../entities/user.entity';
 import { UsersDataService } from '../services/users-data.service';
 
@@ -37,10 +38,10 @@ export class UsersDataController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_USER')
 	@ApiOperation({ summary: 'Creates new users' })
-	@ApiOkResponse({ description: 'The created user', type: [User] })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiBody({ type: [UserPostByAdminDTO] })
-	async create(@Body() input: UserPostByAdminDTO[]) {
+	@ApiOkResponse({ description: 'The created user', type: [BaseUserResponseDTO] })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	@ApiBody({ type: [CreateUserDTO] })
+	async create(@Body() input: CreateUserDTO[]): Promise<BaseUserResponseDTO[]> {
 		const schema = z
 			.object({
 				email: z.string().email(),
@@ -59,10 +60,10 @@ export class UsersDataController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Update users data' })
-	@ApiOkResponse({ description: 'The updated users', type: User })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
+	@ApiOkResponse({ description: 'The updated users', type: UserGetDTO })
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
 	@ApiBody({ type: [UserPatchDTO] })
-	async update(@Req() req: RequestWithUser, @Body() input: UserPatchDTO[]) {
+	async update(@Req() req: RequestWithUser, @Body() input: UserPatchDTO[]): Promise<UserGetDTO[]> {
 		const schema = z
 			.object({
 				id: z.coerce.number(),
@@ -85,7 +86,7 @@ export class UsersDataController {
 			.strict();
 
 		validate(z.array(schema).min(1), input);
-		return this.usersService.update(req.user.id, input);
+		return this.usersService.update((req.user as User).id, input);
 	}
 
 	@Delete(':id')
@@ -93,8 +94,8 @@ export class UsersDataController {
 	@GuardSelfParam('id')
 	@ApiOperation({ summary: 'Delete your account' })
 	@ApiOkResponse({ description: 'User deleted', type: MessageResponseDTO })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async delete(@Param('id') id: number) {
+	@ApiUnauthorizedResponse({ description: 'Insufficient permission', type: ErrorResponseDTO })
+	async delete(@Param('id') id: number): Promise<MessageResponseDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.usersService.delete(id);
@@ -104,33 +105,33 @@ export class UsersDataController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PRIVATE'])
 	@ApiOperation({ summary: 'Get all information of a user' })
-	@ApiOkResponse({ description: 'User data', type: User })
+	@ApiOkResponse({ description: 'User data', type: UserGetDTO })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getPrivate(@Param('id') id: number) {
+	async getPrivate(@Param('id') id: number): Promise<UserGetDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
-		return this.usersService.findOne(id, false);
+		return this.usersService.findOneAsDTO(id, false);
 	}
 
 	@Get(':id/data/public')
 	@UseGuards(SelfOrPermsOrSubGuard)
 	@GuardSelfOrPermsOrSub('id', ['CAN_READ_USER'])
 	@ApiOperation({ summary: 'Get publicly available information of a user' })
-	@ApiOkResponse({ description: 'User data, excepted privates fields (set in the visibility table)', type: User })
+	@ApiOkResponse({ description: 'User data, excepted privates fields (set in the visibility table)', type: UserGetDTO })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getPublic(@Param('id') id: number) {
+	async getPublic(@Param('id') id: number): Promise<UserGetDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
-		return this.usersService.findOne(id);
+		return this.usersService.findOneAsDTO(id);
 	}
 
 	@Get(':id/data/visibility')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER_PRIVATE'])
 	@ApiOperation({ summary: 'Get visibility settings of a user' })
-	@ApiOkResponse({ description: 'User data', type: UserVisibility })
+	@ApiOkResponse({ description: 'User data', type: UserVisibilityGetDTO })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getVisibility(@Param('id') id: number) {
+	async getVisibility(@Param('id') id: number): Promise<UserVisibilityGetDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return (await this.usersService.findVisibilities(id))[0];
@@ -140,9 +141,12 @@ export class UsersDataController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Update visibility settings of a user' })
-	@ApiOkResponse({ description: 'User data', type: UserVisibility })
+	@ApiOkResponse({ description: 'User data', type: UserVisibilityGetDTO })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async updateVisibility(@Param('id') id: number, @Body() input: UserVisibilityPatchDTO) {
+	async updateVisibility(
+		@Param('id') id: number,
+		@Body() input: UserVisibilityPatchDTO,
+	): Promise<UserVisibilityGetDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		const schema = z
@@ -166,9 +170,9 @@ export class UsersDataController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER', 'CAN_READ_ROLE'])
 	@ApiOperation({ summary: 'Get roles of a user' })
-	@ApiOkResponse({ description: 'Roles of the user', type: [UserRolesGetDTO] })
+	@ApiOkResponse({ description: 'Roles of the user', type: [UserRoleGetDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getUserRoles(@Param('id') id: number) {
+	async getUserRoles(@Param('id') id: number): Promise<UserRoleGetDTO[]> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.usersService.getUserRoles(id, { show_expired: true, show_revoked: true });
@@ -178,9 +182,9 @@ export class UsersDataController {
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_READ_USER', 'CAN_READ_PERMISSIONS_OF_USER'])
 	@ApiOperation({ summary: 'Get permissions of a user' })
-	@ApiOkResponse({ description: 'Permissions of the user', type: [Permission] })
+	@ApiOkResponse({ description: 'Permissions of the user', type: [PermissionGetDTO] })
 	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getUserPermissions(@Param('id') id: number) {
+	async getUserPermissions(@Param('id') id: number): Promise<PermissionGetDTO[]> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
 		return this.usersService.getUserPermissions(id, { show_expired: true, show_revoked: true });

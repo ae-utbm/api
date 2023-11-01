@@ -1,4 +1,4 @@
-import type { BaseEntity as BEI } from '#types/api';
+import type { IBaseResponseDTO } from '#types/api';
 
 import { BaseEntity as BE, Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';
@@ -8,7 +8,7 @@ import { ApiProperty } from '@nestjs/swagger';
  * - Contains the primary key, the creation and update dates
  */
 @Entity({ abstract: true })
-export abstract class BaseEntity extends BE<BaseEntity, 'id'> implements BEI {
+export abstract class BaseEntity extends BE<IBaseResponseDTO, 'id'> {
 	@PrimaryKey()
 	@ApiProperty({ minimum: 1 })
 	id: number;
