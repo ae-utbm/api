@@ -4,7 +4,7 @@ import type { ICreateUserDTO, ICreateUserByAdminDTO, ISignInDTO } from '#types/a
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDate, IsEmail, IsString, IsStrongPassword } from 'class-validator';
 
-export class CreateUserDTO implements Omit<ICreateUserDTO, 'password'> {
+export class CreateUserDTO implements ICreateUserDTO {
 	@ApiProperty({ example: 'example@domain.com' })
 	@IsEmail()
 	email: email;

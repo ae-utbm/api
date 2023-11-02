@@ -52,9 +52,9 @@ export class FileVisibilityGroupGetDTO implements IFileVisibilityGroupGetDTO {
 
 	@ApiProperty()
 	@IsInt()
-	users: number;
+	users_count: number;
 
 	@ApiProperty()
 	@IsInt()
-	files: number;
+	files_count: number;
 }

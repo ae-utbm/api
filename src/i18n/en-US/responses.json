@@ -67,6 +67,9 @@
     "deleted": "'{type}' successfully deleted.",
     "email": {
       "verified": "{type} email has been verified."
+    },
+    "user": {
+      "register": "You have been successfully registered, please check your email to verify your account."
     }
   }
 }

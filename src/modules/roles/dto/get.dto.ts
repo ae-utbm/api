@@ -27,5 +27,5 @@ export class RoleGetDTO implements IRoleGetDTO {
 
 	@ApiProperty({ type: Number, default: 1 })
 	@IsInt()
-	users: number;
+	users_count: number;
 }

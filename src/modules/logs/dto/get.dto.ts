@@ -6,7 +6,7 @@ import { IsInt, IsString } from 'class-validator';
 export class LogDTO implements ILogDTO {
 	@ApiProperty()
 	@IsInt()
-	user: number;
+	user_id: number;
 
 	@ApiProperty()
 	@IsString()

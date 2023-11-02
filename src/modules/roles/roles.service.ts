@@ -49,7 +49,7 @@ export class RolesService {
 	@CreateRequestContext()
 	async getAllRoles(): Promise<RoleGetDTO[]> {
 		const roles = await this.orm.em.find(Role, {}, { populate: ['users'] });
-		return roles.map((r) => ({ ...r, users: r.users.count() }));
+		return roles.map((r) => r.toObject() as unknown as RoleGetDTO);
 	}
 
 	@CreateRequestContext()
@@ -57,7 +57,7 @@ export class RolesService {
 		const role = await this.orm.em.findOne(Role, { id }, { populate: ['users'] });
 		if (!role) throw new NotFoundException(this.t.Errors.Id.NotFound(Role, id));
 
-		return { ...role, users: role.users.count() };
+		return role.toObject() as unknown as RoleGetDTO;
 	}
 
 	@CreateRequestContext()
@@ -77,8 +77,7 @@ export class RolesService {
 		const role = this.orm.em.create(Role, { name: roleName, permissions });
 		await this.orm.em.persistAndFlush(role);
 
-		delete role.users;
-		return { ...role, users: 0 };
+		return role.toObject() as unknown as RoleGetDTO;
 	}
 
 	@CreateRequestContext()
@@ -90,7 +89,7 @@ export class RolesService {
 		role.permissions = input.permissions.unique();
 		await this.orm.em.persistAndFlush(role);
 
-		return { ...role, users: role.users.count() };
+		return role.toObject() as unknown as RoleGetDTO;
 	}
 
 	@CreateRequestContext()

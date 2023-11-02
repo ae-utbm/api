@@ -13,7 +13,7 @@ export class PromotionResponseDTO extends BaseResponseDTO implements IPromotionR
 
 	@ApiProperty()
 	@IsInt()
-	users: number;
+	users_count: number;
 
 	@ApiProperty({ required: false })
 	@IsInt()
@@ -23,5 +23,5 @@ export class PromotionResponseDTO extends BaseResponseDTO implements IPromotionR
 export class PromotionPictureResponseDTO extends FileGetDTO implements IPromotionPictureResponseDTO {
 	@ApiProperty()
 	@IsInt()
-	picture_promotion: number;
+	picture_promotion_id: number;
 }

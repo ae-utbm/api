@@ -1,6 +1,7 @@
 import type { email } from '#types';
 import type {
 	IUserBannerResponseDTO,
+	IUserGetPrivateDTO,
 	IUserPictureResponseDTO,
 	IUserRoleGetDTO,
 	IUserVisibilityGetDTO,
@@ -10,7 +11,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsDate, IsEmail, IsIn, IsInt, IsNumber, IsString } from 'class-validator';
 
 import { IUserGetDTO, PERMISSION_NAMES } from '#types/api';
-import { USER_GENDER } from '@exported/api/constants/genders';
+import { USER_GENDER, genders } from '@exported/api/constants/genders';
 import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
 import { BaseResponseDTO } from '@modules/_mixin/dto/base.dto';
 import { FileGetDTO } from '@modules/files/dto/get.dto';
@@ -54,6 +55,10 @@ export class UserGetDTO extends BaseResponseDTO implements IUserGetDTO {
 	@IsString()
 	last_name: string;
 
+	@ApiProperty({ example: 'John Doe' })
+	@IsString()
+	full_name: string;
+
 	@ApiProperty({ minimum: 1 })
 	@IsNumber()
 	picture?: number;
@@ -64,15 +69,23 @@ export class UserGetDTO extends BaseResponseDTO implements IUserGetDTO {
 
 	@ApiProperty({ type: String, example: 'example@domain.com' })
 	@IsEmail()
-	email: email;
+	email?: email;
 
 	@ApiProperty({ type: Boolean, default: false })
 	@IsBoolean()
-	email_verified: boolean;
+	email_verified?: boolean;
 
 	@ApiProperty({ example: new Date('1999-12-31').toISOString() })
 	@IsDate()
-	birth_date: Date;
+	birth_date?: Date;
+
+	@ApiProperty({ example: 21 })
+	@IsNumber()
+	age: number;
+
+	@ApiProperty()
+	@IsBoolean()
+	is_minor: boolean;
 
 	@ApiProperty()
 	@IsString()
@@ -81,7 +94,7 @@ export class UserGetDTO extends BaseResponseDTO implements IUserGetDTO {
 	@ApiProperty({ example: USER_GENDER[0], enum: USER_GENDER })
 	@IsString()
 	@IsIn(USER_GENDER)
-	gender?: (typeof USER_GENDER)[number];
+	gender?: genders;
 
 	@ApiProperty({ example: null })
 	@IsString()
@@ -116,10 +129,93 @@ export class UserGetDTO extends BaseResponseDTO implements IUserGetDTO {
 	verified?: Date;
 }
 
+export class UserGetPrivateDTO extends BaseResponseDTO implements IUserGetPrivateDTO {
+	@ApiProperty({ example: 'John' })
+	@IsString()
+	first_name: string;
+
+	@ApiProperty({ example: 'Doe' })
+	@IsString()
+	last_name: string;
+
+	@ApiProperty({ example: 'John Doe' })
+	@IsString()
+	full_name: string;
+
+	@ApiProperty({ minimum: 1 })
+	@IsNumber()
+	picture?: number;
+
+	@ApiProperty({ minimum: 1 })
+	@IsNumber()
+	banner?: number;
+
+	@ApiProperty({ type: String, example: 'example@domain.com' })
+	@IsEmail()
+	email: email;
+
+	@ApiProperty({ type: Boolean, default: false })
+	@IsBoolean()
+	email_verified?: boolean;
+
+	@ApiProperty({ example: new Date('1999-12-31').toISOString() })
+	@IsDate()
+	birth_date: Date;
+
+	@ApiProperty({ example: 21 })
+	@IsNumber()
+	age: number;
+
+	@ApiProperty()
+	@IsBoolean()
+	is_minor: boolean;
+
+	@ApiProperty()
+	@IsString()
+	nickname?: string;
+
+	@ApiProperty({ example: USER_GENDER[0], enum: USER_GENDER })
+	@IsString()
+	@IsIn(USER_GENDER)
+	gender: genders;
+
+	@ApiProperty({ example: null })
+	@IsString()
+	pronouns: string;
+
+	@ApiProperty({ type: Number, minimum: 1 })
+	@IsNumber()
+	promotion: number;
+
+	@ApiProperty({ example: new Date().toISOString() })
+	@IsDate()
+	last_seen?: Date;
+
+	@ApiProperty({ example: false })
+	@IsBoolean()
+	subscribed: boolean; // TODO: (KEY: 2) Make a PR to implement subscriptions in the API
+
+	@ApiProperty()
+	@IsEmail()
+	secondary_email: string;
+
+	@ApiProperty()
+	@IsString()
+	phone: string;
+
+	@ApiProperty()
+	@IsString()
+	parent_contact: string;
+
+	@ApiProperty({ type: Date })
+	@IsDate()
+	verified?: Date;
+}
+
 export class UserVisibilityGetDTO implements IUserVisibilityGetDTO {
 	@ApiProperty({ minimum: 1 })
 	@IsInt()
-	user: number;
+	user_id: number;
 
 	@ApiProperty({ type: Boolean, default: false })
 	@IsBoolean()
@@ -157,11 +253,11 @@ export class UserVisibilityGetDTO implements IUserVisibilityGetDTO {
 export class UserGetPictureDTO extends FileGetDTO implements IUserPictureResponseDTO {
 	@ApiProperty({ minimum: 1 })
 	@IsInt()
-	picture_user: number;
+	picture_user_id: number;
 }
 
 export class UserGetBannerDTO extends FileGetDTO implements IUserBannerResponseDTO {
 	@ApiProperty({ minimum: 1 })
 	@IsInt()
-	banner_user: number;
+	banner_user_id: number;
 }

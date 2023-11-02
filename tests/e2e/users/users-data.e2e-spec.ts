@@ -2,7 +2,6 @@ import type { email } from '#types';
 
 import request from 'supertest';
 
-import { USER_GENDER } from '@exported/api/constants/genders';
 import { TokenDTO } from '@modules/auth/dto/get.dto';
 import { User } from '@modules/users/entities/user.entity';
 
@@ -239,19 +238,6 @@ describe('Users Data (e2e)', () => {
 						updated: expect.any(String),
 						first_name: 'John',
 						last_name: 'Doe',
-						email_verified: true,
-						files_visibility_groups: [],
-						full_name: 'John Doe',
-						email: fakeUserEmail,
-						birth_date: '2001-01-01T00:00:00.000Z',
-						age: expect.any(Number),
-						is_minor: false,
-						gender: USER_GENDER[0],
-						last_seen: expect.any(String),
-						logs: [],
-						permissions: [],
-						roles: [],
-						verified: expect.any(String),
 					},
 				]);
 			});
@@ -439,22 +425,12 @@ describe('Users Data (e2e)', () => {
 						first_name: 'John',
 						last_name: 'Doe',
 						full_name: 'John Doe',
-						email: 'john.doe@example.fr',
-						email_verified: true,
-						gender: USER_GENDER[0],
 						birth_date: '1990-01-01T00:00:00.000Z',
 						age: expect.any(Number),
 						is_minor: false,
-						last_seen: expect.any(String),
 						nickname: null,
-						parent_contact: null,
-						phone: null,
-						banner: null,
-						picture: null,
 						promotion: null,
-						pronouns: null,
-						secondary_email: null,
-						verified: expect.any(String),
+						last_seen: expect.any(String),
 					},
 				]);
 
@@ -625,9 +601,6 @@ describe('Users Data (e2e)', () => {
 					updated: expect.any(String),
 					first_name: 'unverified',
 					last_name: 'user',
-					email_verified: false,
-					picture: null,
-					banner: null,
 					email: 'unverified@email.com',
 					birth_date: '2000-01-01T00:00:00.000Z',
 					nickname: null,
@@ -641,7 +614,6 @@ describe('Users Data (e2e)', () => {
 					full_name: 'unverified user',
 					age: expect.any(Number),
 					is_minor: false,
-					verified: null,
 				});
 			});
 
@@ -657,9 +629,6 @@ describe('Users Data (e2e)', () => {
 					updated: expect.any(String),
 					first_name: 'root',
 					last_name: 'root',
-					email_verified: true,
-					picture: null,
-					banner: null,
 					email: 'ae.info@utbm.fr',
 					birth_date: '2000-01-01T00:00:00.000Z',
 					nickname: 'noot noot',
@@ -673,7 +642,6 @@ describe('Users Data (e2e)', () => {
 					full_name: 'root root',
 					age: expect.any(Number),
 					is_minor: false,
-					verified: expect.any(String),
 				});
 			});
 		});
@@ -749,9 +717,6 @@ describe('Users Data (e2e)', () => {
 					updated: expect.any(String),
 					first_name: 'root',
 					last_name: 'root',
-					email_verified: true,
-					picture: null,
-					banner: null,
 					birth_date: expect.any(String),
 					nickname: 'noot noot',
 					promotion: 21,
@@ -759,7 +724,6 @@ describe('Users Data (e2e)', () => {
 					full_name: 'root root',
 					age: expect.any(Number),
 					is_minor: false,
-					verified: expect.any(String),
 				});
 			});
 
@@ -775,9 +739,6 @@ describe('Users Data (e2e)', () => {
 					updated: expect.any(String),
 					first_name: 'root',
 					last_name: 'root',
-					email_verified: true,
-					picture: null,
-					banner: null,
 					birth_date: expect.any(String),
 					nickname: 'noot noot',
 					promotion: 21,
@@ -785,7 +746,6 @@ describe('Users Data (e2e)', () => {
 					full_name: 'root root',
 					age: expect.any(Number),
 					is_minor: false,
-					verified: expect.any(String),
 				});
 			});
 		});
@@ -859,7 +819,7 @@ describe('Users Data (e2e)', () => {
 					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					user: 1,
+					user_id: 1,
 					email: false,
 					secondary_email: false,
 					birth_date: true,
@@ -881,7 +841,7 @@ describe('Users Data (e2e)', () => {
 					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					user: 3,
+					user_id: 3,
 					email: false,
 					secondary_email: false,
 					birth_date: true,
@@ -987,7 +947,7 @@ describe('Users Data (e2e)', () => {
 					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					user: 1,
+					user_id: 1,
 					email: true,
 					secondary_email: true,
 					birth_date: true,
@@ -1019,7 +979,7 @@ describe('Users Data (e2e)', () => {
 					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					user: 3,
+					user_id: 3,
 					email: false,
 					secondary_email: false,
 					birth_date: true,
@@ -1213,7 +1173,7 @@ describe('Users Data (e2e)', () => {
 						name: 'ROOT',
 						revoked: false,
 						expires: '9999-12-31T00:00:00.000Z',
-						user: 1,
+						user_id: 1,
 					},
 				]);
 			});

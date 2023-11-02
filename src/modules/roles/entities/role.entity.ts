@@ -19,6 +19,10 @@ export class Role extends BaseEntity {
 	@Property({ name: 'permissions' })
 	permissions: PERMISSION_NAMES[];
 
-	@ManyToMany(() => User, (user) => user.roles, { owner: true })
+	@ManyToMany(() => User, (user) => user.roles, {
+		owner: true,
+		serializedName: 'users_count',
+		serializer: (u: User[]) => u.length,
+	})
 	users = new Collection<User>(this);
 }

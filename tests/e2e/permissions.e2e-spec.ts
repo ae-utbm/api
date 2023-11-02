@@ -137,7 +137,7 @@ describe('Permissions (e2e)', () => {
 					name: 'CAN_EDIT_PROMOTION',
 					revoked: false,
 					updated: expect.any(String),
-					user: 1,
+					user_id: 1,
 				});
 
 				// Remove the permission after the test
@@ -221,7 +221,7 @@ describe('Permissions (e2e)', () => {
 					name: 'ROOT',
 					revoked: false,
 					updated: expect.any(String),
-					user: 1,
+					user_id: 1,
 				});
 			});
 		});
@@ -299,7 +299,7 @@ describe('Permissions (e2e)', () => {
 						name: 'ROOT',
 						revoked: false,
 						updated: expect.any(String),
-						user: 1,
+						user_id: 1,
 					},
 				]);
 			});

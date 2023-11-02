@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 
 import { USER_GENDER } from '@exported/api/constants/genders';
@@ -38,6 +38,7 @@ export class UsersDataController {
 	@ApiOperation({ summary: 'Creates new users' })
 	@ApiOkResponse({ description: 'The created user', type: [BaseUserResponseDTO] })
 	@ApiNotOkResponses({ 400: 'Invalid input', 401: 'Insufficient permission' })
+	@ApiBody({ type: [CreateUserDTO] })
 	async create(@Body() input: CreateUserDTO[]): Promise<BaseUserResponseDTO[]> {
 		const schema = z
 			.object({
@@ -108,7 +109,7 @@ export class UsersDataController {
 	async getPrivate(@Param('id') id: number): Promise<UserGetDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
-		return this.usersService.findOneAsDTO(id, false);
+		return await this.usersService.findOne(id, false);
 	}
 
 	@Get(':id/data/public')
@@ -121,7 +122,7 @@ export class UsersDataController {
 	async getPublic(@Param('id') id: number): Promise<UserGetDTO> {
 		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
 
-		return this.usersService.findOneAsDTO(id);
+		return this.usersService.findOne(id);
 	}
 
 	@Get(':id/data/visibility')

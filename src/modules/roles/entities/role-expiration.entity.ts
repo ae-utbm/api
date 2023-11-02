@@ -8,10 +8,10 @@ import { Role } from './role.entity';
 
 @Entity({ tableName: 'roles_expirations' })
 export class RoleExpiration extends BaseEntity {
-	@ManyToOne(() => User)
+	@ManyToOne(() => User, { serializedName: 'user_id', serializer: (u: User) => u.id })
 	user: User;
 
-	@ManyToOne(() => Role)
+	@ManyToOne(() => Role, { serializedName: 'role_id', serializer: (r: Role) => r.id })
 	role: Role;
 
 	@Property({ name: 'expires_at' })

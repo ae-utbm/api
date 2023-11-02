@@ -10,9 +10,18 @@ export class Promotion extends BaseEntity implements Promotion {
 	@Property()
 	number: number;
 
-	@OneToMany(() => User, (user) => user.promotion, { cascade: [Cascade.REMOVE] })
+	@OneToMany(() => User, (user) => user.promotion, {
+		cascade: [Cascade.REMOVE],
+		serializedName: 'users_count',
+		serializer: (u: User[]) => u.length,
+	})
 	users: Collection<User>;
 
-	@OneToOne(() => PromotionPicture, (picture) => picture.picture_promotion, { cascade: [Cascade.ALL], nullable: true })
+	@OneToOne(() => PromotionPicture, (picture) => picture.picture_promotion, {
+		cascade: [Cascade.ALL],
+		nullable: true,
+		serializedName: 'picture_id',
+		serializer: (p: PromotionPicture) => p?.id,
+	})
 	picture?: PromotionPicture;
 }

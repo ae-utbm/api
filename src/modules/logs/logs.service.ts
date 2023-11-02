@@ -21,7 +21,7 @@ export class LogsService {
 	}
 
 	async getUserLogs(id: number): Promise<LogDTO[]> {
-		return (await this.orm.em.find(Log, { user: id })).map((log) => ({ ...log, user: log.user.id }));
+		return (await this.orm.em.find(Log, { user: id })).map((log) => log.toObject() as unknown as LogDTO);
 	}
 
 	async deleteUserLogs(id: number) {

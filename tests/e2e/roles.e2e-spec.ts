@@ -77,7 +77,7 @@ describe('Roles (e2e)', () => {
 					permissions: expect.any(Array),
 					revoked: false,
 					updated: expect.any(String),
-					users: expect.any(Number),
+					users_count: expect.any(Number),
 				});
 			});
 		});
@@ -185,6 +185,7 @@ describe('Roles (e2e)', () => {
 					name: 'TEST_ROLE',
 					revoked: false,
 					permissions: ['ROOT'],
+					users_count: 0,
 				});
 			});
 		});
@@ -284,7 +285,7 @@ describe('Roles (e2e)', () => {
 					name: 'TEST_TEST_ROLE',
 					revoked: false,
 					permissions: ['ROOT', 'CAN_READ_ROLE', 'CAN_EDIT_ROLE'],
-					users: 0,
+					users_count: 0,
 				});
 			});
 		});
@@ -366,7 +367,7 @@ describe('Roles (e2e)', () => {
 						'CAN_READ_PERMISSIONS_OF_ROLE',
 						'CAN_EDIT_PERMISSIONS_OF_ROLE',
 					],
-					users: 1,
+					users_count: 1,
 				});
 			});
 		});

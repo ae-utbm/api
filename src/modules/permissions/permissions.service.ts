@@ -68,7 +68,7 @@ export class PermissionsService {
 
 		// Save it & return it
 		await this.orm.em.persistAndFlush(permission);
-		return { ...permission, user: user.id } as PermissionGetDTO;
+		return permission.toObject() as unknown as PermissionGetDTO;
 	}
 
 	/**
@@ -82,7 +82,7 @@ export class PermissionsService {
 		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
 
 		const permissions = await user.permissions.loadItems();
-		return permissions.map((p) => ({ ...p, user: user.id }));
+		return permissions.map((p) => p.toObject() as unknown as PermissionGetDTO);
 	}
 
 	@CreateRequestContext()
@@ -98,6 +98,6 @@ export class PermissionsService {
 		if (data.revoked !== undefined) perm.revoked = data.revoked;
 
 		await this.orm.em.persistAndFlush(perm);
-		return { ...perm, user: user.id };
+		return perm.toObject() as unknown as PermissionGetDTO;
 	}
 }

@@ -16,6 +16,11 @@ export class Permission extends BaseEntity {
 	@Property({ name: 'expires_at' })
 	expires: Date;
 
-	@ManyToOne(() => User, { onDelete: 'cascade', joinColumn: 'user_id' })
+	@ManyToOne(() => User, {
+		onDelete: 'cascade',
+		joinColumn: 'user_id',
+		serializedName: 'user_id',
+		serializer: (u: User) => u.id,
+	})
 	user: User;
 }

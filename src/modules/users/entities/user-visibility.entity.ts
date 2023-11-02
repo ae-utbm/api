@@ -7,7 +7,12 @@ import { User } from './user.entity';
 @Entity({ tableName: 'users_visibility' })
 export class UserVisibility extends BaseEntity {
 	/** Specify to which user those parameters belongs */
-	@OneToOne(() => User, { onDelete: 'cascade', joinColumn: 'user_id' })
+	@OneToOne(() => User, {
+		onDelete: 'cascade',
+		joinColumn: 'user_id',
+		serializedName: 'user_id',
+		serializer: (u: User) => u.id,
+	})
 	user: User;
 
 	/** Wether the user email should be visible or not */

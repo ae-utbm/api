@@ -307,6 +307,8 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 3028,
 					updated: expect.any(String),
+					picture_user_id: 4,
+					visibility_id: 1,
 				});
 
 				// Delete the picture
@@ -328,6 +330,8 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 3028,
 					updated: expect.any(String),
+					picture_user_id: 4,
+					visibility_id: 1,
 				});
 
 				// Delete the picture
@@ -357,6 +361,8 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 3028,
 					updated: expect.any(String),
+					picture_user_id: 1,
+					visibility_id: 1,
 				});
 
 				// Delete the picture
@@ -464,27 +470,8 @@ describe('Users Files (e2e)', () => {
 					.expect(200);
 
 				expect(response.body).toEqual({
-					age: expect.any(Number),
-					banner: null,
-					birth_date: '2000-01-01T00:00:00.000Z',
-					created: expect.any(String),
-					email: 'ae.info@utbm.fr',
-					email_verified: true,
-					first_name: 'root',
-					full_name: 'root root',
-					gender: 'OTHER',
-					id: 1,
-					is_minor: false,
-					last_name: 'root',
-					last_seen: expect.any(String),
-					nickname: 'noot noot',
-					parent_contact: null,
-					phone: null,
-					promotion: 21,
-					pronouns: null,
-					secondary_email: null,
-					updated: expect.any(String),
-					verified: '2000-01-01T00:00:00.000Z',
+					message: t.Success.Entity.Deleted(UserPicture),
+					statusCode: 201,
 				});
 			});
 		});
@@ -708,6 +695,8 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 9498,
 					updated: expect.any(String),
+					banner_user_id: 4,
+					visibility_id: 1,
 				});
 
 				// Delete the banner
@@ -737,6 +726,8 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 9498,
 					updated: expect.any(String),
+					banner_user_id: 4,
+					visibility_id: 1,
 				});
 
 				// Delete the banner
@@ -758,6 +749,8 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 9498,
 					updated: expect.any(String),
+					banner_user_id: 1,
+					visibility_id: 1,
 				});
 
 				// Delete the banner
@@ -852,27 +845,8 @@ describe('Users Files (e2e)', () => {
 					.expect(200);
 
 				expect(response.body).toEqual({
-					age: expect.any(Number),
-					birth_date: '2000-01-01T00:00:00.000Z',
-					created: expect.any(String),
-					email: 'ae.info@utbm.fr',
-					email_verified: true,
-					first_name: 'root',
-					full_name: 'root root',
-					gender: 'OTHER',
-					id: 1,
-					is_minor: false,
-					last_name: 'root',
-					last_seen: expect.any(String),
-					nickname: 'noot noot',
-					parent_contact: null,
-					phone: null,
-					picture: null,
-					promotion: 21,
-					pronouns: null,
-					secondary_email: null,
-					updated: expect.any(String),
-					verified: '2000-01-01T00:00:00.000Z',
+					message: t.Success.Entity.Deleted(UserBanner),
+					statusCode: 201,
 				});
 			});
 		});

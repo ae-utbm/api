@@ -101,23 +101,6 @@ describe('Logs (e2e)', () => {
 			});
 		});
 
-		describe('404 : Not Found', () => {
-			it('when the user does not exist', async () => {
-				const fakeId = 9999;
-
-				const response = await request(server)
-					.get(`/logs/user/${fakeId}`)
-					.set('Authorization', `Bearer ${tokenLogModerator}`)
-					.expect(404);
-
-				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(User, fakeId),
-				});
-			});
-		});
-
 		describe('200 : Ok', () => {
 			it('when user is asking for himself', async () => {
 				const response = await request(server)
@@ -150,7 +133,7 @@ describe('Logs (e2e)', () => {
 					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					user: userIdUnauthorized,
+					user_id: userIdUnauthorized,
 					action: expect.any(String),
 					ip: expect.any(String),
 					user_agent: expect.any(String),

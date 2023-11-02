@@ -79,11 +79,7 @@ export class UsersFilesService {
 			});
 
 		await this.orm.em.persistAndFlush(user);
-
-		delete user.picture.picture_user; // avoid circular reference
-		delete user.picture.visibility;
-
-		return { ...user.picture, picture_user: user.id, visibility: user.picture.visibility.id };
+		return user.picture.toObject() as unknown as UserGetPictureDTO;
 	}
 
 	@CreateRequestContext()
@@ -104,7 +100,7 @@ export class UsersFilesService {
 		this.filesService.deleteFromDisk(user.picture);
 		await this.orm.em.removeAndFlush(user.picture);
 
-		return { message: this.t.Success.Entity.Deleted(UserPicture), statusCode: 200 };
+		return { message: this.t.Success.Entity.Deleted(UserPicture), statusCode: 201 };
 	}
 
 	@CreateRequestContext()
@@ -141,10 +137,7 @@ export class UsersFilesService {
 			});
 
 		await this.orm.em.persistAndFlush(user);
-
-		delete user.banner.banner_user; // avoid circular reference
-		delete user.banner.visibility;
-		return { ...user.banner, banner_user: user.id, visibility: user.banner.visibility.id };
+		return user.banner.toObject() as unknown as UserGetBannerDTO;
 	}
 
 	@CreateRequestContext()
@@ -165,6 +158,6 @@ export class UsersFilesService {
 		this.filesService.deleteFromDisk(user.banner);
 		await this.orm.em.removeAndFlush(user.banner);
 
-		return { message: this.t.Success.Entity.Deleted(UserBanner), statusCode: 200 };
+		return { message: this.t.Success.Entity.Deleted(UserBanner), statusCode: 201 };
 	}
 }

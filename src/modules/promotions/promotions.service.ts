@@ -36,43 +36,32 @@ export class PromotionsService {
 
 	@CreateRequestContext()
 	async findAll(): Promise<PromotionResponseDTO[]> {
-		const promotions = await this.orm.em.find(Promotion, {}, { fields: ['*', 'picture', 'users'] });
-		const res: PromotionResponseDTO[] = [];
-
-		for (const promotion of promotions) {
-			res.push({ ...promotion, users: promotion.users.count(), picture: promotion.picture?.id });
-		}
-
-		return res;
+		return (await this.orm.em.find(Promotion, {}, { fields: ['*', 'users'] })).map(
+			(p) => p.toObject() as unknown as PromotionResponseDTO,
+		);
 	}
 
 	@CreateRequestContext()
 	async findLatest(): Promise<PromotionResponseDTO> {
 		const promotion = (
-			await this.orm.em.find(Promotion, {}, { orderBy: { number: 'DESC' }, fields: ['*', 'picture', 'users'] })
+			await this.orm.em.find(
+				Promotion,
+				{},
+				{ orderBy: { number: 'DESC' }, limit: 1, fields: ['*', 'picture', 'users'] },
+			)
 		)[0];
-
-		return {
-			...promotion,
-			users: promotion.users.count(),
-			picture: promotion.picture?.id,
-		};
+		return promotion.toObject() as unknown as PromotionResponseDTO;
 	}
 
 	@CreateRequestContext()
 	async findCurrent(): Promise<PromotionResponseDTO[]> {
-		const promotions = await this.orm.em.find(
-			Promotion,
-			{},
-			{ orderBy: { number: 'DESC' }, fields: ['*', 'picture', 'users'], limit: 5 },
-		);
-		const res: PromotionResponseDTO[] = [];
-
-		for (const promotion of promotions) {
-			res.push({ ...promotion, users: promotion.users.count(), picture: promotion.picture?.id });
-		}
-
-		return res;
+		return (
+			await this.orm.em.find(
+				Promotion,
+				{},
+				{ orderBy: { number: 'DESC' }, limit: 5, fields: ['*', 'picture', 'users'] },
+			)
+		).map((p) => p.toObject() as unknown as PromotionResponseDTO);
 	}
 
 	@CreateRequestContext()
@@ -80,11 +69,7 @@ export class PromotionsService {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['*', 'picture', 'users'] });
 		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
 
-		return {
-			...promotion,
-			users: promotion.users.count(),
-			picture: promotion.picture?.id,
-		};
+		return promotion.toObject() as unknown as PromotionResponseDTO;
 	}
 
 	@CreateRequestContext()
@@ -139,8 +124,7 @@ export class PromotionsService {
 			});
 
 		await this.orm.em.persistAndFlush(promotion);
-
-		return { ...promotion.picture, picture_promotion: promotion.number, visibility: promotion.picture.visibility?.id };
+		return promotion.picture.toObject() as unknown as PromotionPictureResponseDTO;
 	}
 
 	@CreateRequestContext()

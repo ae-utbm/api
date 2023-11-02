@@ -18,7 +18,7 @@ import { UserVisibility } from './user-visibility.entity';
 export type UserPrivateKeys = Omit<UserVisibility, 'user' | keyof BaseEntity>;
 
 export type UserPrivate = User;
-export type UserPublic = Omit<User, keyof UserPrivateKeys> & Pick<User, keyof UserPrivateKeys>;
+export type UserPublic = Omit<User, keyof UserPrivateKeys> & Partial<Pick<User, keyof UserPrivateKeys>>;
 
 export type Request = Express.Request & {
 	user: User;
@@ -39,16 +39,26 @@ export class User extends BaseEntity {
 		return `${this.first_name} ${this.last_name}`;
 	}
 
-	@OneToOne(() => UserPicture, (picture) => picture.picture_user, { cascade: [Cascade.ALL], nullable: true })
+	@OneToOne(() => UserPicture, (picture) => picture.picture_user, {
+		cascade: [Cascade.ALL],
+		nullable: true,
+		serializedName: 'picture_id',
+		serializer: (p: UserPicture) => p?.id,
+	})
 	picture?: UserPicture;
 
-	@OneToOne(() => UserBanner, (banner) => banner.banner_user, { cascade: [Cascade.ALL], nullable: true })
+	@OneToOne(() => UserBanner, (banner) => banner.banner_user, {
+		cascade: [Cascade.ALL],
+		nullable: true,
+		serializedName: 'banner_id',
+		serializer: (b: UserBanner) => b?.id,
+	})
 	banner?: UserBanner;
 
 	@Property({ unique: true, type: String })
 	email: email;
 
-	@Property({ onCreate: () => false })
+	@Property({ onCreate: () => false, hidden: true })
 	email_verified: boolean;
 
 	@Property({ nullable: true, hidden: true })
@@ -116,19 +126,25 @@ export class User extends BaseEntity {
 		cascade: [Cascade.REMOVE],
 		orphanRemoval: true,
 		nullable: true,
+		hidden: true,
 	})
 	permissions? = new Collection<Permission>(this);
 
-	@ManyToMany(() => Role, (role) => role.users, { nullable: true })
+	@ManyToMany(() => Role, (role) => role.users, { nullable: true, hidden: true })
 	roles? = new Collection<Role>(this);
 
-	@OneToMany(() => Log, (log) => log.user, { cascade: [Cascade.REMOVE], orphanRemoval: true, nullable: true })
+	@OneToMany(() => Log, (log) => log.user, {
+		cascade: [Cascade.REMOVE],
+		orphanRemoval: true,
+		nullable: true,
+		hidden: true,
+	})
 	logs? = new Collection<Log>(this);
 
-	@Property({ type: Date, nullable: true, onCreate: () => null })
+	@Property({ type: Date, nullable: true, onCreate: () => null, hidden: true })
 	verified?: Date;
 
 	//* FILES
-	@ManyToMany(() => FileVisibilityGroup, (group) => group.users, { nullable: true })
+	@ManyToMany(() => FileVisibilityGroup, (group) => group.users, { nullable: true, hidden: true })
 	files_visibility_groups? = new Collection<FileVisibilityGroup>(this);
 }

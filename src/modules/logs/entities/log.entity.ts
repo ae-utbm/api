@@ -5,7 +5,7 @@ import { User } from '@modules/users/entities/user.entity';
 
 @Entity({ tableName: 'users_logs' })
 export class Log extends BaseEntity {
-	@ManyToOne()
+	@ManyToOne(() => User, { serializedName: 'user_id', serializer: (u: User) => u.id })
 	user: User;
 
 	@Property()

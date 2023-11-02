@@ -23,7 +23,7 @@ export class PermissionGetDTO extends BaseResponseDTO implements IPermissionGetD
 
 	@ApiProperty()
 	@IsInt()
-	user: number;
+	user_id: number;
 
 	@ApiProperty()
 	@IsBoolean()

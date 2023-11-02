@@ -80,8 +80,7 @@ describe('Promotions (e2e)', () => {
 					created: expect.any(String),
 					updated: expect.any(String),
 					number: 1,
-					picture: null,
-					users: 0,
+					users_count: 0,
 				});
 			});
 		});
@@ -130,8 +129,7 @@ describe('Promotions (e2e)', () => {
 					created: expect.any(String),
 					updated: expect.any(String),
 					number: expect.any(Number),
-					picture: null,
-					users: expect.any(Number),
+					users_count: expect.any(Number),
 				});
 			});
 		});
@@ -174,8 +172,7 @@ describe('Promotions (e2e)', () => {
 					created: expect.any(String),
 					updated: expect.any(String),
 					number: expect.any(Number),
-					picture: null,
-					users: expect.any(Number),
+					users_count: expect.any(Number),
 				});
 			});
 		});
@@ -246,8 +243,7 @@ describe('Promotions (e2e)', () => {
 					created: expect.any(String),
 					updated: expect.any(String),
 					number: 21,
-					picture: null,
-					users: 1,
+					users_count: 1,
 				});
 			});
 		});
@@ -521,33 +517,28 @@ describe('Promotions (e2e)', () => {
 			});
 		});
 
-		describe('200 : Ok', () => {
+		describe('201 : Created', () => {
 			it('when the promotion exists and set the logo', async () => {
 				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
-					.attach('file', filePictureSquare, 'file.png');
+					.attach('file', filePictureSquare, 'file.png')
+					.expect(201);
 
 				// expect registered data to be returned
 				expect(response.body).toEqual({
-					id: 21,
+					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					number: 21,
-					picture: {
-						id: expect.any(Number),
-						created: expect.any(String),
-						updated: expect.any(String),
-						filename: expect.any(String),
-						mimetype: 'image/webp',
-						size: 117280,
-					},
+					filename: expect.any(String),
+					picture_promotion_id: 21,
+					mimetype: 'image/webp',
+					size: 117280,
 				});
 
 				// expect the file to be created on disk
-				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', (response.body as Promotion).picture.filename))).toBe(
-					true,
-				);
+				const logo = await em.findOne(PromotionPicture, { picture_promotion: 21 });
+				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', logo.filename))).toBe(true);
 			});
 
 			it('when the promotion has a logo and update the logo', async () => {
@@ -557,33 +548,28 @@ describe('Promotions (e2e)', () => {
 				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
-					.attach('file', filePictureSquare, 'file.png');
+					.attach('file', filePictureSquare, 'file.png')
+					.expect(201);
 
 				// expect registered data to be returned
 				expect(response.body).toEqual({
-					id: 21,
+					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					number: 21,
-					picture: {
-						id: expect.any(Number),
-						created: expect.any(String),
-						updated: expect.any(String),
-						filename: expect.any(String),
-						description: null,
-						mimetype: 'image/webp',
-						size: 117280,
-						visibility: null,
-					},
+					filename: expect.any(String),
+					picture_promotion_id: 21,
+					description: null,
+					mimetype: 'image/webp',
+					size: 117280,
 				});
 
 				// expect the old file to be deleted from disk
 				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', oldLogo.filename))).toBe(false);
 
+				const newLogo = await em.findOne(PromotionPicture, { picture_promotion: 21 });
+
 				// expect the new file to be created on disk
-				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', (response.body as Promotion).picture.filename))).toBe(
-					true,
-				);
+				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', newLogo.filename))).toBe(true);
 			});
 		});
 	});
@@ -670,14 +656,12 @@ describe('Promotions (e2e)', () => {
 				// Get the logo filename
 				const response = await request(server)
 					.delete('/promotions/21/logo')
-					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
+					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
+					.expect(200);
 
 				expect(response.body).toEqual({
-					id: 21,
-					created: expect.any(String),
-					updated: expect.any(String),
-					number: 21,
-					picture: undefined,
+					message: t.Success.Entity.Deleted(PromotionPicture),
+					statusCode: 200,
 				});
 
 				// expect the file to be deleted from disk

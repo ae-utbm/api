@@ -3,7 +3,6 @@ import type { email } from '#types';
 import { hashSync } from 'bcrypt';
 import request from 'supertest';
 
-import { USER_GENDER } from '@exported/api/constants/genders';
 import { UserPostDTO } from '@modules/auth/dto/post.dto';
 import { User } from '@modules/users/entities/user.entity';
 import { generateRandomPassword } from '@utils/password';
@@ -221,28 +220,8 @@ describe('Auth (e2e)', () => {
 					.expect(201);
 
 				expect(response.body).toEqual({
-					age: (() => {
-						const diff = Date.now() - user.birth_date.getTime();
-						const age = new Date(diff);
-						return Math.abs(age.getUTCFullYear() - 1970);
-					})(),
-					birth_date: '2000-01-01T00:00:00.000Z',
-					created: expect.any(String),
-					last_seen: expect.any(String),
-					email: 'johndoe@domain.com',
-					email_verified: false,
-					files_visibility_groups: [],
-					first_name: 'John',
-					full_name: 'John Doe',
-					id: expect.any(Number),
-					gender: USER_GENDER[0],
-					is_minor: false,
-					last_name: 'Doe',
-					logs: [],
-					permissions: [],
-					roles: [],
-					updated: expect.any(String),
-					verified: null,
+					message: t.Success.User.Registered(),
+					statusCode: 201,
 				});
 			});
 		});
@@ -305,7 +284,7 @@ describe('Auth (e2e)', () => {
 
 				expect(response.body).toEqual({
 					message: t.Success.Email.Verified('unverified@email.com'),
-					status_code: 200,
+					statusCode: 200,
 				});
 
 				// Reset user email_verified to false (for other tests)

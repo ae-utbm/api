@@ -111,5 +111,8 @@ export class TranslateService {
 		Email: {
 			Verified: (email: email) => this.generic('responses.success.email.verified', { email }),
 		},
+		User: {
+			Registered: () => this.generic('responses.success.user.register', {}),
+		},
 	};
 }

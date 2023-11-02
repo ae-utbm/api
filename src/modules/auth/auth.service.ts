@@ -1,14 +1,14 @@
 import type { email } from '#types';
 import type { JWTPayload } from '#types/api';
 
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
+import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compareSync } from 'bcrypt';
 
 import { env } from '@env';
 import { TranslateService } from '@modules/translate/translate.service';
 import { User } from '@modules/users/entities/user.entity';
-import { UsersDataService } from '@modules/users/services/users-data.service';
 
 import { TokenDTO } from './dto/get.dto';
 
@@ -16,8 +16,8 @@ import { TokenDTO } from './dto/get.dto';
 export class AuthService {
 	constructor(
 		private readonly t: TranslateService,
+		private readonly orm: MikroORM,
 		private readonly jwtService: JwtService,
-		private readonly usersService: UsersDataService,
 	) {}
 
 	/**
@@ -26,8 +26,11 @@ export class AuthService {
 	 * @param {string} pass the user password (hashed or not) @default false
 	 * @returns {Promise<TokenDTO>} The JWT token and the user ID
 	 */
+	@CreateRequestContext()
 	async signIn(email: email, pass: string): Promise<TokenDTO> {
-		const user: User = await this.usersService.findOne(email, false);
+		const user: User = await this.orm.em.findOne(User, { email }, { fields: ['*', 'password'] });
+
+		if (!user) throw new NotFoundException(this.t.Errors.Email.NotFound(User, email));
 
 		if (user.password !== pass && !compareSync(pass, user.password)) {
 			throw new UnauthorizedException(this.t.Errors.Password.Mismatch());
@@ -49,8 +52,9 @@ export class AuthService {
 	 * @param {JWTPayload} payload JWT Payload to validate
 	 * @returns {User} The user if found and valid, throw otherwise (email not verified)
 	 */
+	@CreateRequestContext()
 	async validateUser(payload: JWTPayload): Promise<User> {
-		const user = await this.usersService.findOne(payload.email, false);
+		const user = await this.orm.em.findOne(User, { id: payload.sub });
 
 		// throw if user not verified
 		if (!user.email_verified) throw new UnauthorizedException(this.t.Errors.Email.NotVerified(User));

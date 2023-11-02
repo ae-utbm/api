@@ -31,7 +31,12 @@ export abstract class File<T> extends BaseEntity {
 	@Property()
 	size: number;
 
-	@ManyToOne(() => FileVisibilityGroup, { nullable: true, default: null })
+	@ManyToOne(() => FileVisibilityGroup, {
+		nullable: true,
+		default: null,
+		serializedName: 'visibility_id',
+		serializer: (v: FileVisibilityGroup) => v?.id,
+	})
 	visibility?: FileVisibilityGroup;
 
 	@Property({ nullable: true, default: null })

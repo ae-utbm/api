@@ -1,4 +1,4 @@
-import type { KeysOf, email } from '#types';
+import type { email } from '#types';
 import type { I18nTranslations, PERMISSION_NAMES } from '#types/api';
 
 import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
@@ -16,13 +16,13 @@ import { PermissionGetDTO } from '@modules/permissions/dto/get.dto';
 import { RoleExpiration } from '@modules/roles/entities/role-expiration.entity';
 import { TranslateService } from '@modules/translate/translate.service';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
-import { User, UserPrivate, UserPublic } from '@modules/users/entities/user.entity';
+import { User, UserPrivate } from '@modules/users/entities/user.entity';
 import { checkBirthDate } from '@utils/dates';
 import { checkPasswordStrength, generateRandomPassword } from '@utils/password';
 import { getTemplate } from '@utils/template';
 
 import { BaseUserResponseDTO } from '../dto/base-user.dto';
-import { UserGetDTO, UserRoleGetDTO, UserVisibilityGetDTO } from '../dto/get.dto';
+import { UserGetDTO, UserGetPrivateDTO, UserRoleGetDTO, UserVisibilityGetDTO } from '../dto/get.dto';
 import { UserPatchDTO, UserVisibilityPatchDTO } from '../dto/patch.dto';
 
 @Injectable()
@@ -58,25 +58,16 @@ export class UsersDataService {
 	 * @returns {Promise<UserPublic[]>} The filtered users
 	 */
 	@CreateRequestContext()
-	async removePrivateFields(users: User[]): Promise<UserPublic[]> {
-		const res: UserPublic[] = [];
+	async sanitize(users: User[]): Promise<UserGetDTO[]> {
+		const res: UserGetDTO[] = [];
 
 		const visibilities = await this.findVisibilities(users.map((u) => u.id));
 		visibilities.forEach((v) => {
-			const user = users.find((u) => u.id === v.user);
+			const user = users.find((u) => u.id === v.user_id).toObject() as unknown as UserGetDTO;
 
-			Object.entries(v).forEach(([key, value]) => {
-				// FIXME: Element implicitly has an 'any' type because expression of type 'string'
-				//        can't be used to index type 'User'.
-				// -> one solution is to use user[key as keyof User], but does not work because of
-				//    the getters of User
-				// @ts-ignore
-				if (value === false) user[key] = undefined;
-			});
-
-			const privateFields: KeysOf<User> = ['files_visibility_groups', 'logs', 'roles', 'permissions'];
-			privateFields.forEach((key) => {
-				if (user[key]) delete user[key];
+			Object.entries(v).forEach(([key, val]) => {
+				const key_ = key as keyof Omit<UserVisibilityGetDTO, 'user_id'>;
+				if (val === false) delete user[key_];
 			});
 
 			res.push(user);
@@ -111,21 +102,21 @@ export class UsersDataService {
 	 * @param {Partial<number | email>} id_or_email The id or email of the user to find
 	 * @param {boolean} filter Whether to filter the user or not (default: true)
 	 *
-	 * @returns {Promise<UserPrivate | UserPublic>} The user found (public if filter is true)
+	 * @returns {Promise<UserGetPrivateDTO | UserGetDTO>} The user found (public if filter is true)
 	 * @throws {BadRequestException} If no id or email is provided
 	 * @throws {NotFoundException} If no user is found with the provided id/email
 	 *
 	 * @example
 	 * ```ts
-	 * const user1: UserPrivate = await this.usersService.findOne({ id: 1 }, false);
-	 * const user2: UserPublic = await this.usersService.findOne({ email: 'example@domain.com' });
+	 * const user1: UserGetPrivateDTO = await this.usersService.findOne({ id: 1 }, false);
+	 * const user2: UserGetDTO = await this.usersService.findOne({ email: 'example@domain.com' });
 	 * ```
 	 */
-	async findOne(id_or_email: number | email, filter: false): Promise<UserPrivate>;
-	async findOne(id_or_email: number | email): Promise<UserPublic>;
+	async findOne(id_or_email: number | email, filter: false): Promise<UserGetPrivateDTO>;
+	async findOne(id_or_email: number | email): Promise<UserGetDTO>;
 
 	@CreateRequestContext()
-	async findOne(id_or_email: number | email, filter = true): Promise<UserPrivate | UserPublic> {
+	async findOne(id_or_email: number | email, filter = true): Promise<UserPrivate | UserGetDTO> {
 		let user: User = null;
 		const parsed = z.union([z.coerce.number(), z.string().email()]).parse(id_or_email);
 
@@ -136,12 +127,7 @@ export class UsersDataService {
 		if (!user && typeof parsed === 'string')
 			throw new NotFoundException(this.t.Errors.Email.NotFound(User, parsed as email));
 
-		return filter ? (await this.removePrivateFields([user]))[0] : user;
-	}
-
-	async findOneAsDTO(id_or_email: number | email, filter: boolean = true): Promise<UserGetDTO> {
-		const user = await this.findOne(id_or_email, filter as false);
-		return { ...user, picture: user.picture?.id, banner: user.banner?.id, promotion: user.promotion?.id };
+		return filter ? (await this.sanitize([user]))[0] : user;
 	}
 
 	/**
@@ -157,7 +143,7 @@ export class UsersDataService {
 		if (!users || users.length === 0) throw new NotFoundException(this.t.Errors.Id.NotFounds(User, ids));
 
 		const visibilities = await this.orm.em.find(UserVisibility, { user: { $in: users } });
-		return visibilities.map((v) => ({ ...v, user: v.user.id }));
+		return visibilities.map((v) => v.toObject() as unknown as UserVisibilityGetDTO);
 	}
 
 	@CreateRequestContext()
@@ -173,7 +159,7 @@ export class UsersDataService {
 		Object.assign(visibility, input);
 		await this.orm.em.persistAndFlush(visibility);
 
-		return { ...visibility, user: visibility.user.id };
+		return visibility.toObject() as unknown as UserVisibilityGetDTO;
 	}
 
 	@CreateRequestContext()
@@ -206,7 +192,7 @@ export class UsersDataService {
 		// Save changes to the database & create the user's visibility parameters
 		this.orm.em.create(UserVisibility, { user });
 
-		return { message: 'this.t.Success.User.Register(registerDto.email)', statusCode: 200 };
+		return { message: this.t.Success.User.Registered(), statusCode: 201 };
 	}
 
 	@CreateRequestContext()
@@ -214,7 +200,7 @@ export class UsersDataService {
 		this.emailsService.validateEmail(email);
 
 		// Add the email verification token & create the user
-		const user = await this.findOne(id, false);
+		const user = await this.orm.em.findOne(User, { id });
 		const user_b = await this.orm.em.findOne(User, { email });
 
 		// Check if the email is already used by someone else
@@ -293,8 +279,8 @@ export class UsersDataService {
 	}
 
 	@CreateRequestContext()
-	async verifyEmail(user_id: number, token: string): Promise<MessageResponseDTO> {
-		const user = await this.findOne(user_id, false);
+	async verifyEmail(id: number, token: string): Promise<MessageResponseDTO> {
+		const user = await this.orm.em.findOne(User, { id });
 		if (user.email_verified) throw new BadRequestException(this.t.Errors.Email.AlreadyVerified(User));
 
 		if (!compareSync(token, user.email_verification))
@@ -316,7 +302,8 @@ export class UsersDataService {
 		const users: User[] = [];
 
 		for (const input of inputs) {
-			const user = await this.findOne(input.id, false);
+			const user = await this.orm.em.findOne(User, { id: input.id });
+			if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, input.id));
 
 			if (input.email) await this.updateUserEmail(user.id, input.email);
 
@@ -337,7 +324,7 @@ export class UsersDataService {
 			users.push(user);
 		}
 
-		return users.map((u) => ({ ...u, picture: u.picture?.id, banner: u.banner?.id, promotion: u.promotion?.id }));
+		return this.sanitize(users);
 	}
 
 	@CreateRequestContext()
@@ -386,7 +373,7 @@ export class UsersDataService {
 		if (!input.show_expired) permissions.filter((p) => p.expires > new Date());
 		if (!input.show_revoked) permissions.filter((p) => p.revoked === false);
 
-		return permissions.map((p) => ({ ...p, user: id }));
+		return permissions.map((p) => p.toObject() as unknown as PermissionGetDTO);
 	}
 
 	/**
