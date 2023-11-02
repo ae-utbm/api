@@ -1,4 +1,4 @@
-import type { email } from '#types';
+import type { email as Email } from '#types';
 import type { JWTPayload } from '#types/api';
 
 import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
@@ -22,12 +22,12 @@ export class AuthService {
 
 	/**
 	 * Sign in a user and return a JWT token and the user ID
-	 * @param {email} email the user email
+	 * @param {Email} email the user email
 	 * @param {string} pass the user password (hashed or not) @default false
 	 * @returns {Promise<TokenDTO>} The JWT token and the user ID
 	 */
 	@CreateRequestContext()
-	async signIn(email: email, pass: string): Promise<TokenDTO> {
+	async signIn(email: Email, pass: string): Promise<TokenDTO> {
 		const user: User = await this.orm.em.findOne(User, { email }, { fields: ['*', 'password'] });
 
 		if (!user) throw new NotFoundException(this.t.Errors.Email.NotFound(User, email));
