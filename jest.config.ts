@@ -4,20 +4,21 @@ const config: JestConfigWithTsJest = {
 	coverageReporters: ['text', 'lcov'],
 	collectCoverage: true,
 	coverageDirectory: 'coverage',
-	// coverageThreshold: {
-	// 	global: {
-	// 		branches: 100,
-	// 		functions: 100,
-	// 		lines: 100,
-	// 		statements: 100,
-	// 	},
-	// },
+	coverageThreshold: {
+		global: {
+			branches: 95,
+			functions: 95,
+			lines: 95,
+			statements: 95,
+		},
+	},
 	detectOpenHandles: true,
 	maxConcurrency: 1,
 	moduleNameMapper: {
 		'@env': '<rootDir>/src/env.ts',
 		'@mikro-orm.config': '<rootDir>/src/mikro-orm.config.ts',
 		'@app.module': '<rootDir>/src/app.module.ts',
+		'@main': '<rootDir>/src/main.ts',
 		'^src/(.*)$': '<rootDir>/src/$1',
 		'^@database/(.*)$': '<rootDir>/src/database/$1',
 		'^@exported/(.*)$': '<rootDir>/src/exported/$1',
