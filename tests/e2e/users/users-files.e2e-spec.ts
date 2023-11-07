@@ -3,9 +3,9 @@ import { join } from 'path';
 
 import request from 'supertest';
 
+import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 import { OutputMessageDTO } from '@modules/base/dto/output.dto';
 import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
-import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 import { FileVisibilityGroup } from '@modules/files/entities/file-visibility.entity';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';

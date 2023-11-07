@@ -2,13 +2,13 @@ import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBearerAuth, ApiOkResponse, ApiParam, ApiOperation } from '@nestjs/swagger';
 
-import { ApiNotOkResponses } from '@modules/base/decorators/api-not-ok.decorator';
-import { InputIdParamDTO } from '@modules/base/dto/input.dto';
-import { OutputMessageDTO } from '@modules/base/dto/output.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
+import { ApiNotOkResponses } from '@modules/base/decorators/api-not-ok.decorator';
+import { InputIdParamDTO } from '@modules/base/dto/input.dto';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
 
 import { OutputLogDTO } from './dto/output.dto';
 import { LogsService } from './logs.service';

@@ -2,14 +2,14 @@ import { Controller, Delete, Get, Param, Post, Req, UploadedFile, UseGuards } fr
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
-import { ApiNotOkResponses } from '@modules/base/decorators/api-not-ok.decorator';
-import { InputIdParamDTO } from '@modules/base/dto/input.dto';
-import { OutputMessageDTO } from '@modules/base/dto/output.dto';
-import { i18nBadRequestException } from '@modules/base/http-errors';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
+import { ApiNotOkResponses } from '@modules/base/decorators/api-not-ok.decorator';
+import { InputIdParamDTO } from '@modules/base/dto/input.dto';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nBadRequestException } from '@modules/base/http-errors';
 import { ApiDownloadFile } from '@modules/files/decorators/download.decorator';
 import { ApiUploadFile } from '@modules/files/decorators/upload.decorator';
 import { FilesService } from '@modules/files/files.service';

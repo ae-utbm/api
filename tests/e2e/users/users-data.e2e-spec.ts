@@ -2,9 +2,9 @@ import type { email } from '#types';
 
 import request from 'supertest';
 
+import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 import { OutputMessageDTO } from '@modules/base/dto/output.dto';
 import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
-import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 import { User } from '@modules/users/entities/user.entity';
 
 import { orm, server } from '../..';

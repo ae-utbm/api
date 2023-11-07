@@ -4,9 +4,9 @@ import { join } from 'path';
 import request from 'supertest';
 
 import { env } from '@env';
+import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 import { OutputMessageDTO } from '@modules/base/dto/output.dto';
 import { i18nBadRequestException, i18nNotFoundException } from '@modules/base/http-errors';
-import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 import { PromotionPicture } from '@modules/promotions/entities/promotion-picture.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
 

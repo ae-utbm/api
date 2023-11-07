@@ -1,8 +1,8 @@
 import request from 'supertest';
 
+import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 import { OutputMessageDTO } from '@modules/base/dto/output.dto';
 import { i18nBadRequestException } from '@modules/base/http-errors';
-import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 
 import { server } from '..';
 

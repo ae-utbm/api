@@ -1,8 +1,8 @@
 import request from 'supertest';
 
 import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
-import { i18nBadRequestException, i18nNotFoundException } from '@modules/base/http-errors';
 import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
+import { i18nBadRequestException, i18nNotFoundException } from '@modules/base/http-errors';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 
 import { server, orm } from '..';
