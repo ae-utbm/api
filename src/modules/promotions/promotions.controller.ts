@@ -1,50 +1,35 @@
-import {
-	BadRequestException,
-	Controller,
-	Delete,
-	Get,
-	Param,
-	Post,
-	StreamableFile,
-	UploadedFile,
-	UseGuards,
-} from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post, Req, UploadedFile, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { z } from 'zod';
 
-import { ApiNotOkResponses } from '@modules/_mixin/decorators/error.decorator';
-import { MessageResponseDTO } from '@modules/_mixin/dto/message.dto';
+import { ApiNotOkResponses } from '@modules/_mixin/decorators/api-not-ok.decorator';
+import { OutputMessageDTO } from '@modules/_mixin/dto/output.dto';
+import { i18nBadRequestException } from '@modules/_mixin/http-errors';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { ApiDownloadFile } from '@modules/files/decorators/download.decorator';
 import { ApiUploadFile } from '@modules/files/decorators/upload.decorator';
 import { FilesService } from '@modules/files/files.service';
-import { TranslateService } from '@modules/translate/translate.service';
-import { validate } from '@utils/validate';
+import { Request } from '@modules/users/entities/user.entity';
 
-import { PromotionResponseDTO } from './dto/get.dto';
-import { Promotion } from './entities/promotion.entity';
+import { InputPromotionNumberParamDTO } from './dto/input.dto';
+import { OutputPromotionDTO } from './dto/output.dto';
 import { PromotionsService } from './promotions.service';
-import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
+import { OutputBaseUserDTO } from '../users/dto/output.dto';
 
 @ApiTags('Promotions')
 @Controller('promotions')
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
 export class PromotionsController {
-	constructor(
-		private readonly promotionsService: PromotionsService,
-		private readonly filesService: FilesService,
-		private readonly t: TranslateService,
-	) {}
+	constructor(private readonly promotionsService: PromotionsService, private readonly filesService: FilesService) {}
 
 	@Get()
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
 	@ApiOperation({ summary: 'Get all existing promotions' })
-	@ApiOkResponse({ type: [PromotionResponseDTO] })
-	async getAll(): Promise<PromotionResponseDTO[]> {
+	@ApiOkResponse({ type: [OutputPromotionDTO] })
+	async getAll(): Promise<OutputPromotionDTO[]> {
 		return this.promotionsService.findAll();
 	}
 
@@ -52,8 +37,8 @@ export class PromotionsController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
 	@ApiOperation({ summary: 'Get the latest promotion that has been created' })
-	@ApiOkResponse({ type: PromotionResponseDTO })
-	async getLatest(): Promise<PromotionResponseDTO> {
+	@ApiOkResponse({ type: OutputPromotionDTO })
+	async getLatest(): Promise<OutputPromotionDTO> {
 		return this.promotionsService.findLatest();
 	}
 
@@ -61,8 +46,8 @@ export class PromotionsController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
 	@ApiOperation({ summary: 'Get promotions currently active' })
-	@ApiOkResponse({ type: [PromotionResponseDTO] })
-	async getCurrent(): Promise<PromotionResponseDTO[]> {
+	@ApiOkResponse({ type: [OutputPromotionDTO] })
+	async getCurrent(): Promise<OutputPromotionDTO[]> {
 		return this.promotionsService.findCurrent();
 	}
 
@@ -72,13 +57,12 @@ export class PromotionsController {
 	@ApiOperation({ summary: 'Update the promotion logo' })
 	@ApiUploadFile()
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
-	@ApiOkResponse({ type: PromotionResponseDTO })
+	@ApiOkResponse({ type: OutputPromotionDTO })
 	@ApiNotOkResponses({ 400: 'Invalid file', 404: 'Promotion not found' })
-	async editLogo(@UploadedFile() file: Express.Multer.File, @Param('number') number: number) {
-		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
-		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
+	async editLogo(@UploadedFile() file: Express.Multer.File, @Param() params: InputPromotionNumberParamDTO) {
+		if (!file) throw new i18nBadRequestException('validations.file.invalid.not_provided');
 
-		return this.promotionsService.updateLogo(number, file);
+		return this.promotionsService.updateLogo(params.number, file);
 	}
 
 	@Get(':number/logo')
@@ -88,11 +72,9 @@ export class PromotionsController {
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiDownloadFile('The promotion logo')
 	@ApiNotOkResponses({ 404: 'Promotion not found or promotion has no logo' })
-	async getLogo(@Param('number') number: number) {
-		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
-
-		const logo = await this.promotionsService.getLogo(number);
-		return new StreamableFile(this.filesService.toReadable(logo));
+	async getLogo(@Req() req: Request, @Param() params: InputPromotionNumberParamDTO) {
+		const logo = await this.promotionsService.getLogo(params.number);
+		return this.filesService.getAsStreamable(logo, req.user.id);
 	}
 
 	@Delete(':number/logo')
@@ -100,12 +82,10 @@ export class PromotionsController {
 	@GuardPermissions('CAN_EDIT_PROMOTION')
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Delete the promotion logo' })
-	@ApiOkResponse({ type: MessageResponseDTO })
+	@ApiOkResponse({ type: OutputMessageDTO })
 	@ApiNotOkResponses({ 404: 'Promotion not found or promotion has no logo' })
-	async deleteLogo(@Param('number') number: number) {
-		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
-
-		return this.promotionsService.deleteLogo(number);
+	async deleteLogo(@Param() params: InputPromotionNumberParamDTO) {
+		return this.promotionsService.deleteLogo(params.number);
 	}
 
 	@Get(':number')
@@ -113,12 +93,10 @@ export class PromotionsController {
 	@GuardPermissions('CAN_READ_PROMOTION')
 	@ApiOperation({ summary: 'Get the specified promotion' })
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
-	@ApiOkResponse({ type: PromotionResponseDTO })
+	@ApiOkResponse({ type: OutputPromotionDTO })
 	@ApiNotOkResponses({ 404: 'Promotion not found' })
-	async get(@Param('number') number: number) {
-		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
-
-		return this.promotionsService.findOne(number);
+	async get(@Param() params: InputPromotionNumberParamDTO) {
+		return this.promotionsService.findOne(params.number);
 	}
 
 	@Get(':number/users')
@@ -126,11 +104,9 @@ export class PromotionsController {
 	@GuardPermissions('CAN_READ_PROMOTION')
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Get users of the specified promotions' })
-	@ApiOkResponse({ type: [BaseUserResponseDTO] })
+	@ApiOkResponse({ type: [OutputBaseUserDTO] })
 	@ApiNotOkResponses({ 404: 'Promotion not found' })
-	async getUsers(@Param('number') number: number) {
-		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
-
-		return this.promotionsService.getUsers(number);
+	async getUsers(@Param() params: InputPromotionNumberParamDTO) {
+		return this.promotionsService.getUsers(params.number);
 	}
 }

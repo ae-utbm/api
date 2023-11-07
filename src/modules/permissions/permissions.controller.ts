@@ -1,20 +1,16 @@
 import { Body, Controller, Get, Param, Post, UseGuards, Patch } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { z } from 'zod';
 
-import { ApiNotOkResponses } from '@modules/_mixin/decorators/error.decorator';
+import { ApiNotOkResponses } from '@modules/_mixin/decorators/api-not-ok.decorator';
+import { InputIdParamDTO } from '@modules/_mixin/dto/input.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
-import { TranslateService } from '@modules/translate/translate.service';
-import { User } from '@modules/users/entities/user.entity';
-import { validate } from '@utils/validate';
 
-import { PermissionGetDTO } from './dto/get.dto';
-import { PermissionPatchDTO } from './dto/patch.dto';
-import { PermissionPostDTO } from './dto/post.dto';
+import { InputUpdatePermissionDTO, InputCreatePermissionDTO } from './dto/input.dto';
+import { OutputPermissionDTO } from './dto/output.dto';
 import { PermissionsService } from './permissions.service';
 
 @Controller('permissions')
@@ -22,27 +18,18 @@ import { PermissionsService } from './permissions.service';
 @ApiTags('Permissions')
 @ApiBearerAuth()
 export class PermissionsController {
-	constructor(private readonly permsService: PermissionsService, private readonly t: TranslateService) {}
+	constructor(private readonly permsService: PermissionsService) {}
 
 	@Post()
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PERMISSIONS_OF_USER')
 	@ApiOperation({ summary: 'Add a permission to a user' })
-	@ApiOkResponse({ description: 'The added permission', type: PermissionGetDTO })
+	@ApiOkResponse({ description: 'The added permission', type: OutputPermissionDTO })
 	@ApiNotOkResponses({
 		400: 'Bad request, invalid fields',
 		404: 'User not found',
 	})
-	async addToUser(@Body() body: PermissionPostDTO): Promise<PermissionGetDTO> {
-		const schema = z
-			.object({
-				expires: z.string().datetime(),
-				id: z.number().int().min(1).optional(),
-				permission: z.string(),
-			})
-			.strict();
-		validate(schema, body);
-
+	async addToUser(@Body() body: InputCreatePermissionDTO): Promise<OutputPermissionDTO> {
 		return this.permsService.addPermissionToUser(body);
 	}
 
@@ -50,36 +37,20 @@ export class PermissionsController {
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PERMISSIONS_OF_USER')
 	@ApiOperation({ summary: 'Edit permission of a user' })
-	@ApiOkResponse({ description: 'The modified user permission', type: PermissionGetDTO })
+	@ApiOkResponse({ description: 'The modified user permission', type: OutputPermissionDTO })
 	@ApiNotOkResponses({ 404: 'User/permission not found' })
-	async editPermissionFromUser(@Body() body: PermissionPatchDTO): Promise<PermissionGetDTO> {
-		const schema = z
-			.object({
-				id: z.number().int().min(1),
-				expires: z.string().datetime().optional(),
-				revoked: z.boolean().optional(),
-				user_id: z.number().int().min(1).optional(),
-				name: z
-					.string()
-					.optional()
-					.refine((name) => name === name.toUpperCase(), {}),
-			})
-			.strict();
-		validate(schema, body);
-
+	async editPermissionFromUser(@Body() body: InputUpdatePermissionDTO): Promise<OutputPermissionDTO> {
 		return this.permsService.editPermissionOfUser(body);
 	}
 
-	@Get(':user_id')
+	@Get(':id')
 	@UseGuards(SelfOrPermissionGuard)
-	@GuardSelfOrPermissions('user_id', ['CAN_READ_PERMISSIONS_OF_USER'])
+	@GuardSelfOrPermissions('id', ['CAN_READ_PERMISSIONS_OF_USER'])
 	@ApiOperation({ summary: 'Get all permissions of a user (active, revoked and expired)' })
-	@ApiParam({ name: 'user_id', description: 'The user ID' })
-	@ApiOkResponse({ description: 'User permission(s) retrieved', type: [PermissionGetDTO] })
+	@ApiParam({ name: 'id', description: 'The user ID' })
+	@ApiOkResponse({ description: 'User permission(s) retrieved', type: [OutputPermissionDTO] })
 	@ApiNotOkResponses({ 404: 'User not found' })
-	async getUserPermissions(@Param('user_id') id: number): Promise<PermissionGetDTO[]> {
-		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
-
-		return this.permsService.getPermissionsOfUser(id);
+	async getUserPermissions(@Param() params: InputIdParamDTO): Promise<OutputPermissionDTO[]> {
+		return this.permsService.getPermissionsOfUser(params.id);
 	}
 }

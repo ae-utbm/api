@@ -1,10 +1,10 @@
 import request from 'supertest';
 
-import { TokenDTO } from '@modules/auth/dto/get.dto';
-import { Log } from '@modules/logs/entities/log.entity';
-import { User } from '@modules/users/entities/user.entity';
+import { OutputMessageDTO } from '@modules/_mixin/dto/output.dto';
+import { i18nBadRequestException } from '@modules/_mixin/http-errors';
+import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 
-import { server, t } from '..';
+import { server } from '..';
 
 describe('Logs (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -17,7 +17,7 @@ describe('Logs (e2e)', () => {
 	let userIdLogModerator: number;
 
 	beforeAll(async () => {
-		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
+		type res = Omit<request.Response, 'body'> & { body: OutputTokenDTO };
 
 		const responseA: res = await request(server).post('/auth/login').send({
 			email: 'promos@email.com',
@@ -55,9 +55,7 @@ describe('Logs (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, fakeId),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'id', value: fakeId }),
 				});
 			});
 		});
@@ -163,9 +161,7 @@ describe('Logs (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, fakeId),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'id', value: fakeId }),
 				});
 			});
 		});
@@ -204,8 +200,7 @@ describe('Logs (e2e)', () => {
 					.expect(200);
 
 				expect(response.body).toEqual({
-					statusCode: 200,
-					message: t.Success.Entity.Deleted(Log),
+					...new OutputMessageDTO('validations.logs.success.deleted'),
 				});
 			});
 		});

@@ -1,19 +1,17 @@
 import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
-import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
-import { TranslateService } from '@modules/translate/translate.service';
+import { i18nBadRequestException, i18nNotFoundException } from '@modules/_mixin/http-errors';
 
-import { PermissionGetDTO } from './dto/get.dto';
-import { PermissionPatchDTO } from './dto/patch.dto';
-import { PermissionPostDTO } from './dto/post.dto';
+import { InputUpdatePermissionDTO, InputCreatePermissionDTO } from './dto/input.dto';
+import { OutputPermissionDTO } from './dto/output.dto';
 import { Permission } from './entities/permission.entity';
 import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class PermissionsService {
-	constructor(private readonly orm: MikroORM, private readonly t: TranslateService) {}
+	constructor(private readonly orm: MikroORM) {}
 
 	/**
 	 * Automatically revoke permissions that have expired.
@@ -40,14 +38,10 @@ export class PermissionsService {
 	 * @returns The created permission
 	 */
 	@CreateRequestContext()
-	async addPermissionToUser(data: PermissionPostDTO): Promise<PermissionGetDTO> {
-		// Check if the permission is valid
-		if (!PERMISSIONS_NAMES.includes(data.permission))
-			throw new BadRequestException(this.t.Errors.Permission.Invalid(data.permission));
-
+	async addPermissionToUser(data: InputCreatePermissionDTO): Promise<OutputPermissionDTO> {
 		// Find the user
 		const user = await this.orm.em.findOne(User, { id: data.id }, { populate: ['permissions'] });
-		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, data.id));
+		if (!user) throw new i18nNotFoundException('validations.user.not_found.id', { id: data.id });
 
 		// Check if the user already has the permission
 		if (
@@ -56,7 +50,10 @@ export class PermissionsService {
 				.map((p) => p.name)
 				.includes(data.permission)
 		)
-			throw new BadRequestException(this.t.Errors.Permission.AlreadyOnUser(data.permission, user.full_name));
+			throw new i18nBadRequestException('validations.permission.invalid.already_on', {
+				permission: data.permission,
+				name: user.full_name,
+			});
 
 		// Add the permission to the user
 		const permission = this.orm.em.create(Permission, {
@@ -68,7 +65,7 @@ export class PermissionsService {
 
 		// Save it & return it
 		await this.orm.em.persistAndFlush(permission);
-		return permission.toObject() as unknown as PermissionGetDTO;
+		return permission.toObject() as unknown as OutputPermissionDTO;
 	}
 
 	/**
@@ -77,27 +74,28 @@ export class PermissionsService {
 	 * @returns {Promise<Permission[]>} The permissions of the user
 	 */
 	@CreateRequestContext()
-	async getPermissionsOfUser(id: number): Promise<PermissionGetDTO[]> {
+	async getPermissionsOfUser(id: number): Promise<OutputPermissionDTO[]> {
 		const user = await this.orm.em.findOne(User, { id });
-		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, id));
+		if (!user) throw new i18nNotFoundException('validations.user.not_found.id', { id });
 
 		const permissions = await user.permissions.loadItems();
-		return permissions.map((p) => p.toObject() as unknown as PermissionGetDTO);
+		return permissions.map((p) => p.toObject() as unknown as OutputPermissionDTO);
 	}
 
 	@CreateRequestContext()
-	async editPermissionOfUser(data: PermissionPatchDTO): Promise<PermissionGetDTO> {
+	async editPermissionOfUser(data: InputUpdatePermissionDTO): Promise<OutputPermissionDTO> {
 		const user = await this.orm.em.findOne(User, { id: data.user_id });
-		if (!user) throw new NotFoundException(this.t.Errors.Id.NotFound(User, data.user_id));
+		if (!user) throw new i18nNotFoundException('validations.user.not_found.id', { id: data.user_id });
 
 		const perm = await this.orm.em.findOne(Permission, { id: data.id, user: data.user_id });
-		if (!perm) throw new NotFoundException(this.t.Errors.Permission.NotFoundOnUser(data.name, user.full_name));
+		if (!perm)
+			throw new i18nNotFoundException('validations.permission.not_found', { id: data.id, name: user.full_name });
 
 		if (data.name) perm.name = data.name;
 		if (data.expires) perm.expires = data.expires;
 		if (data.revoked !== undefined) perm.revoked = data.revoked;
 
 		await this.orm.em.persistAndFlush(perm);
-		return perm.toObject() as unknown as PermissionGetDTO;
+		return perm.toObject() as unknown as OutputPermissionDTO;
 	}
 }

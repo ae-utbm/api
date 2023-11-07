@@ -2,8 +2,10 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
 
-import { env } from '@env';
+import { VALIDATION_PIPE_OPTIONS, env } from '@env';
+import { I18nHttpExceptionFilter } from '@modules/_mixin/http-errors';
 import '@exported/global/utils';
 
 import { AppModule } from './app.module';
@@ -18,6 +20,8 @@ async function bootstrap() {
 
 	app.enableCors({ origin: cors_urls.includes('*') ? '*' : cors_urls });
 	app.useStaticAssets('./src/swagger', { index: false, prefix: '/public' });
+	app.useGlobalPipes(new I18nValidationPipe(VALIDATION_PIPE_OPTIONS));
+	app.useGlobalFilters(new I18nValidationExceptionFilter({ detailedErrors: false }), new I18nHttpExceptionFilter());
 
 	const config = new DocumentBuilder()
 		.setTitle('AE UTBM — REST API')

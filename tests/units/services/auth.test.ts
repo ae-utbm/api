@@ -1,9 +1,8 @@
-import { UnauthorizedException } from '@nestjs/common';
-
 import { env } from '@env';
+import { i18nUnauthorizedException } from '@modules/_mixin/http-errors';
 import { AuthService } from '@modules/auth/auth.service';
 
-import { module_fixture, jwt, t } from '../..';
+import { module_fixture, jwt } from '../..';
 
 describe('AuthService (unit)', () => {
 	let authService: AuthService;
@@ -15,14 +14,14 @@ describe('AuthService (unit)', () => {
 	describe('.verifyJWT()', () => {
 		it('should return an error if the token is invalid', () => {
 			expect(() => authService.verifyJWT('Bearer invalid')).toThrowError(
-				new UnauthorizedException(t.Errors.JWT.Invalid()),
+				new i18nUnauthorizedException('validations.token.invalid.format', { property: 'token', value: 'invalid' }),
 			);
 		});
 
 		it('should return an error if the token is expired', () => {
 			expect(() =>
 				authService.verifyJWT(jwt.sign({ id: 1, email: 'test@example.fr' }, { expiresIn: '0s', secret: env.JWT_KEY })),
-			).toThrowError(new UnauthorizedException(t.Errors.JWT.Expired()));
+			).toThrowError(new i18nUnauthorizedException('validations.token.invalid.expired'));
 		});
 	});
 });

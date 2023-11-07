@@ -1,0 +1,159 @@
+{
+  "array": {
+    "invalid": {
+      "format": "{property} with value '{value}' is not a valid array of '{type}'",
+      "duplicate": "{property} with value '{value}' is not a valid array, it contains duplicate values",
+      "not_empty": "{property} is not a valid array, it must not be empty"
+    }
+  },
+  "boolean": {
+    "invalid": {
+      "format": "{property} with value '{value}' is not a valid boolean"
+    }
+  },
+  "birth_date": {
+    "invalid": {
+      "outbound": "'{date}' is not a valid birth date, it must be at least 13 years ago and at most 100"
+    }
+  },
+  "date": {
+    "invalid": {
+      "format": "{property} with value '{value}' is not a valid date"
+    }
+  },
+  "email": {
+    "invalid": {
+      "format": "{property} with value '{value}' is not a valid email",
+      "blacklisted": "{property} with value '{value}' is a blacklisted email",
+      "size": "Email '{email}' is either too long (>60) or too short (<6)",
+      "used": "Email '{email}' is already used",
+      "are_used": "Emails ['{emails}'] are already used",
+      "already_verified": "Email already verified"
+    },
+    "success": {
+      "verified": "Successfully verified email"
+    }
+  },
+  "file": {
+    "invalid": {
+      "not_provided": "File not provided",
+      "not_found": "File '{filename}' cannot be found on disk",
+      "no_mime_type": "File has no mime type",
+      "unauthorized_mime_type": "File has an unauthorized mime type, valid mime types are ['{mime_types}']",
+      "infected": "File is infected with virus"
+    }
+  },
+  "file_visibility_group": {
+    "invalid": {
+      "not_found": "File visibility group with name '{name}' not found"
+    }
+  },
+  "gender": {
+    "invalid": {
+      "format": "{property} with value '{value}' is not a valid gender, valid genders are ['{genders}']"
+    }
+  },
+  "id": {
+    "invalid": {
+      "format": "{property} with value '{value}' is not a valid ID, it must be a valid string number or a number",
+      "min": "{property} with value '{value}' is not a valid ID, it must be greater than or equal to {min}"
+    }
+  },
+  "ids": {
+    "invalid": {
+      "format": "{property} with values in ['{value}'] is not a valid IDs array, it must be an array of valid string numbers and/or numbers"
+    }
+  },
+  "image": {
+    "invalid": {
+      "aspect_ratio": "Image aspect ratio must be {aspect_ratio}"
+    }
+  },
+  "logs": {
+    "success": {
+      "deleted": "Successfully deleted logs"
+    }
+  },
+  "number": {
+    "invalid": {
+      "format": "{property} with value '{value}' is not a valid string number or number",
+      "min": "{property} with value '{value}' is not a valid number, it must be greater than or equal to {min}"
+    }
+  },
+  "password": {
+    "invalid": {
+      "mismatch": "Passwords do not match",
+      "weak": "{property} with value '{value}' is not a valid password, it must be at least 8 characters long and contain at least one number, one lowercase letter, one uppercase letter and one special character"
+    }
+  },
+  "permission": {
+    "invalid": {
+      "format": "{property} with value '{value}' is not a valid permission, valid permissions are: ['{permissions}']",
+      "already_on": "Permission '{permission}' already attributed to user '{name}'"
+    },
+    "not_found": "Permission with ID '{id}' not found on user '{name}'"
+  },
+  "phone": {
+    "invalid": {
+      "format": "{property} with value '{value}' is not a valid phone number, it must start with a '+' followed by a country code and contain only numbers"
+    }
+  },
+  "promotion": {
+    "invalid": {
+      "not_found": "Promotion with number '{number}' not found",
+      "no_logo": "Promotion with number '{number}' has no logo"
+    },
+    "success": {
+      "deleted_logo": "Successfully deleted logo of promotion '{number}'"
+    }
+  },
+  "role": {
+    "invalid": {
+      "already_exist": "Role with name '{name}' already exist",
+      "already_on": "Role '{role}' already attributed to user '{name}'"
+    },
+    "not_found": "Role with ID '{id}' not found"
+  },
+  "string": {
+    "invalid": {
+      "format": "{property} with value '{value}' is not a valid string",
+      "uppercase": "{property} with value '{value}' is not a valid string, it must be uppercase"
+    }
+  },
+  "token": {
+    "invalid": {
+      "format": "Token invalid",
+      "expired": "Token expired",
+      "unknown": "An unknown error occurred while verifying token"
+    }
+  },
+  "user": {
+    "invalid": {
+      "not_in_file_visibility_group": "User is not in file visibility group '{group_name}'"
+    },
+    "success": {
+      "registered": "User '{name}' successfully registered",
+      "deleted": "User '{name}' successfully deleted",
+      "deleted_picture": "Successfully deleted picture of '{name}'",
+      "deleted_banner": "Successfully deleted banner of '{name}'"
+    },
+    "cannot_update": "You cannot update your own birth date or name, ask another user with the appropriate permission",
+    "not_found": {
+      "email": "User with email '{email}' not found",
+      "id": "User with ID '{id}' not found"
+    },
+    "unverified": "User unverified",
+    "picture": {
+      "cooldown": "You can only change your picture once every {days} days",
+      "not_found": "User '{name}' has no picture"
+    },
+    "banner": {
+      "not_found": "User '{name}' has no banner"
+    }
+  },
+  "users": {
+    "not_found": {
+      "ids": "User(s) within IDs ['{ids}'] not found"
+    }
+  }
+}

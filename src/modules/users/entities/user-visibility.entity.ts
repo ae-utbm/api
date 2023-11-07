@@ -56,5 +56,5 @@ export class UserVisibility extends BaseEntity {
 
 	/** Wether the user parent's contact should be visible or not */
 	@Property({ onCreate: () => false })
-	parent_contact: boolean;
+	parents_phone: boolean;
 }

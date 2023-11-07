@@ -12,13 +12,6 @@ import { Role } from '@modules/roles/entities/role.entity';
 
 import { UserBanner } from './user-banner.entity';
 import { UserPicture } from './user-picture.entity';
-import { UserVisibility } from './user-visibility.entity';
-
-/** Keys that may change of visibility */
-export type UserPrivateKeys = Omit<UserVisibility, 'user' | keyof BaseEntity>;
-
-export type UserPrivate = User;
-export type UserPublic = Omit<User, keyof UserPrivateKeys> & Partial<Pick<User, keyof UserPrivateKeys>>;
 
 export type Request = Express.Request & {
 	user: User;
@@ -119,7 +112,7 @@ export class User extends BaseEntity {
 	phone?: string;
 
 	@Property({ nullable: true })
-	parent_contact?: string;
+	parents_phone?: string;
 
 	//* PERMISSIONS & TRACKING
 	@OneToMany(() => Permission, (permission) => permission.user, {

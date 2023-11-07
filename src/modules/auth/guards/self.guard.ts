@@ -4,9 +4,7 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { z } from 'zod';
 
-import { TranslateService } from '@modules/translate/translate.service';
-import { User } from '@modules/users/entities/user.entity';
-import { validate } from '@utils/validate';
+import { i18nBadRequestException } from '@modules/_mixin/http-errors';
 
 import { AuthService } from '../auth.service';
 
@@ -16,28 +14,19 @@ import { AuthService } from '../auth.service';
  * **The user id parameter should be called `user_id`**
  * @example
  * UseGuards(SelfGuard)
- * async route(@param('user_id') user_id: string) {
+ * async route(@param('user_id', ParseIntPipe) user_id: string) {
  * // ...
  * }
  */
 @Injectable()
 export class SelfGuard implements CanActivate {
-	constructor(
-		private readonly t: TranslateService,
-		private readonly reflector: Reflector,
-		private readonly authService: AuthService,
-	) {}
+	constructor(private readonly reflector: Reflector, private readonly authService: AuthService) {}
 
 	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-		return SelfGuard.checkSelf(context, this.reflector, this.authService, this.t);
+		return SelfGuard.checkSelf(context, this.reflector, this.authService);
 	}
 
-	static checkSelf(
-		context: ExecutionContext,
-		reflector: Reflector,
-		authService: AuthService,
-		t: TranslateService,
-	): boolean {
+	static checkSelf(context: ExecutionContext, reflector: Reflector, authService: AuthService): boolean {
 		type req = Omit<Request, 'params' | 'body' | 'headers'> & {
 			params: Record<string, string>;
 			body: Record<string, string> | Array<Record<string, string>>;
@@ -62,14 +51,30 @@ export class SelfGuard implements CanActivate {
 
 		/* istanbul ignore next-line */
 		if (!id_key_values.length) return false;
-		/* istanbul ignore next-line */
-		validate(
-			z.array(z.coerce.number().int().min(1)).min(1),
-			id_key_values,
-			id_key_values.length > 1
-				? t.Errors.Id.Invalids(User, id_key_values)
-				: t.Errors.Id.Invalid(User, id_key_values[0]),
-		);
+
+		try {
+			z.array(
+				z.coerce
+					.number()
+					.int()
+					.min(1)
+					.refine((val: unknown) => typeof val === 'number' && Number.isFinite(val)),
+			)
+				.min(1)
+				.parse(id_key_values);
+		} catch {
+			if (id_key_values.length > 1)
+				/* istanbul ignore next-line */
+				throw new i18nBadRequestException('validations.ids.invalid.format', {
+					property: id_key,
+					value: id_key_values.join("', '"),
+				});
+			else
+				throw new i18nBadRequestException('validations.id.invalid.format', {
+					property: id_key,
+					value: id_key_values[0],
+				});
+		}
 
 		// Retrieve the authenticated user from the request's user object or session
 		const token = request.headers.authorization;

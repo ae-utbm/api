@@ -1,10 +1,11 @@
 import request from 'supertest';
 
-import { TokenDTO } from '@modules/auth/dto/get.dto';
+import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
+import { i18nBadRequestException, i18nNotFoundException } from '@modules/_mixin/http-errors';
+import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 import { Permission } from '@modules/permissions/entities/permission.entity';
-import { User } from '@modules/users/entities/user.entity';
 
-import { server, t, orm } from '..';
+import { server, orm } from '..';
 
 describe('Permissions (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -13,7 +14,7 @@ describe('Permissions (e2e)', () => {
 
 	beforeAll(async () => {
 		em = orm.em.fork();
-		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
+		type res = Omit<request.Response, 'body'> & { body: OutputTokenDTO };
 
 		const resA: res = await request(server).post('/auth/login').send({
 			email: 'unauthorized@email.com',
@@ -40,9 +41,11 @@ describe('Permissions (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Permission.Invalid('INVALID'),
+					...new i18nBadRequestException('validations.permission.invalid.format', {
+						property: 'permission',
+						value: 'INVALID',
+						permissions: PERMISSIONS_NAMES.join("', '"),
+					}),
 				});
 			});
 
@@ -54,14 +57,7 @@ describe('Permissions (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: {
-						_errors: [],
-						expires: {
-							_errors: ['Required'],
-						},
-					},
+					...new i18nBadRequestException('validations.date.invalid.format', { property: 'expires', value: undefined }),
 				});
 			});
 
@@ -73,9 +69,10 @@ describe('Permissions (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Permission.AlreadyOnUser('ROOT', 'root root'),
+					...new i18nBadRequestException('validations.permission.invalid.already_on', {
+						permission: 'ROOT',
+						name: 'root root',
+					}),
 				});
 			});
 		});
@@ -115,9 +112,7 @@ describe('Permissions (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					statusCode: 404,
-					error: 'Not Found',
-					message: t.Errors.Id.NotFound(User, 999999),
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 999999 }),
 				});
 			});
 		});
@@ -185,9 +180,7 @@ describe('Permissions (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					statusCode: 404,
-					error: 'Not Found',
-					message: t.Errors.Id.NotFound(User, 999999),
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 999999 }),
 				});
 			});
 
@@ -199,9 +192,7 @@ describe('Permissions (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					statusCode: 404,
-					error: 'Not Found',
-					message: t.Errors.Permission.NotFoundOnUser('ROOT', 'root root'),
+					...new i18nNotFoundException('validations.permission.not_found', { id: 999999, name: 'root root' }),
 				});
 			});
 		});
@@ -227,7 +218,7 @@ describe('Permissions (e2e)', () => {
 		});
 	});
 
-	describe('(GET) /permissions/:user_id', () => {
+	describe('(GET) /permissions/:id', () => {
 		describe('400 : Bad Request', () => {
 			it('when the user ID is not valid', async () => {
 				const response = await request(server)
@@ -236,9 +227,7 @@ describe('Permissions (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(User, 'abc'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'id', value: 'abc' }),
 				});
 			});
 		});
@@ -277,9 +266,7 @@ describe('Permissions (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					statusCode: 404,
-					error: 'Not Found',
-					message: t.Errors.Id.NotFound(User, 999999),
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 999999 }),
 				});
 			});
 		});

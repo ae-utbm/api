@@ -4,11 +4,13 @@ import { join } from 'path';
 import request from 'supertest';
 
 import { env } from '@env';
-import { TokenDTO } from '@modules/auth/dto/get.dto';
+import { OutputMessageDTO } from '@modules/_mixin/dto/output.dto';
+import { i18nBadRequestException, i18nNotFoundException } from '@modules/_mixin/http-errors';
+import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 import { PromotionPicture } from '@modules/promotions/entities/promotion-picture.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
 
-import { server, t, orm } from '..';
+import { server, orm } from '..';
 
 describe('Promotions (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -21,7 +23,7 @@ describe('Promotions (e2e)', () => {
 
 	beforeAll(async () => {
 		em = orm.em.fork();
-		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
+		type res = Omit<request.Response, 'body'> & { body: OutputTokenDTO };
 
 		const resA: res = await request(server).post('/auth/login').send({
 			email: 'unauthorized@email.com',
@@ -186,9 +188,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Promotion, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'number', value: 'invalid' }),
 				});
 			});
 		});
@@ -225,9 +225,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound('Promotion', 999999),
+					...new i18nNotFoundException('validations.promotion.invalid.not_found', { number: 999999 }),
 				});
 			});
 		});
@@ -257,9 +255,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Promotion, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'number', value: 'invalid' }),
 				});
 			});
 		});
@@ -296,9 +292,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Promotion, 999999),
+					...new i18nNotFoundException('validations.promotion.invalid.not_found', { number: 999999 }),
 				});
 			});
 		});
@@ -331,9 +325,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Promotion, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'number', value: 'invalid' }),
 				});
 			});
 		});
@@ -370,9 +362,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Promotion, 999999),
+					...new i18nNotFoundException('validations.promotion.invalid.not_found', { number: 999999 }),
 				});
 			});
 
@@ -382,9 +372,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Promotion.LogoNotFound(21),
+					...new i18nNotFoundException('validations.promotion.invalid.no_logo', { number: 21 }),
 				});
 			});
 		});
@@ -431,9 +419,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					message: t.Errors.File.NotProvided(),
-					statusCode: 400,
+					...new i18nBadRequestException('validations.file.invalid.not_provided'),
 				});
 			});
 
@@ -444,9 +430,7 @@ describe('Promotions (e2e)', () => {
 					.attach('file', fileNotAnImage, 'file.txt');
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.File.InvalidMimeType(['image/*']),
+					...new i18nBadRequestException('validations.file.invalid.unauthorized_mime_type', { mime_types: 'image/*' }),
 				});
 			});
 
@@ -457,9 +441,7 @@ describe('Promotions (e2e)', () => {
 					.attach('file', filePictureNotSquare, 'file.png');
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Image.InvalidAspectRatio('1:1'),
+					...new i18nBadRequestException('validations.image.invalid.aspect_ratio', { aspect_ratio: '1:1' }),
 				});
 			});
 
@@ -470,9 +452,7 @@ describe('Promotions (e2e)', () => {
 					.attach('file', filePictureSquare, 'file.png');
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Promotion, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'number', value: 'invalid' }),
 				});
 			});
 		});
@@ -510,9 +490,7 @@ describe('Promotions (e2e)', () => {
 					.attach('file', filePictureSquare, 'file.png');
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Promotion, 999999),
+					...new i18nNotFoundException('validations.promotion.invalid.not_found', { number: 999999 }),
 				});
 			});
 		});
@@ -582,9 +560,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Promotion, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'number', value: 'invalid' }),
 				});
 			});
 		});
@@ -621,9 +597,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Promotion, 999999),
+					...new i18nNotFoundException('validations.promotion.invalid.not_found', { number: 999999 }),
 				});
 			});
 
@@ -633,9 +607,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Promotion.LogoNotFound(20),
+					...new i18nNotFoundException('validations.promotion.invalid.no_logo', { number: 20 }),
 				});
 			});
 		});
@@ -660,8 +632,7 @@ describe('Promotions (e2e)', () => {
 					.expect(200);
 
 				expect(response.body).toEqual({
-					message: t.Success.Entity.Deleted(PromotionPicture),
-					statusCode: 200,
+					...new OutputMessageDTO('validations.promotion.success.deleted_logo', { number: 21 }),
 				});
 
 				// expect the file to be deleted from disk

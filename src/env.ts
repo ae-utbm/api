@@ -4,7 +4,14 @@ import { join } from 'node:path';
 import 'dotenv/config';
 
 import { Logger } from '@nestjs/common';
+import { I18nValidationPipeOptions } from 'nestjs-i18n';
 import { z } from 'zod';
+
+export const VALIDATION_PIPE_OPTIONS: I18nValidationPipeOptions = {
+	transform: true,
+	whitelist: true,
+	forbidNonWhitelisted: true,
+};
 
 /**
  * NodeJS environment variables + API specific environment variables, validated using zod

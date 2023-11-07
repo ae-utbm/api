@@ -1,9 +1,11 @@
 import request from 'supertest';
 
+import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
+import { i18nBadRequestException, i18nNotFoundException } from '@modules/_mixin/http-errors';
+import { InputUpdateRoleUserDTO } from '@modules/roles/dto/input.dto';
 import { Role } from '@modules/roles/entities/role.entity';
-import { User } from '@modules/users/entities/user.entity';
 
-import { server, t, orm } from '..';
+import { server, orm } from '..';
 
 describe('Roles (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -95,14 +97,14 @@ describe('Roles (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: {
-						_errors: [],
-						name: {
-							_errors: ['Required'],
+					...new i18nBadRequestException([
+						{ key: 'validations.string.invalid.uppercase', args: { property: 'name', value: undefined } },
+						{ key: 'validations.string.invalid.format', args: { property: 'name', value: undefined } },
+						{
+							key: 'validations.permission.invalid.format',
+							args: { property: 'permissions', value: 'test', permissions: PERMISSIONS_NAMES.join("', '") },
 						},
-					},
+					]),
 				});
 			});
 
@@ -117,9 +119,11 @@ describe('Roles (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					message: t.Errors.Permission.Invalid('TEST'),
-					error: 'Bad Request',
+					...new i18nBadRequestException('validations.permission.invalid.format', {
+						property: 'permissions',
+						value: 'TEST',
+						permissions: PERMISSIONS_NAMES.join("', '"),
+					}),
 				});
 			});
 
@@ -134,9 +138,7 @@ describe('Roles (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					message: t.Errors.Role.NameAlreadyUsed('PERMISSIONS_MODERATOR'),
-					error: 'Bad Request',
+					...new i18nBadRequestException('validations.role.invalid.already_exist', { name: 'PERMISSIONS_MODERATOR' }),
 				});
 			});
 		});
@@ -204,17 +206,14 @@ describe('Roles (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: {
-						_errors: [],
-						id: {
-							_errors: ['Required'],
+					...new i18nBadRequestException([
+						{ key: 'validations.id.invalid.format', args: { property: 'id', value: undefined } },
+						{ key: 'validations.string.invalid.uppercase', args: { property: 'name', value: 'test' } },
+						{
+							key: 'validations.permission.invalid.format',
+							args: { property: 'permissions', value: 'test', permissions: PERMISSIONS_NAMES.join("', '") },
 						},
-						name: {
-							_errors: ['Invalid input'],
-						},
-					},
+					]),
 				});
 			});
 		});
@@ -253,14 +252,12 @@ describe('Roles (e2e)', () => {
 					.send({
 						id: 9999,
 						name: 'TEST',
-						permissions: ['TEST'],
+						permissions: ['ROOT'],
 					})
 					.expect(404);
 
 				expect(response.body).toEqual({
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Role, 9999),
-					error: 'Not Found',
+					...new i18nNotFoundException('validations.role.not_found', { id: 9999 }),
 				});
 			});
 		});
@@ -300,9 +297,7 @@ describe('Roles (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Role, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'id', value: 'invalid' }),
 				});
 			});
 		});
@@ -341,9 +336,7 @@ describe('Roles (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Role, 9999),
-					error: 'Not Found',
+					...new i18nNotFoundException('validations.role.not_found', { id: 9999 }),
 				});
 			});
 		});
@@ -382,9 +375,7 @@ describe('Roles (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Role, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'id', value: 'invalid' }),
 				});
 			});
 		});
@@ -423,9 +414,7 @@ describe('Roles (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Role, 9999),
-					error: 'Not Found',
+					...new i18nNotFoundException('validations.role.not_found', { id: 9999 }),
 				});
 			});
 		});
@@ -458,53 +447,52 @@ describe('Roles (e2e)', () => {
 				const response = await request(server)
 					.post('/roles/invalid/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send([
-						{
-							id: 1,
-							expires: new Date('9021-01-01').toISOString(),
-						},
-						{
-							id: 2,
-							expires: new Date('9022-01-01').toISOString(),
-						},
-						{
-							id: 3,
-							expires: new Date('9023-01-01').toISOString(),
-						},
-					])
+					.send({
+						users: [
+							{
+								id: 1,
+								expires: new Date('9021-01-01').toISOString(),
+							},
+							{
+								id: 2,
+								expires: new Date('9022-01-01').toISOString(),
+							},
+							{
+								id: 3,
+								expires: new Date('9023-01-01').toISOString(),
+							},
+						],
+					})
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Role, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'id', value: 'invalid' }),
 				});
 			});
 
-			it('when one of the user id is invalid', async () => {
+			it('when one of the body is invalid', async () => {
 				const response = await request(server)
 					.post('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send([
-						{
-							id: 'invalid',
-							expires: new Date('9021-01-01').toISOString(),
-						},
-					])
+					.send({
+						users: [
+							{
+								id: 'invalid',
+								expires: new Date('9021-01-01').toISOString(),
+							},
+							'test',
+						],
+					})
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: {
-						_errors: [],
-						0: {
-							_errors: [],
-							id: {
-								_errors: ['Expected number, received string'],
-							},
+					...new i18nBadRequestException([
+						{ key: 'validations.id.invalid.format', args: { property: 'users.0.id', value: 'invalid' } },
+						{
+							key: 'validations.array.invalid.format',
+							args: { property: 'users.1', value: 'test', type: InputUpdateRoleUserDTO.name },
 						},
-					},
+					]),
 				});
 			});
 
@@ -512,15 +500,11 @@ describe('Roles (e2e)', () => {
 				const response = await request(server)
 					.post('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send([])
+					.send({ users: [] })
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: {
-						_errors: ['Array must contain at least 1 element(s)'],
-					},
+					...new i18nBadRequestException('validations.array.invalid.not_empty', { property: 'users' }),
 				});
 			});
 		});
@@ -556,13 +540,11 @@ describe('Roles (e2e)', () => {
 				const response = await request(server)
 					.post('/roles/9999/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send([{ id: 1, expires: new Date('9021-01-01').toISOString() }])
+					.send({ users: [{ id: 1, expires: new Date('9021-01-01').toISOString() }] })
 					.expect(404);
 
 				expect(response.body).toEqual({
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Role, 9999),
-					error: 'Not Found',
+					...new i18nNotFoundException('validations.role.not_found', { id: 9999 }),
 				});
 			});
 
@@ -570,13 +552,11 @@ describe('Roles (e2e)', () => {
 				const response = await request(server)
 					.post('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send([{ id: 9999, expires: new Date('9021-01-01').toISOString() }])
+					.send({ users: [{ id: 9999, expires: new Date('9021-01-01').toISOString() }] })
 					.expect(404);
 
 				expect(response.body).toEqual({
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(User, 9999),
-					error: 'Not Found',
+					...new i18nNotFoundException('validations.users.not_found.ids', { ids: '9999' }),
 				});
 			});
 		});
@@ -587,10 +567,12 @@ describe('Roles (e2e)', () => {
 				const response = await request(server)
 					.post(`/roles/${role_id}/users`)
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send([
-						{ id: 1, expires: new Date('9021-01-01').toISOString() },
-						{ id: 2, expires: new Date('9022-01-01').toISOString() },
-					])
+					.send({
+						users: [
+							{ id: 1, expires: new Date('9021-01-01').toISOString() },
+							{ id: 2, expires: new Date('9022-01-01').toISOString() },
+						],
+					})
 					.expect(201);
 
 				const body = response.body as Array<unknown>;
@@ -628,13 +610,11 @@ describe('Roles (e2e)', () => {
 				const response = await request(server)
 					.delete('/roles/invalid/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send([1, 2, 3])
+					.send({ users: [1, 2, 3] })
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Role, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'id', value: 'invalid' }),
 				});
 			});
 
@@ -642,18 +622,14 @@ describe('Roles (e2e)', () => {
 				const response = await request(server)
 					.delete('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send(['invalid'])
+					.send({ users: ['invalid'] })
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: {
-						0: {
-							_errors: ['Expected number, received string'],
-						},
-						_errors: [],
-					},
+					...new i18nBadRequestException('validations.id.invalid.format', {
+						property: 'users',
+						value: 'invalid',
+					}),
 				});
 			});
 
@@ -661,15 +637,11 @@ describe('Roles (e2e)', () => {
 				const response = await request(server)
 					.delete('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send([])
+					.send({ users: [] })
 					.expect(400);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: {
-						_errors: ['Array must contain at least 1 element(s)'],
-					},
+					...new i18nBadRequestException('validations.array.invalid.not_empty', { property: 'users' }),
 				});
 			});
 		});
@@ -705,13 +677,11 @@ describe('Roles (e2e)', () => {
 				const response = await request(server)
 					.delete('/roles/9999/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send([1, 2, 3])
+					.send({ users: [1, 2, 3] })
 					.expect(404);
 
 				expect(response.body).toEqual({
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Role, 9999),
-					error: 'Not Found',
+					...new i18nNotFoundException('validations.role.not_found', { id: 9999 }),
 				});
 			});
 
@@ -719,13 +689,11 @@ describe('Roles (e2e)', () => {
 				const response = await request(server)
 					.delete('/roles/1/users')
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send([9999])
+					.send({ users: [9999] })
 					.expect(404);
 
 				expect(response.body).toEqual({
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(User, 9999),
-					error: 'Not Found',
+					...new i18nNotFoundException('validations.users.not_found.ids', { ids: 9999 }),
 				});
 			});
 		});
@@ -756,7 +724,7 @@ describe('Roles (e2e)', () => {
 				const response2 = await request(server)
 					.delete(`/roles/${role_id}/users`)
 					.set('Authorization', `Bearer ${tokenRolesModerator}`)
-					.send([2])
+					.send({ users: [2] })
 					.expect(200);
 
 				const body = response2.body as Array<unknown>;
