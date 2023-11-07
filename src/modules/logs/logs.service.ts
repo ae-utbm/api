@@ -2,7 +2,7 @@ import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
-import { OutputMessageDTO } from '@modules/_mixin/dto/output.dto';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
 
 import { OutputLogDTO } from './dto/output.dto';
 import { Log } from './entities/log.entity';

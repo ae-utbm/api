@@ -2,8 +2,8 @@ import { Body, Controller, Get, Param, Post, UseGuards, Patch } from '@nestjs/co
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
-import { ApiNotOkResponses } from '@modules/_mixin/decorators/api-not-ok.decorator';
-import { InputIdParamDTO } from '@modules/_mixin/dto/input.dto';
+import { ApiNotOkResponses } from '@modules/base/decorators/api-not-ok.decorator';
+import { InputIdParamDTO } from '@modules/base/dto/input.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';

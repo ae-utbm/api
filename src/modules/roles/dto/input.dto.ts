@@ -14,7 +14,7 @@ import { ArrayNotEmpty, ArrayUnique, IsEnum, IsUppercase, ValidateNested } from 
 import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
-import { I18nIsDate, I18nIsId, I18nIsString } from '@modules/_mixin/decorators';
+import { I18nIsDate, I18nIsId, I18nIsString } from '@modules/base/decorators';
 
 export class InputCreateRoleDTO implements InputCreateRoleDto {
 	@ApiProperty({ type: String, example: 'AE_ADMINS' })

@@ -5,7 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
 
 import { VALIDATION_PIPE_OPTIONS, env } from '@env';
-import { I18nHttpExceptionFilter } from '@modules/_mixin/http-errors';
+import { I18nHttpExceptionFilter } from '@modules/base/http-errors';
 import '@exported/global/utils';
 
 import { AppModule } from './app.module';

@@ -4,7 +4,7 @@ import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
-import { i18nBadRequestException, i18nNotFoundException } from '@modules/_mixin/http-errors';
+import { i18nBadRequestException, i18nNotFoundException } from '@modules/base/http-errors';
 import { OutputBaseUserDTO } from '@modules/users/dto/output.dto';
 import { User } from '@modules/users/entities/user.entity';
 import { UsersDataService } from '@modules/users/services/users-data.service';

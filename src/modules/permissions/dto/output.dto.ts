@@ -3,7 +3,7 @@ import type { OutputPermissionDto, OutputPermissionsOfRoleDto, PERMISSION_NAMES 
 import { ApiProperty } from '@nestjs/swagger';
 
 import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
-import { OutputBaseDTO } from '@modules/_mixin/dto/output.dto';
+import { OutputBaseDTO } from '@modules/base/dto/output.dto';
 
 export class OutputPermissionsOfRoleDTO implements OutputPermissionsOfRoleDto {
 	@ApiProperty()

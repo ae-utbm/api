@@ -1,6 +1,6 @@
 import { Collection, Entity, ManyToMany, OneToMany, Property } from '@mikro-orm/core';
 
-import { BaseEntity } from '@modules/_mixin/entities/base.entity';
+import { BaseEntity } from '@modules/base/entities/base.entity';
 import { File } from '@modules/files/entities/file.entity';
 import { User } from '@modules/users/entities/user.entity';
 

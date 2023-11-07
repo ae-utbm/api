@@ -1,4 +1,4 @@
-import { generateRandomPassword } from '@modules/_mixin/decorators/is-strong-pass.decorator';
+import { generateRandomPassword } from '@modules/base/decorators/is-strong-pass.decorator';
 
 describe('Password (unit)', () => {
 	describe('.generateRandomPassword()', () => {

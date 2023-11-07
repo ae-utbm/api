@@ -4,8 +4,8 @@ import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 
 import { env } from '@env';
-import { OutputMessageDTO } from '@modules/_mixin/dto/output.dto';
-import { i18nNotFoundException, i18nUnauthorizedException } from '@modules/_mixin/http-errors';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
 import { ImagesService } from '@modules/files/images.service';
 
 import { UsersDataService } from './users-data.service';

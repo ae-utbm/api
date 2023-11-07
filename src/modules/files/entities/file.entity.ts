@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 
-import { BaseEntity } from '@modules/_mixin/entities/base.entity';
+import { BaseEntity } from '@modules/base/entities/base.entity';
 import { FileVisibilityGroup } from '@modules/files/entities/file-visibility.entity';
 import { PromotionPicture } from '@modules/promotions/entities/promotion-picture.entity';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';

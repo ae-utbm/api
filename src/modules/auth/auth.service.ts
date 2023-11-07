@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { compareSync } from 'bcrypt';
 
 import { env } from '@env';
-import { i18nForbiddenException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/_mixin/http-errors';
+import { i18nForbiddenException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
 import { User } from '@modules/users/entities/user.entity';
 
 import { OutputTokenDTO } from './dto/output.dto';

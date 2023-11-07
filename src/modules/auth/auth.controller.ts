@@ -1,8 +1,8 @@
 import { Controller, Post, Body, Param, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
-import { ApiNotOkResponses } from '@modules/_mixin/decorators/api-not-ok.decorator';
-import { OutputCreatedDTO, OutputMessageDTO } from '@modules/_mixin/dto/output.dto';
+import { ApiNotOkResponses } from '@modules/base/decorators/api-not-ok.decorator';
+import { OutputCreatedDTO, OutputMessageDTO } from '@modules/base/dto/output.dto';
 import { UsersDataService } from '@modules/users/services/users-data.service';
 
 import { AuthService } from './auth.service';

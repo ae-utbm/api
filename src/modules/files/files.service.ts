@@ -7,7 +7,7 @@ import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { Injectable, StreamableFile } from '@nestjs/common';
 import { fromBuffer, MimeType } from 'file-type';
 
-import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/_mixin/http-errors';
+import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
 import { User } from '@modules/users/entities/user.entity';
 import { UsersDataService } from '@modules/users/services/users-data.service';
 

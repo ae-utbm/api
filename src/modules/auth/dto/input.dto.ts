@@ -12,7 +12,7 @@ import { Type } from 'class-transformer';
 import { ArrayNotEmpty, ArrayUnique, ValidateNested } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
-import { I18nIsId, I18nIsEmail, I18nIsDate, I18nIsString, I18nIsStrongPassword } from '@modules/_mixin/decorators';
+import { I18nIsId, I18nIsEmail, I18nIsDate, I18nIsString, I18nIsStrongPassword } from '@modules/base/decorators';
 
 export class InputRegisterUserAdminDTO implements InputRegisterUserAdminDto {
 	@ApiProperty({ example: 'example@domain.com' })

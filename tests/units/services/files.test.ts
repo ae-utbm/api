@@ -1,4 +1,4 @@
-import { i18nBadRequestException, i18nNotFoundException } from '@modules/_mixin/http-errors';
+import { i18nBadRequestException, i18nNotFoundException } from '@modules/base/http-errors';
 import { FilesService } from '@modules/files/files.service';
 import { PromotionPicture } from '@modules/promotions/entities/promotion-picture.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';

@@ -3,8 +3,8 @@ import { join } from 'path';
 
 import request from 'supertest';
 
-import { OutputMessageDTO } from '@modules/_mixin/dto/output.dto';
-import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/_mixin/http-errors';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
 import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 import { FileVisibilityGroup } from '@modules/files/entities/file-visibility.entity';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';

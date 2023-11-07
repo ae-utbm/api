@@ -2,7 +2,7 @@ import type { OutputPromotionPictureDto, OutputPromotionDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { OutputBaseDTO } from '@modules/_mixin/dto/output.dto';
+import { OutputBaseDTO } from '@modules/base/dto/output.dto';
 import { OutputFileDTO } from '@modules/files/dto/output.dto';
 
 export class OutputPromotionDTO extends OutputBaseDTO implements OutputPromotionDto {

@@ -1,7 +1,7 @@
 import request from 'supertest';
 
 import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
-import { i18nBadRequestException, i18nNotFoundException } from '@modules/_mixin/http-errors';
+import { i18nBadRequestException, i18nNotFoundException } from '@modules/base/http-errors';
 import { InputUpdateRoleUserDTO } from '@modules/roles/dto/input.dto';
 import { Role } from '@modules/roles/entities/role.entity';
 

@@ -3,10 +3,10 @@ import type { email } from '#types';
 import { hashSync } from 'bcrypt';
 import request from 'supertest';
 
-import { generateRandomPassword } from '@modules/_mixin/decorators';
-import { OutputCreatedDTO, OutputMessageDTO } from '@modules/_mixin/dto/output.dto';
-import { i18nForbiddenException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/_mixin/http-errors';
-import { i18nBadRequestException } from '@modules/_mixin/http-errors/bad-request';
+import { generateRandomPassword } from '@modules/base/decorators';
+import { OutputCreatedDTO, OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nForbiddenException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
+import { i18nBadRequestException } from '@modules/base/http-errors/bad-request';
 import { InputRegisterUserDTO } from '@modules/auth/dto/input.dto';
 import { User } from '@modules/users/entities/user.entity';
 

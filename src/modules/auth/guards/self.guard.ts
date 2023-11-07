@@ -4,7 +4,7 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { z } from 'zod';
 
-import { i18nBadRequestException } from '@modules/_mixin/http-errors';
+import { i18nBadRequestException } from '@modules/base/http-errors';
 
 import { AuthService } from '../auth.service';
 

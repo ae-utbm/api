@@ -1,4 +1,4 @@
-import { i18nBadRequestException } from '@modules/_mixin/http-errors';
+import { i18nBadRequestException } from '@modules/base/http-errors';
 import { ImagesService } from '@modules/files/images.service';
 
 import { module_fixture } from '../..';

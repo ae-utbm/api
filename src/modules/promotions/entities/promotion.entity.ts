@@ -1,6 +1,6 @@
 import { Cascade, Collection, Entity, OneToMany, OneToOne, Property } from '@mikro-orm/core';
 
-import { BaseEntity } from '@modules/_mixin/entities/base.entity';
+import { BaseEntity } from '@modules/base/entities/base.entity';
 import { User } from '@modules/users/entities/user.entity';
 
 import { PromotionPicture } from './promotion-picture.entity';

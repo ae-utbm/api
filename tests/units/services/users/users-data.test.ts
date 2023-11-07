@@ -1,6 +1,6 @@
 import { hashSync } from 'bcrypt';
 
-import { i18nNotFoundException } from '@modules/_mixin/http-errors';
+import { i18nNotFoundException } from '@modules/base/http-errors';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { Role } from '@modules/roles/entities/role.entity';
 import { User } from '@modules/users/entities/user.entity';

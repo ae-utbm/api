@@ -9,9 +9,9 @@ import { I18nContext, I18nService } from 'nestjs-i18n';
 import { z } from 'zod';
 
 import { env } from '@env';
-import { generateRandomPassword, isStrongPassword } from '@modules/_mixin/decorators';
-import { OutputCreatedDTO, OutputMessageDTO } from '@modules/_mixin/dto/output.dto';
-import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/_mixin/http-errors';
+import { generateRandomPassword, isStrongPassword } from '@modules/base/decorators';
+import { OutputCreatedDTO, OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
 import { InputRegisterUserAdminDTO, InputRegisterUserDTO } from '@modules/auth/dto/input.dto';
 import { EmailsService } from '@modules/emails/emails.service';
 import { OutputPermissionDTO } from '@modules/permissions/dto/output.dto';

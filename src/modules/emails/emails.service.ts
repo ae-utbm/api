@@ -7,7 +7,7 @@ import { Injectable } from '@nestjs/common';
 import { Transporter, createTransport } from 'nodemailer';
 
 import { env } from '@env';
-import { i18nBadRequestException } from '@modules/_mixin/http-errors';
+import { i18nBadRequestException } from '@modules/base/http-errors';
 
 interface EmailOptions {
 	to: string[];

@@ -1,5 +1,5 @@
 import { env } from '@env';
-import { i18nUnauthorizedException } from '@modules/_mixin/http-errors';
+import { i18nUnauthorizedException } from '@modules/base/http-errors';
 import { AuthService } from '@modules/auth/auth.service';
 
 import { module_fixture, jwt } from '../..';

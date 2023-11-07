@@ -2,7 +2,7 @@ import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
-import { i18nBadRequestException, i18nNotFoundException } from '@modules/_mixin/http-errors';
+import { i18nBadRequestException, i18nNotFoundException } from '@modules/base/http-errors';
 
 import { InputUpdatePermissionDTO, InputCreatePermissionDTO } from './dto/input.dto';
 import { OutputPermissionDTO } from './dto/output.dto';

@@ -1,7 +1,7 @@
 import request from 'supertest';
 
-import { OutputMessageDTO } from '@modules/_mixin/dto/output.dto';
-import { i18nBadRequestException } from '@modules/_mixin/http-errors';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nBadRequestException } from '@modules/base/http-errors';
 import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
 
 import { server } from '..';

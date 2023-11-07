@@ -5,8 +5,8 @@ import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
 import { env } from '@env';
-import { OutputMessageDTO } from '@modules/_mixin/dto/output.dto';
-import { i18nNotFoundException } from '@modules/_mixin/http-errors';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nNotFoundException } from '@modules/base/http-errors';
 import { ImagesService } from '@modules/files/images.service';
 
 import { OutputPromotionPictureDTO, OutputPromotionDTO } from './dto/output.dto';

@@ -3,7 +3,7 @@ import type { email } from '#types';
 import { Cascade, Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, Property } from '@mikro-orm/core';
 
 import { USER_GENDER } from '@exported/api/constants/genders';
-import { BaseEntity } from '@modules/_mixin/entities/base.entity';
+import { BaseEntity } from '@modules/base/entities/base.entity';
 import { FileVisibilityGroup } from '@modules/files/entities/file-visibility.entity';
 import { Log } from '@modules/logs/entities/log.entity';
 import { Permission } from '@modules/permissions/entities/permission.entity';

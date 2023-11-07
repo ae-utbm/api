@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { fromBuffer } from 'file-type';
 import sharp from 'sharp';
 
-import { i18nBadRequestException } from '@modules/_mixin/http-errors';
+import { i18nBadRequestException } from '@modules/base/http-errors';
 
 import { FilesService, WriteFileOptions } from './files.service';
 

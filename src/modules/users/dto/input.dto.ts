@@ -13,7 +13,7 @@ import {
 	I18nIsId,
 	I18nIsPhoneNumber,
 	I18nIsString,
-} from '@modules/_mixin/decorators';
+} from '@modules/base/decorators';
 
 export class InputUpdateUserDTO implements InputUpdateUserDto {
 	@ApiProperty({ required: false })

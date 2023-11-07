@@ -11,7 +11,7 @@ import { I18nContext, I18nService, I18nValidationExceptionFilter, I18nValidation
 
 import { AppModule } from '@app.module';
 import { VALIDATION_PIPE_OPTIONS } from '@env';
-import { I18nHttpExceptionFilter } from '@modules/_mixin/http-errors';
+import { I18nHttpExceptionFilter } from '@modules/base/http-errors';
 
 let module_fixture: TestingModule;
 let jwt: JwtService;

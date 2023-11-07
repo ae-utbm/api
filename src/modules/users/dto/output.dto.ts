@@ -12,7 +12,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { OutputUserDto, PERMISSION_NAMES, GENDERS } from '#types/api';
 import { USER_GENDER } from '@exported/api/constants/genders';
 import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
-import { OutputBaseDTO } from '@modules/_mixin/dto/output.dto';
+import { OutputBaseDTO } from '@modules/base/dto/output.dto';
 import { OutputFileDTO } from '@modules/files/dto/output.dto';
 
 export class OutputBaseUserDTO extends OutputBaseDTO implements OutputBaseUserDto {
