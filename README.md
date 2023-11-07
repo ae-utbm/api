@@ -125,8 +125,11 @@ pnpm run start:prod
 Both unit and e2e tests are available and run with [Jest](https://jestjs.io/). You can run them with the following command:
 
 ```bash
-# unit tests
+# all tests
 pnpm test
+
+# unique test file
+pnpm test -- "auth.e2e-spec.ts"
 ```
 
 > After running the tests, a coverage report is generated in the `./coverage` folder.
