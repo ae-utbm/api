@@ -54,7 +54,4 @@ afterAll(async () => {
 	server.close();
 });
 
-/** @deprecated */
-const t = {};
-
-export { module_fixture, server, orm, t, jwt };
+export { module_fixture, server, orm, jwt };
