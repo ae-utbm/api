@@ -120,7 +120,6 @@ describe('Files (e2e)', () => {
 					id: file.id,
 					filename: 'test.png',
 					mimetype: 'image/png',
-					path: 'test.png',
 					size: 123,
 					visibility: file.visibility.id,
 					description: 'foo bar',

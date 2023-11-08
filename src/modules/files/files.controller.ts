@@ -25,7 +25,7 @@ export class FilesController {
 		const file = await this.filesService.findOne(id);
 		await file.visibility?.init();
 
-		if (await this.filesService.canReadFile(file, req.user as User)) return file;
+		if (await this.filesService.canReadFile(file, req.user as User)) return file.toObject();
 		throw new UnauthorizedException(this.t.Errors.File.Unauthorized(file.visibility?.name));
 	}
 }
