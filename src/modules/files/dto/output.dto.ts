@@ -2,6 +2,8 @@ import type { OutputFileDto, OutputFileVisibilityGroupDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 
+import { OutputBaseDTO } from '@modules/base/dto/output.dto';
+
 export class OutputFileDTO implements OutputFileDto {
 	@ApiProperty()
 	id: number;
@@ -31,7 +33,7 @@ export class OutputFileDTO implements OutputFileDto {
 	description?: string;
 }
 
-export class OutputFileVisibilityGroupDTO implements OutputFileVisibilityGroupDto {
+export class OutputFileVisibilityGroupDTO extends OutputBaseDTO implements OutputFileVisibilityGroupDto {
 	@ApiProperty()
 	name: Uppercase<string>;
 

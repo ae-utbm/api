@@ -90,7 +90,7 @@ export class OutputUserDTO extends OutputBaseDTO implements OutputUserDto {
 	subscribed: boolean; // TODO: (KEY: 2) Make a PR to implement subscriptions in the API
 
 	@ApiProperty({ required: false })
-	secondary_email?: string;
+	secondary_email?: email;
 
 	@ApiProperty({ required: false })
 	phone?: string;
