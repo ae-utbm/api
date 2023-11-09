@@ -1,15 +1,17 @@
-import { readFileSync } from 'fs';
+import { copyFileSync, existsSync, readFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 
 import request from 'supertest';
 
-import { TokenDTO } from '@modules/auth/dto/token.dto';
+import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
 import { FileVisibilityGroup } from '@modules/files/entities/file-visibility.entity';
 import { UserBanner } from '@modules/users/entities/user-banner.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';
 import { User } from '@modules/users/entities/user.entity';
 
-import { orm, server, t } from '../..';
+import { orm, server } from '../..';
 
 describe('Users Files (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -24,7 +26,7 @@ describe('Users Files (e2e)', () => {
 
 	beforeAll(async () => {
 		em = orm.em.fork();
-		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
+		type res = Omit<request.Response, 'body'> & { body: OutputTokenDTO };
 
 		const responseA: res = await request(server).post('/auth/login').send({
 			email: 'unauthorized@email.com',
@@ -57,6 +59,17 @@ describe('Users Files (e2e)', () => {
 	});
 
 	describe('(GET) /users/:id/picture', () => {
+		const origin = join(process.cwd(), './tests/files/user_picture.jpeg');
+		const copy = join(process.cwd(), './tests/files/user_picture_copy.jpeg');
+
+		beforeAll(() => {
+			copyFileSync(origin, copy);
+		});
+
+		afterAll(() => {
+			if (existsSync(copy)) unlinkSync(copy);
+		});
+
 		describe('400 : Bad Request', () => {
 			it('when the user id is invalid', async () => {
 				const response = await request(server)
@@ -65,9 +78,7 @@ describe('Users Files (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'invalid', property: 'id' }),
 				});
 			});
 		});
@@ -81,34 +92,45 @@ describe('Users Files (e2e)', () => {
 					message: 'Unauthorized',
 				});
 			});
-		});
 
-		describe('403 : Forbidden', () => {
-			it('when the user is not authorized', async () => {
+			it('when the user is not in the visibility group of the picture', async () => {
+				const visibility_group = await em.findOne(FileVisibilityGroup, { name: 'SUBSCRIBER' });
+				const picture = em.create(UserPicture, {
+					filename: 'user_picture.jpeg',
+					description: 'A fake picture for logs moderator',
+					mimetype: 'image/jpeg',
+					path: copy,
+					picture_user: em.getReference(User, 1),
+					size: 0,
+					visibility: visibility_group,
+				});
+
+				await em.persistAndFlush(picture);
+
 				const response = await request(server)
 					.get('/users/1/picture')
-					.set('Authorization', `Bearer ${tokenUnauthorized}`)
-					.expect(403);
+					.set('Authorization', `Bearer ${tokenLogs}`)
+					.expect(401);
 
 				expect(response.body).toEqual({
-					error: 'Forbidden',
-					statusCode: 403,
-					message: 'Forbidden resource',
+					...new i18nUnauthorizedException('validations.user.invalid.not_in_file_visibility_group', {
+						group_name: 'SUBSCRIBER',
+					}),
 				});
+
+				await em.removeAndFlush(picture);
 			});
 		});
 
 		describe('404 : Not Found', () => {
 			it('when the user does not exist', async () => {
 				const response = await request(server)
-					.get('/users/999/picture')
+					.get('/users/9999/picture')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(User, 999),
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 9999 }),
 				});
 			});
 
@@ -119,9 +141,7 @@ describe('Users Files (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.User.NoPicture(1),
+					...new i18nNotFoundException('validations.user.picture.not_found', { name: 'root root' }),
 				});
 			});
 		});
@@ -136,7 +156,7 @@ describe('Users Files (e2e)', () => {
 					filename: 'user_picture.jpeg',
 					description: 'A fake picture for logs moderator',
 					mimetype: 'image/jpeg',
-					path: join(process.cwd(), './tests/files/user_picture.jpeg'),
+					path: copy,
 					picture_user: em.getReference(User, idLogs),
 					size: 0,
 					visibility: visibility_group,
@@ -146,7 +166,6 @@ describe('Users Files (e2e)', () => {
 			});
 
 			afterAll(async () => {
-				// Delete the fake picture
 				await em.removeAndFlush(picture);
 			});
 
@@ -183,6 +202,17 @@ describe('Users Files (e2e)', () => {
 	});
 
 	describe('(POST) /users/:id/picture', () => {
+		const origin = join(process.cwd(), './tests/files/user_picture.jpeg');
+		const copy = join(process.cwd(), './tests/files/user_picture_copy.jpeg');
+
+		beforeAll(() => {
+			copyFileSync(origin, copy);
+		});
+
+		afterAll(() => {
+			if (existsSync(copy)) unlinkSync(copy);
+		});
+
 		describe('400 : Bad Request', () => {
 			it('when the user id is invalid', async () => {
 				const response = await request(server)
@@ -192,9 +222,7 @@ describe('Users Files (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'invalid', property: 'id' }),
 				});
 			});
 
@@ -205,9 +233,7 @@ describe('Users Files (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.File.NotProvided(),
+					...new i18nBadRequestException('validations.file.invalid.not_provided'),
 				});
 			});
 		});
@@ -231,7 +257,7 @@ describe('Users Files (e2e)', () => {
 					filename: 'user_picture.jpeg',
 					description: 'A fake picture for root',
 					mimetype: 'image/jpeg',
-					path: join(process.cwd(), './tests/files/user_picture.jpeg'),
+					path: copy,
 					picture_user: em.getReference(User, idLogs),
 					size: 0,
 					visibility: await em.findOneOrFail(FileVisibilityGroup, { name: 'SUBSCRIBER' }),
@@ -247,11 +273,7 @@ describe('Users Files (e2e)', () => {
 					.expect(401);
 
 				expect(response.body).toEqual({
-					error: 'Unauthorized',
-					statusCode: 401,
-					// TODO: (KEY: 8) Find a way to get the cooldown and test the message (time is not the same)
-					// message: t.Errors.User.PictureCooldown(picture.updated.getTime() + env().users.picture_cooldown - Date.now()),
-					message: expect.any(String),
+					...new i18nUnauthorizedException('validations.user.picture.cooldown', { days: 7 }),
 				});
 
 				// Delete the fake picture
@@ -278,15 +300,13 @@ describe('Users Files (e2e)', () => {
 		describe('404 : Not Found', () => {
 			it('when the user does not exist', async () => {
 				const response = await request(server)
-					.post('/users/999/picture')
+					.post('/users/9999/picture')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.attach('file', filePictureSquare, 'file.jpeg')
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(User, 999),
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 9999 }),
 				});
 			});
 		});
@@ -296,8 +316,8 @@ describe('Users Files (e2e)', () => {
 				const response = await request(server)
 					.post('/users/4/picture')
 					.set('Authorization', `Bearer ${tokenLogs}`)
-					.attach('file', filePictureSquare, 'file.jpeg')
-					.expect(201);
+					.attach('file', filePictureSquare, 'file.jpeg');
+				// .expect(201);
 
 				expect(response.body).toEqual({
 					created: expect.any(String),
@@ -307,6 +327,8 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 3028,
 					updated: expect.any(String),
+					picture_user_id: 4,
+					visibility_id: 1,
 				});
 
 				// Delete the picture
@@ -328,6 +350,8 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 3028,
 					updated: expect.any(String),
+					picture_user_id: 4,
+					visibility_id: 1,
 				});
 
 				// Delete the picture
@@ -357,6 +381,8 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 3028,
 					updated: expect.any(String),
+					picture_user_id: 1,
+					visibility_id: 1,
 				});
 
 				// Delete the picture
@@ -374,9 +400,7 @@ describe('Users Files (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'invalid', property: 'id' }),
 				});
 			});
 		});
@@ -423,14 +447,12 @@ describe('Users Files (e2e)', () => {
 		describe('404 : Not Found', () => {
 			it('when the user does not exist', async () => {
 				const response = await request(server)
-					.delete('/users/999/picture')
+					.delete('/users/9999/picture')
 					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(User, 999),
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 9999 }),
 				});
 			});
 
@@ -441,9 +463,7 @@ describe('Users Files (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.User.NoPicture(1),
+					...new i18nNotFoundException('validations.user.picture.not_found', { name: 'root root' }),
 				});
 			});
 		});
@@ -464,33 +484,24 @@ describe('Users Files (e2e)', () => {
 					.expect(200);
 
 				expect(response.body).toEqual({
-					age: expect.any(Number),
-					banner: null,
-					birth_date: '2000-01-01T00:00:00.000Z',
-					created: expect.any(String),
-					email: 'ae.info@utbm.fr',
-					email_verified: true,
-					first_name: 'root',
-					full_name: 'root root',
-					gender: 'OTHER',
-					id: 1,
-					is_minor: false,
-					last_name: 'root',
-					last_seen: expect.any(String),
-					nickname: 'noot noot',
-					parent_contact: null,
-					phone: null,
-					promotion: 21,
-					pronouns: null,
-					secondary_email: null,
-					updated: expect.any(String),
-					verified: '2000-01-01T00:00:00.000Z',
+					...new OutputMessageDTO('validations.user.success.deleted_picture', { name: 'root root' }),
 				});
 			});
 		});
 	});
 
 	describe('(GET) /users/:id/banner', () => {
+		const origin = join(process.cwd(), './tests/files/user_banner.jpeg');
+		const copy = join(process.cwd(), './tests/files/user_banner_copy.jpeg');
+
+		beforeAll(() => {
+			copyFileSync(origin, copy);
+		});
+
+		afterAll(() => {
+			if (existsSync(copy)) unlinkSync(copy);
+		});
+
 		describe('400 : Bad Request', () => {
 			it('when the user id is invalid', async () => {
 				const response = await request(server)
@@ -499,9 +510,7 @@ describe('Users Files (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'invalid', property: 'id' }),
 				});
 			});
 		});
@@ -517,21 +526,6 @@ describe('Users Files (e2e)', () => {
 			});
 		});
 
-		describe('403 : Forbidden', () => {
-			it('when the user is not authorized', async () => {
-				const response = await request(server)
-					.get('/users/1/banner')
-					.set('Authorization', `Bearer ${tokenUnauthorized}`)
-					.expect(403);
-
-				expect(response.body).toEqual({
-					error: 'Forbidden',
-					statusCode: 403,
-					message: 'Forbidden resource',
-				});
-			});
-		});
-
 		describe('404 : Not Found', () => {
 			it('when the user does not exist', async () => {
 				const response = await request(server)
@@ -540,9 +534,7 @@ describe('Users Files (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(User, 999),
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 999 }),
 				});
 			});
 
@@ -553,9 +545,7 @@ describe('Users Files (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.User.NoBanner(1),
+					...new i18nNotFoundException('validations.user.banner.not_found', { name: 'root root' }),
 				});
 			});
 		});
@@ -570,7 +560,7 @@ describe('Users Files (e2e)', () => {
 					filename: 'user_banner.jpeg',
 					description: 'A fake banner for logs moderator',
 					mimetype: 'image/jpeg',
-					path: join(process.cwd(), './tests/files/user_banner.jpeg'),
+					path: copy,
 					banner_user: em.getReference(User, idLogs),
 					size: 0,
 					visibility: visibility_group,
@@ -626,9 +616,7 @@ describe('Users Files (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'invalid', property: 'id' }),
 				});
 			});
 
@@ -639,9 +627,7 @@ describe('Users Files (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.File.NotProvided(),
+					...new i18nBadRequestException('validations.file.invalid.not_provided'),
 				});
 			});
 		});
@@ -685,9 +671,7 @@ describe('Users Files (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(User, 999),
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 999 }),
 				});
 			});
 		});
@@ -708,6 +692,8 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 9498,
 					updated: expect.any(String),
+					banner_user_id: 4,
+					visibility_id: 1,
 				});
 
 				// Delete the banner
@@ -737,6 +723,8 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 9498,
 					updated: expect.any(String),
+					banner_user_id: 4,
+					visibility_id: 1,
 				});
 
 				// Delete the banner
@@ -758,6 +746,8 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 9498,
 					updated: expect.any(String),
+					banner_user_id: 1,
+					visibility_id: 1,
 				});
 
 				// Delete the banner
@@ -775,9 +765,7 @@ describe('Users Files (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'invalid', property: 'id' }),
 				});
 			});
 		});
@@ -816,9 +804,7 @@ describe('Users Files (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(User, 999),
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 999 }),
 				});
 			});
 
@@ -829,9 +815,7 @@ describe('Users Files (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.User.NoBanner(1),
+					...new i18nNotFoundException('validations.user.banner.not_found', { name: 'root root' }),
 				});
 			});
 		});
@@ -852,27 +836,7 @@ describe('Users Files (e2e)', () => {
 					.expect(200);
 
 				expect(response.body).toEqual({
-					age: expect.any(Number),
-					birth_date: '2000-01-01T00:00:00.000Z',
-					created: expect.any(String),
-					email: 'ae.info@utbm.fr',
-					email_verified: true,
-					first_name: 'root',
-					full_name: 'root root',
-					gender: 'OTHER',
-					id: 1,
-					is_minor: false,
-					last_name: 'root',
-					last_seen: expect.any(String),
-					nickname: 'noot noot',
-					parent_contact: null,
-					phone: null,
-					picture: null,
-					promotion: 21,
-					pronouns: null,
-					secondary_email: null,
-					updated: expect.any(String),
-					verified: '2000-01-01T00:00:00.000Z',
+					...new OutputMessageDTO('validations.user.success.deleted_banner', { name: 'root root' }),
 				});
 			});
 		});

@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { AuthService } from '@modules/auth/auth.service';
-import { TranslateService } from '@modules/translate/translate.service';
 import { UsersModule } from '@modules/users/users.module';
 
 import { Permission } from './entities/permission.entity';
@@ -12,7 +11,7 @@ import { PermissionsService } from './permissions.service';
 
 @Module({
 	imports: [MikroOrmModule.forFeature([Permission]), UsersModule],
-	providers: [PermissionsService, JwtService, AuthService, TranslateService],
+	providers: [PermissionsService, JwtService, AuthService],
 	controllers: [PermissionsController],
 	exports: [PermissionsService],
 })

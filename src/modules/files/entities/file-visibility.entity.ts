@@ -1,26 +1,30 @@
-import type { FileVisibilityGroupEntity } from '#types/api';
-
 import { Collection, Entity, ManyToMany, OneToMany, Property } from '@mikro-orm/core';
-import { ApiProperty } from '@nestjs/swagger';
 
-import { BaseEntity } from '@modules/_mixin/entities/base.entity';
+import { BaseEntity } from '@modules/base/entities/base.entity';
 import { File } from '@modules/files/entities/file.entity';
 import { User } from '@modules/users/entities/user.entity';
 
 @Entity({ tableName: 'files_visibility_groups' })
-export class FileVisibilityGroup extends BaseEntity implements FileVisibilityGroupEntity<User> {
+export class FileVisibilityGroup extends BaseEntity {
 	@Property()
-	@ApiProperty()
 	name: Uppercase<string>;
 
 	@Property()
-	@ApiProperty()
 	description: string;
 
 	//* Note: Used the 'string' version of the entity name to avoid circular dependency issues.
-	@ManyToMany(() => 'User', (user: User) => user.files_visibility_groups, { owner: true, nullable: true })
+	@ManyToMany(() => 'User', (user: User) => user.files_visibility_groups, {
+		owner: true,
+		nullable: true,
+		serializedName: 'users_count',
+		serializer: (u: User[]) => u.length,
+	})
 	users = new Collection<User>(this);
 
-	@OneToMany(() => File, (file) => file.visibility, { nullable: true })
+	@OneToMany(() => File, (file) => file.visibility, {
+		nullable: true,
+		serializedName: 'files_count',
+		serializer: (f: File<unknown>[]) => f.length,
+	})
 	files = new Collection<File<unknown>>(this);
 }

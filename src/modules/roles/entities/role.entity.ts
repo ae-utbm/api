@@ -1,34 +1,28 @@
-import type { PERMISSION_NAMES, RoleEntity } from '#types/api';
+import type { PERMISSION_NAMES } from '#types/api';
 
 import { Collection, Entity, ManyToMany, Property } from '@mikro-orm/core';
-import { ApiProperty } from '@nestjs/swagger';
 
-import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
-import { BaseEntity } from '@modules/_mixin/entities/base.entity';
+import { BaseEntity } from '@modules/base/entities/base.entity';
 import { User } from '@modules/users/entities/user.entity';
 
 /**
  * Entity used to store roles, which are a collection of permissions
  */
 @Entity({ tableName: 'roles' })
-export class Role extends BaseEntity implements RoleEntity<User> {
-	/** Name of the role, in caps */
+export class Role extends BaseEntity {
 	@Property({ unique: true })
-	@ApiProperty({ type: String, example: 'AE_ADMIN' })
 	name: Uppercase<string>;
 
-	/** Determine wether the role is still active */
 	@Property({ name: 'is_revoked', onCreate: () => false })
-	@ApiProperty({ type: Boolean, default: false })
 	revoked: boolean;
 
-	/** Specify what permissions the role has */
 	@Property({ name: 'permissions' })
-	@ApiProperty({ enum: PERMISSIONS_NAMES, isArray: true })
 	permissions: PERMISSION_NAMES[];
 
-	/** Specify to which user the role is attached */
-	@ManyToMany(() => User, (user) => user.roles, { owner: true })
-	@ApiProperty({ type: Number, default: 1 })
+	@ManyToMany(() => User, (user) => user.roles, {
+		owner: true,
+		serializedName: 'users_count',
+		serializer: (u: User[]) => u.length,
+	})
 	users = new Collection<User>(this);
 }

@@ -111,7 +111,7 @@ export class TestSeeder extends Seeder {
 			{
 				email: 'unverified@email.com',
 				email_verified: false,
-				email_verification: hashSync('token67891012', 10),
+				email_verification: hashSync('token67891012', 10), // used in auth.e2e-spec.ts
 				password: hashSync('root', 10),
 				first_name: 'unverified',
 				last_name: 'user',

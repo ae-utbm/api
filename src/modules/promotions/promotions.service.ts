@@ -1,25 +1,22 @@
 import { join } from 'path';
 
 import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
 import { env } from '@env';
-import { FilesService } from '@modules/files/files.service';
-import { TranslateService } from '@modules/translate/translate.service';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nNotFoundException } from '@modules/base/http-errors';
+import { ImagesService } from '@modules/files/images.service';
 
-import { PromotionResponseDTO } from './dto/promotion.dto';
+import { OutputPromotionPictureDTO, OutputPromotionDTO } from './dto/output.dto';
 import { PromotionPicture } from './entities/promotion-picture.entity';
 import { Promotion } from './entities/promotion.entity';
-import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
+import { OutputBaseUserDTO } from '../users/dto/output.dto';
 
 @Injectable()
 export class PromotionsService {
-	constructor(
-		private readonly t: TranslateService,
-		private readonly orm: MikroORM,
-		private readonly filesService: FilesService,
-	) {}
+	constructor(private readonly orm: MikroORM, private readonly imagesService: ImagesService) {}
 
 	/**
 	 * Create a new promotion each year on the 15th of July
@@ -34,62 +31,49 @@ export class PromotionsService {
 	}
 
 	@CreateRequestContext()
-	async findAll(): Promise<PromotionResponseDTO[]> {
-		const promotions = await this.orm.em.find(Promotion, {}, { fields: ['*', 'picture', 'users'] });
-		const res: PromotionResponseDTO[] = [];
-
-		for (const promotion of promotions) {
-			res.push({ ...promotion, users: promotion.users.count() });
-		}
-
-		return res;
-	}
-
-	@CreateRequestContext()
-	async findLatest(): Promise<PromotionResponseDTO> {
-		const promotion = (
-			await this.orm.em.find(Promotion, {}, { orderBy: { number: 'DESC' }, fields: ['*', 'picture', 'users'] })
-		)[0];
-
-		return {
-			...promotion,
-			users: promotion.users.count(),
-		};
-	}
-
-	@CreateRequestContext()
-	async findCurrent(): Promise<PromotionResponseDTO[]> {
-		const promotions = await this.orm.em.find(
-			Promotion,
-			{},
-			{ orderBy: { number: 'DESC' }, fields: ['*', 'picture', 'users'], limit: 5 },
+	async findAll(): Promise<OutputPromotionDTO[]> {
+		return (await this.orm.em.find(Promotion, {}, { fields: ['*', 'users'] })).map(
+			(p) => p.toObject() as unknown as OutputPromotionDTO,
 		);
-		const res: PromotionResponseDTO[] = [];
-
-		for (const promotion of promotions) {
-			res.push({ ...promotion, users: promotion.users.count() });
-		}
-
-		return res;
 	}
 
 	@CreateRequestContext()
-	async findOne(number: number): Promise<PromotionResponseDTO> {
+	async findLatest(): Promise<OutputPromotionDTO> {
+		const promotion = (
+			await this.orm.em.find(
+				Promotion,
+				{},
+				{ orderBy: { number: 'DESC' }, limit: 1, fields: ['*', 'picture', 'users'] },
+			)
+		)[0];
+		return promotion.toObject() as unknown as OutputPromotionDTO;
+	}
+
+	@CreateRequestContext()
+	async findCurrent(): Promise<OutputPromotionDTO[]> {
+		return (
+			await this.orm.em.find(
+				Promotion,
+				{},
+				{ orderBy: { number: 'DESC' }, limit: 5, fields: ['*', 'picture', 'users'] },
+			)
+		).map((p) => p.toObject() as unknown as OutputPromotionDTO);
+	}
+
+	@CreateRequestContext()
+	async findOne(number: number): Promise<OutputPromotionDTO> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['*', 'picture', 'users'] });
-		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
+		if (!promotion) throw new i18nNotFoundException('validations.promotion.invalid.not_found', { number });
 
-		return {
-			...promotion,
-			users: promotion.users.count(),
-		};
+		return promotion.toObject() as unknown as OutputPromotionDTO;
 	}
 
 	@CreateRequestContext()
-	async getUsers(number: number): Promise<BaseUserResponseDTO[]> {
+	async getUsers(number: number): Promise<OutputBaseUserDTO[]> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { fields: ['users'] });
-		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
+		if (!promotion) throw new i18nNotFoundException('validations.promotion.invalid.not_found', { number });
 
-		const res: BaseUserResponseDTO[] = [];
+		const res: OutputBaseUserDTO[] = [];
 
 		for (const user of promotion.users.getItems()) {
 			res.push({
@@ -106,19 +90,19 @@ export class PromotionsService {
 	}
 
 	@CreateRequestContext()
-	async updateLogo(number: number, file: Express.Multer.File): Promise<Promotion> {
+	async updateLogo(number: number, file: Express.Multer.File): Promise<OutputPromotionPictureDTO> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
 
-		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
+		if (!promotion) throw new i18nNotFoundException('validations.promotion.invalid.not_found', { number });
 
-		const fileInfos = await this.filesService.writeOnDiskAsImage(file, {
+		const fileInfos = await this.imagesService.writeOnDisk(file.buffer, {
 			directory: join(env.PROMOTION_BASE_PATH, 'logo'),
 			filename: `promotion_${promotion.number}`,
 			aspect_ratio: '1:1',
 		});
 
 		if (promotion.picture) {
-			this.filesService.deleteFromDisk(promotion.picture);
+			this.imagesService.deleteFromDisk(promotion.picture);
 
 			promotion.picture.filename = fileInfos.filename;
 			promotion.picture.mimetype = fileInfos.mimetype;
@@ -136,35 +120,30 @@ export class PromotionsService {
 			});
 
 		await this.orm.em.persistAndFlush(promotion);
-
-		// Fix issue with the picture not being populated
-		// -> happens when the picture is updated
-		const out = await this.orm.em.findOne(Promotion, { number }, { fields: ['*'], populate: ['picture'] });
-		delete out.picture.picture_promotion; // avoid circular reference
-		return out;
+		return promotion.picture.toObject() as unknown as OutputPromotionPictureDTO;
 	}
 
 	@CreateRequestContext()
 	async getLogo(number: number): Promise<PromotionPicture> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
-		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
+		if (!promotion) throw new i18nNotFoundException('validations.promotion.invalid.not_found', { number });
 
-		if (!promotion.picture) throw new NotFoundException(this.t.Errors.Promotion.LogoNotFound(number));
+		if (!promotion.picture) throw new i18nNotFoundException('validations.promotion.invalid.no_logo', { number });
 
 		delete promotion.picture.picture_promotion; // avoid circular reference
 		return promotion.picture;
 	}
 
 	@CreateRequestContext()
-	async deleteLogo(number: number): Promise<Promotion> {
+	async deleteLogo(number: number): Promise<OutputMessageDTO> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
-		if (!promotion) throw new NotFoundException(this.t.Errors.Id.NotFound(Promotion, number));
+		if (!promotion) throw new i18nNotFoundException('validations.promotion.invalid.not_found', { number });
 
-		if (!promotion.picture) throw new NotFoundException(this.t.Errors.Promotion.LogoNotFound(number));
+		if (!promotion.picture) throw new i18nNotFoundException('validations.promotion.invalid.no_logo', { number });
 
-		this.filesService.deleteFromDisk(promotion.picture);
+		this.imagesService.deleteFromDisk(promotion.picture);
 		await this.orm.em.removeAndFlush(promotion.picture);
 
-		return promotion;
+		return new OutputMessageDTO('validations.promotion.success.deleted_logo', { number: promotion.number });
 	}
 }

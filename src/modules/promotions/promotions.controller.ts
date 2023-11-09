@@ -1,125 +1,80 @@
-import {
-	BadRequestException,
-	Controller,
-	Delete,
-	Get,
-	Param,
-	Post,
-	StreamableFile,
-	UploadedFile,
-	UseGuards,
-	UseInterceptors,
-} from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post, Req, UploadedFile, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { FileInterceptor } from '@nestjs/platform-express';
-import {
-	ApiBadRequestResponse,
-	ApiBearerAuth,
-	ApiBody,
-	ApiConsumes,
-	ApiNotFoundResponse,
-	ApiOkResponse,
-	ApiOperation,
-	ApiParam,
-	ApiTags,
-	ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
-import { z } from 'zod';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
+import { ApiNotOkResponses } from '@modules/base/decorators/api-not-ok.decorator';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nBadRequestException } from '@modules/base/http-errors';
+import { ApiDownloadFile } from '@modules/files/decorators/download.decorator';
+import { ApiUploadFile } from '@modules/files/decorators/upload.decorator';
 import { FilesService } from '@modules/files/files.service';
-import { TranslateService } from '@modules/translate/translate.service';
-import { validate } from '@utils/validate';
+import { Request } from '@modules/users/entities/user.entity';
 
-import { PromotionResponseDTO } from './dto/promotion.dto';
-import { Promotion } from './entities/promotion.entity';
+import { InputPromotionNumberParamDTO } from './dto/input.dto';
+import { OutputPromotionDTO } from './dto/output.dto';
 import { PromotionsService } from './promotions.service';
-import { BaseUserResponseDTO } from '../users/dto/base-user.dto';
+import { OutputBaseUserDTO } from '../users/dto/output.dto';
 
 @ApiTags('Promotions')
 @Controller('promotions')
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
 export class PromotionsController {
-	constructor(
-		private readonly promotionsService: PromotionsService,
-		private readonly filesService: FilesService,
-		private readonly t: TranslateService,
-	) {}
+	constructor(private readonly promotionsService: PromotionsService, private readonly filesService: FilesService) {}
 
 	@Get()
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiOkResponse({ type: [PromotionResponseDTO] })
-	@ApiOperation({ summary: 'Get all promotions' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getAll() {
+	@ApiOperation({ summary: 'Get all existing promotions' })
+	@ApiOkResponse({ type: [OutputPromotionDTO] })
+	async getAll(): Promise<OutputPromotionDTO[]> {
 		return this.promotionsService.findAll();
 	}
 
 	@Get('latest')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiOkResponse({ type: PromotionResponseDTO })
-	@ApiOperation({ summary: 'Get the latest promotion' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getLatest() {
+	@ApiOperation({ summary: 'Get the latest promotion that has been created' })
+	@ApiOkResponse({ type: OutputPromotionDTO })
+	async getLatest(): Promise<OutputPromotionDTO> {
 		return this.promotionsService.findLatest();
 	}
 
 	@Get('current')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiOkResponse({ type: [PromotionResponseDTO] })
 	@ApiOperation({ summary: 'Get promotions currently active' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getCurrent() {
+	@ApiOkResponse({ type: [OutputPromotionDTO] })
+	async getCurrent(): Promise<OutputPromotionDTO[]> {
 		return this.promotionsService.findCurrent();
 	}
 
 	@Post(':number/logo')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_PROMOTION')
-	@ApiConsumes('multipart/form-data')
-	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Update the promotion logo' })
-	@ApiNotFoundResponse({ description: 'Promotion not found' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiBadRequestResponse({ description: 'Invalid file' })
-	@ApiOkResponse({ type: Promotion })
-	@ApiBody({
-		schema: {
-			type: 'object',
-			properties: {
-				file: {
-					type: 'string',
-					format: 'binary',
-				},
-			},
-		},
-	})
-	@UseInterceptors(FileInterceptor('file'))
-	async editLogo(@UploadedFile() file: Express.Multer.File, @Param('number') number: number) {
-		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
-		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
+	@ApiUploadFile()
+	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
+	@ApiOkResponse({ type: OutputPromotionDTO })
+	@ApiNotOkResponses({ 400: 'Invalid file', 404: 'Promotion not found' })
+	async editLogo(@UploadedFile() file: Express.Multer.File, @Param() params: InputPromotionNumberParamDTO) {
+		if (!file) throw new i18nBadRequestException('validations.file.invalid.not_provided');
 
-		return this.promotionsService.updateLogo(number, file);
+		return this.promotionsService.updateLogo(params.number, file);
 	}
 
 	@Get(':number/logo')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Get the promotion logo' })
-	@ApiNotFoundResponse({ description: 'Promotion not found' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiNotFoundResponse({ description: 'Promotion not found or promotion has no logo' })
-	async getLogo(@Param('number') number: number) {
-		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
-
-		const logo = await this.promotionsService.getLogo(number);
-		return new StreamableFile(this.filesService.toReadable(logo));
+	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
+	@ApiDownloadFile('The promotion logo')
+	@ApiNotOkResponses({ 404: 'Promotion not found or promotion has no logo' })
+	async getLogo(@Req() req: Request, @Param() params: InputPromotionNumberParamDTO) {
+		const logo = await this.promotionsService.getLogo(params.number);
+		return this.filesService.getAsStreamable(logo, req.user.id);
 	}
 
 	@Delete(':number/logo')
@@ -127,40 +82,31 @@ export class PromotionsController {
 	@GuardPermissions('CAN_EDIT_PROMOTION')
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Delete the promotion logo' })
-	@ApiNotFoundResponse({ description: 'Promotion not found' })
-	@ApiOkResponse({ type: Promotion })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async deleteLogo(@Param('number') number: number) {
-		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
-
-		return this.promotionsService.deleteLogo(number);
+	@ApiOkResponse({ type: OutputMessageDTO })
+	@ApiNotOkResponses({ 404: 'Promotion not found or promotion has no logo' })
+	async deleteLogo(@Param() params: InputPromotionNumberParamDTO) {
+		return this.promotionsService.deleteLogo(params.number);
 	}
 
 	@Get(':number')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiOkResponse({ type: PromotionResponseDTO })
-	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Get the specified promotion' })
-	@ApiNotFoundResponse({ description: 'Promotion not found' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async get(@Param('number') number: number) {
-		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
-
-		return this.promotionsService.findOne(number);
+	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
+	@ApiOkResponse({ type: OutputPromotionDTO })
+	@ApiNotOkResponses({ 404: 'Promotion not found' })
+	async get(@Param() params: InputPromotionNumberParamDTO) {
+		return this.promotionsService.findOne(params.number);
 	}
 
 	@Get(':number/users')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_READ_PROMOTION')
-	@ApiOkResponse({ type: [BaseUserResponseDTO] })
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
 	@ApiOperation({ summary: 'Get users of the specified promotions' })
-	@ApiNotFoundResponse({ description: 'Promotion not found' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getUsers(@Param('number') number: number) {
-		validate(z.coerce.number().int().min(1), number, this.t.Errors.Id.Invalid(Promotion, number));
-
-		return this.promotionsService.getUsers(number);
+	@ApiOkResponse({ type: [OutputBaseUserDTO] })
+	@ApiNotOkResponses({ 404: 'Promotion not found' })
+	async getUsers(@Param() params: InputPromotionNumberParamDTO) {
+		return this.promotionsService.getUsers(params.number);
 	}
 }

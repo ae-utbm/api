@@ -1,26 +1,16 @@
 import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import {
-	ApiTags,
-	ApiBearerAuth,
-	ApiNotFoundResponse,
-	ApiBadRequestResponse,
-	ApiOkResponse,
-	ApiParam,
-	ApiOperation,
-} from '@nestjs/swagger';
-import { z } from 'zod';
+import { ApiTags, ApiBearerAuth, ApiOkResponse, ApiParam, ApiOperation } from '@nestjs/swagger';
 
-import { MessageResponseDTO } from '@modules/_mixin/dto/message-response.dto';
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
-import { TranslateService } from '@modules/translate/translate.service';
-import { User } from '@modules/users/entities/user.entity';
-import { validate } from '@utils/validate';
+import { ApiNotOkResponses } from '@modules/base/decorators/api-not-ok.decorator';
+import { InputIdParamDTO } from '@modules/base/dto/input.dto';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
 
-import { Log } from './entities/log.entity';
+import { OutputLogDTO } from './dto/output.dto';
 import { LogsService } from './logs.service';
 
 @Controller('logs')
@@ -28,33 +18,27 @@ import { LogsService } from './logs.service';
 @ApiTags('Logs')
 @ApiBearerAuth()
 export class LogsController {
-	constructor(private readonly logsService: LogsService, private readonly t: TranslateService) {}
+	constructor(private readonly logsService: LogsService) {}
 
-	@Get('user/:user_id')
+	@Get('user/:id')
 	@UseGuards(SelfOrPermissionGuard)
-	@GuardSelfOrPermissions('user_id', ['CAN_READ_LOGS_OF_USER'])
-	@ApiNotFoundResponse({ description: 'User not found' })
-	@ApiBadRequestResponse({ description: 'Invalid user ID' })
-	@ApiOkResponse({ description: 'User logs retrieved', type: [Log] })
-	@ApiParam({ name: 'id', description: 'The user ID' })
+	@GuardSelfOrPermissions('id', ['CAN_READ_LOGS_OF_USER'])
 	@ApiOperation({ summary: 'Get all logs of a user' })
-	getUserLogs(@Param('user_id') id: number) {
-		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
-
-		return this.logsService.getUserLogs(id);
+	@ApiParam({ name: 'id', description: 'The user ID' })
+	@ApiOkResponse({ description: 'User logs retrieved', type: [OutputLogDTO] })
+	@ApiNotOkResponses({ 400: 'Invalid user ID', 404: 'User not found' })
+	async getUserLogs(@Param() params: InputIdParamDTO): Promise<OutputLogDTO[]> {
+		return this.logsService.getUserLogs(params.id);
 	}
 
-	@Delete('user/:user_id')
+	@Delete('user/:id')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_DELETE_LOGS_OF_USER')
-	@ApiNotFoundResponse({ description: 'User not found' })
-	@ApiBadRequestResponse({ description: 'Invalid user ID' })
-	@ApiOkResponse({ description: 'User logs deleted', type: MessageResponseDTO })
-	@ApiParam({ name: 'id', description: 'The user ID' })
 	@ApiOperation({ summary: 'Delete all logs of a user' })
-	deleteUserLogs(@Param('user_id') id: number) {
-		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
-
-		return this.logsService.deleteUserLogs(id);
+	@ApiParam({ name: 'id', description: 'The user ID' })
+	@ApiOkResponse({ description: 'User logs deleted', type: OutputMessageDTO })
+	@ApiNotOkResponses({ 400: 'Invalid user ID', 404: 'User not found' })
+	async deleteUserLogs(@Param() params: InputIdParamDTO): Promise<OutputMessageDTO> {
+		return this.logsService.deleteUserLogs(params.id);
 	}
 }

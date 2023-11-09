@@ -6,7 +6,6 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { z } from 'zod';
 
 import { env } from '@env';
-import { validate } from '@utils/validate';
 
 import { AuthService } from '../auth.service';
 
@@ -29,16 +28,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 	 * @param payload - The payload from the JWT
 	 */
 	async validate(payload: JWTPayload) {
-		const schema = z
-			.object({
-				sub: z.number().int().min(1),
-				email: z.string().email(),
-				iat: z.number().int().min(0),
-				exp: z.number().int().min(0),
-			})
-			.strict();
-
-		validate(schema, payload);
+		z.object({
+			sub: z.number().int().min(1),
+			email: z.string().email(),
+			iat: z.number().int().min(0),
+			exp: z.number().int().min(0),
+		})
+			.strict()
+			.parse(payload);
 
 		// Find the user from the payload
 		// > If the user is not found, throw an error (Not found)

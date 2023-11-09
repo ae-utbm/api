@@ -1,45 +1,21 @@
-import type { RequestWithUser } from '#types/api';
-
-import {
-	BadRequestException,
-	Controller,
-	Delete,
-	Get,
-	Param,
-	Post,
-	Req,
-	StreamableFile,
-	UnauthorizedException,
-	UploadedFile,
-	UseGuards,
-	UseInterceptors,
-} from '@nestjs/common';
+import { Controller, Delete, Get, Param, Post, Req, UploadedFile, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { FileInterceptor } from '@nestjs/platform-express';
-import {
-	ApiBearerAuth,
-	ApiBody,
-	ApiConsumes,
-	ApiOkResponse,
-	ApiOperation,
-	ApiTags,
-	ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
-import { z } from 'zod';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import { GuardPermissions } from '@modules/auth/decorators/permissions.decorator';
 import { GuardSelfOrPermissions } from '@modules/auth/decorators/self-or-perms.decorator';
-import { GuardSelfOrPermsOrSub } from '@modules/auth/decorators/self-or-sub-perms.decorator';
 import { PermissionGuard } from '@modules/auth/guards/permission.guard';
 import { SelfOrPermissionGuard } from '@modules/auth/guards/self-or-perms.guard';
-import { SelfOrPermsOrSubGuard } from '@modules/auth/guards/self-or-sub-or-perms.guard';
+import { ApiNotOkResponses } from '@modules/base/decorators/api-not-ok.decorator';
+import { InputIdParamDTO } from '@modules/base/dto/input.dto';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nBadRequestException } from '@modules/base/http-errors';
+import { ApiDownloadFile } from '@modules/files/decorators/download.decorator';
+import { ApiUploadFile } from '@modules/files/decorators/upload.decorator';
 import { FilesService } from '@modules/files/files.service';
-import { TranslateService } from '@modules/translate/translate.service';
-import { validate } from '@utils/validate';
 
-import { UserBanner } from '../entities/user-banner.entity';
-import { UserPicture } from '../entities/user-picture.entity';
-import { User } from '../entities/user.entity';
+import { OutputUserBannerDTO, OutputUserPictureDTO } from '../dto/output.dto';
+import { Request } from '../entities/user.entity';
 import { UsersFilesService } from '../services/users-files.service';
 
 @ApiTags('Users Files')
@@ -47,125 +23,80 @@ import { UsersFilesService } from '../services/users-files.service';
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
 export class UsersFilesController {
-	constructor(
-		private readonly t: TranslateService,
-		private readonly usersFilesService: UsersFilesService,
-		private readonly filesService: FilesService,
-	) {}
+	constructor(private readonly usersFilesService: UsersFilesService, private readonly filesService: FilesService) {}
 
 	@Post(':id/picture')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Update user profile picture' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiOkResponse({ description: 'The updated user picture', type: UserPicture })
-	@ApiConsumes('multipart/form-data')
-	@ApiBody({
-		schema: {
-			type: 'object',
-			properties: {
-				file: {
-					type: 'string',
-					format: 'binary',
-				},
-			},
-		},
-	})
-	@UseInterceptors(FileInterceptor('file'))
-	async editPicture(@Req() req: RequestWithUser, @UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
-		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
-		validate(z.coerce.number().int().min(1), id);
-
-		return this.usersFilesService.updatePicture(req.user as User, id, file);
+	@ApiParam({ name: 'id', description: 'The user ID' })
+	@ApiOkResponse({ description: 'The updated user picture', type: OutputUserPictureDTO })
+	@ApiNotOkResponses({ 400: 'Invalid user ID or missing uploaded file', 404: 'User not found' })
+	@ApiUploadFile()
+	async editPicture(
+		@Req() req: Request,
+		@Param() params: InputIdParamDTO,
+		@UploadedFile() file: Express.Multer.File,
+	): Promise<OutputUserPictureDTO> {
+		if (!file) throw new i18nBadRequestException('validations.file.invalid.not_provided');
+		return this.usersFilesService.updatePicture(req.user, params.id, file);
 	}
 
 	@Delete(':id/picture')
 	@UseGuards(PermissionGuard)
 	@GuardPermissions('CAN_EDIT_USER')
 	@ApiOperation({ summary: 'Delete user profile picture' })
-	@ApiOkResponse({ type: User })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async deletePicture(@Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
-
-		return this.usersFilesService.deletePicture(id);
+	@ApiParam({ name: 'id', description: 'The user ID' })
+	@ApiOkResponse({ type: OutputMessageDTO })
+	@ApiNotOkResponses({ 400: 'Invalid ID', 404: 'User not found' })
+	async deletePicture(@Param() params: InputIdParamDTO): Promise<OutputMessageDTO> {
+		return this.usersFilesService.deletePicture(params.id);
 	}
 
 	@Get(':id/picture')
-	@UseGuards(SelfOrPermsOrSubGuard)
-	@GuardSelfOrPermsOrSub('id', ['CAN_READ_USER'])
 	@ApiOperation({ summary: 'Get user profile picture' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getPicture(@Req() req: RequestWithUser, @Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
-
-		const picture = await this.usersFilesService.getPicture(id);
-		await picture.visibility?.init();
-
-		if (await this.filesService.canReadFile(picture, req.user as User))
-			return new StreamableFile(this.filesService.toReadable(picture));
-
-		// Should not happen unless the user is subscribed but not in the visibility group of subscribers
-		// -> all others options are caught by the guard
-		/* istanbul ignore next-line */
-		throw new UnauthorizedException(this.t.Errors.File.Unauthorized(picture.visibility?.name));
+	@ApiParam({ name: 'id', description: 'The user ID' })
+	@ApiNotOkResponses({ 400: 'Invalid ID', 404: 'User not found' })
+	@ApiDownloadFile()
+	async getPicture(@Req() req: Request, @Param() params: InputIdParamDTO) {
+		const picture = await this.usersFilesService.getPicture(params.id);
+		return this.filesService.getAsStreamable(picture, req.user.id);
 	}
 
 	@Post(':id/banner')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Update user profile banner' })
-	@ApiOkResponse({ description: 'The updated user banner', type: UserBanner })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	@ApiConsumes('multipart/form-data')
-	@ApiBody({
-		schema: {
-			type: 'object',
-			properties: {
-				file: {
-					type: 'string',
-					format: 'binary',
-				},
-			},
-		},
-	})
-	@UseInterceptors(FileInterceptor('file'))
-	async editBanner(@UploadedFile() file: Express.Multer.File, @Param('id') id: number) {
-		if (!file) throw new BadRequestException(this.t.Errors.File.NotProvided());
-		validate(z.coerce.number().int().min(1), id);
-
-		return this.usersFilesService.updateBanner(id, file);
+	@ApiParam({ name: 'id', description: 'The user ID' })
+	@ApiOkResponse({ description: 'The updated user banner', type: OutputUserBannerDTO })
+	@ApiNotOkResponses({ 400: 'Invalid user ID or missing uploaded file', 404: 'User not found' })
+	@ApiUploadFile()
+	async editBanner(
+		@Param() params: InputIdParamDTO,
+		@UploadedFile() file: Express.Multer.File,
+	): Promise<OutputUserBannerDTO> {
+		if (!file) throw new i18nBadRequestException('validations.file.invalid.not_provided');
+		return this.usersFilesService.updateBanner(params.id, file);
 	}
 
 	@Delete(':id/banner')
 	@UseGuards(SelfOrPermissionGuard)
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Delete user profile banner' })
-	@ApiOkResponse({ type: User })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async deleteBanner(@Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid(User, id));
-
-		return this.usersFilesService.deleteBanner(id);
+	@ApiParam({ name: 'id', description: 'The user ID' })
+	@ApiOkResponse({ type: OutputMessageDTO })
+	@ApiNotOkResponses({ 400: 'Invalid ID', 404: 'User not found' })
+	async deleteBanner(@Param() params: InputIdParamDTO): Promise<OutputMessageDTO> {
+		return this.usersFilesService.deleteBanner(params.id);
 	}
 
 	@Get(':id/banner')
-	@UseGuards(SelfOrPermsOrSubGuard)
-	@GuardSelfOrPermsOrSub('id', ['CAN_READ_USER'])
 	@ApiOperation({ summary: 'Get user profile banner' })
-	@ApiUnauthorizedResponse({ description: 'Insufficient permission' })
-	async getBanner(@Req() req: RequestWithUser, @Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id);
-
-		const banner = await this.usersFilesService.getBanner(id);
-		await banner.visibility?.init();
-
-		if (await this.filesService.canReadFile(banner, req.user as User))
-			return new StreamableFile(this.filesService.toReadable(banner));
-
-		// Should not happen unless the user is subscribed but not in the visibility group of subscribers
-		// -> all others options are caught by the guard
-		/* istanbul ignore next-line */
-		throw new UnauthorizedException(this.t.Errors.File.Unauthorized(banner.visibility?.name));
+	@ApiParam({ name: 'id', description: 'The user ID' })
+	@ApiNotOkResponses({ 400: 'Invalid ID', 404: 'User not found' })
+	@ApiDownloadFile()
+	async getBanner(@Req() req: Request, @Param() params: InputIdParamDTO) {
+		const banner = await this.usersFilesService.getBanner(params.id);
+		return this.filesService.getAsStreamable(banner, req.user.id);
 	}
 }

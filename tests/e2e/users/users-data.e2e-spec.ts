@@ -2,11 +2,12 @@ import type { email } from '#types';
 
 import request from 'supertest';
 
-import { USER_GENDER } from '@exported/api/constants/genders';
-import { TokenDTO } from '@modules/auth/dto/token.dto';
+import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
 import { User } from '@modules/users/entities/user.entity';
 
-import { orm, t, server } from '../..';
+import { orm, server } from '../..';
 
 describe('Users Data (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -16,7 +17,7 @@ describe('Users Data (e2e)', () => {
 	let em: typeof orm.em;
 
 	const fakeUserEmail: email = 'john.doe@example.fr';
-	type res = Omit<request.Response, 'body'> & { body: TokenDTO };
+	type res = Omit<request.Response, 'body'> & { body: OutputTokenDTO };
 
 	beforeAll(async () => {
 		em = orm.em.fork();
@@ -56,27 +57,22 @@ describe('Users Data (e2e)', () => {
 				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							first_name: 'John',
-							last_name: 'Doe',
-							birth_date: new Date('1990-01-01'),
-						},
-					])
+					.send({
+						users: [
+							{
+								first_name: 'John',
+								last_name: 'Doe',
+								birth_date: new Date('1990-01-01'),
+							},
+						],
+					})
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: {
-						0: {
-							_errors: [],
-							email: {
-								_errors: ['Required'],
-							},
-						},
-						_errors: [],
-					},
+					...new i18nBadRequestException('validations.email.invalid.format', {
+						property: 'users.0.email',
+						value: undefined,
+					}),
 				});
 			});
 
@@ -84,20 +80,20 @@ describe('Users Data (e2e)', () => {
 				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							email: 'ae.info@utbm.fr',
-							first_name: 'John',
-							last_name: 'Doe',
-							birth_date: new Date('1990-01-01'),
-						},
-					])
+					.send({
+						users: [
+							{
+								email: 'ae.info@utbm.fr',
+								first_name: 'John',
+								last_name: 'Doe',
+								birth_date: new Date('1990-01-01'),
+							},
+						],
+					})
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Email.IsAlreadyUsed('ae.info@utbm.fr'),
+					...new i18nBadRequestException('validations.email.invalid.used', { email: 'ae.info@utbm.fr' }),
 				});
 			});
 
@@ -105,26 +101,28 @@ describe('Users Data (e2e)', () => {
 				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							email: 'ae.info@utbm.fr',
-							first_name: 'John',
-							last_name: 'Doe',
-							birth_date: new Date('1990-01-01'),
-						},
-						{
-							email: 'unverified@email.com',
-							first_name: 'John',
-							last_name: 'Doe',
-							birth_date: new Date('1990-01-01'),
-						},
-					])
+					.send({
+						users: [
+							{
+								email: 'ae.info@utbm.fr',
+								first_name: 'John',
+								last_name: 'Doe',
+								birth_date: new Date('1990-01-01'),
+							},
+							{
+								email: 'unverified@email.com',
+								first_name: 'John',
+								last_name: 'Doe',
+								birth_date: new Date('1990-01-01'),
+							},
+						],
+					})
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Email.AreAlreadyUsed(['ae.info@utbm.fr', 'unverified@email.com']),
+					...new i18nBadRequestException('validations.email.invalid.are_used', {
+						emails: ['unverified@email.com', 'ae.info@utbm.fr'].join("', '"),
+					}),
 				});
 			});
 
@@ -132,20 +130,23 @@ describe('Users Data (e2e)', () => {
 				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							email: 'any@utbm.fr',
-							first_name: 'John',
-							last_name: 'Doe',
-							birth_date: new Date('1990-01-01'),
-						},
-					])
+					.send({
+						users: [
+							{
+								email: 'any@utbm.fr',
+								first_name: 'John',
+								last_name: 'Doe',
+								birth_date: new Date('1990-01-01'),
+							},
+						],
+					})
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Email.Blacklisted('any@utbm.fr'),
+					...new i18nBadRequestException('validations.email.invalid.blacklisted', {
+						property: 'users.0.email',
+						value: 'any@utbm.fr',
+					}),
 				});
 			});
 
@@ -155,20 +156,20 @@ describe('Users Data (e2e)', () => {
 				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							email: 'example123@domain.com',
-							first_name: 'John',
-							last_name: 'Doe',
-							birth_date: date,
-						},
-					])
+					.send({
+						users: [
+							{
+								email: 'example123@domain.com',
+								first_name: 'John',
+								last_name: 'Doe',
+								birth_date: date,
+							},
+						],
+					})
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.BirthDate.Invalid(date),
+					...new i18nBadRequestException('validations.birth_date.invalid.outbound', { date: date.toISOString() }),
 				});
 			});
 		});
@@ -177,14 +178,16 @@ describe('Users Data (e2e)', () => {
 			it('when the user is not authenticated', async () => {
 				const response = await request(server)
 					.post('/users')
-					.send([
-						{
-							email: 'any@example.com',
-							first_name: 'John',
-							last_name: 'Doe',
-							birth_date: new Date('1990-01-01'),
-						},
-					])
+					.send({
+						users: [
+							{
+								email: 'any@example.com',
+								first_name: 'John',
+								last_name: 'Doe',
+								birth_date: new Date('1990-01-01'),
+							},
+						],
+					})
 					.expect(401);
 
 				expect(response.body).toEqual({
@@ -199,14 +202,16 @@ describe('Users Data (e2e)', () => {
 				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
-					.send([
-						{
-							email: 'any@example.com',
-							first_name: 'John',
-							last_name: 'Doe',
-							birth_date: new Date('1990-01-01'),
-						},
-					])
+					.send({
+						users: [
+							{
+								email: 'any@example.com',
+								first_name: 'John',
+								last_name: 'Doe',
+								birth_date: new Date('1990-01-01'),
+							},
+						],
+					})
 					.expect(403);
 
 				expect(response.body).toEqual({
@@ -222,14 +227,16 @@ describe('Users Data (e2e)', () => {
 				const response = await request(server)
 					.post('/users')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							email: fakeUserEmail,
-							birth_date: new Date('2001-01-01'),
-							first_name: 'John',
-							last_name: 'Doe',
-						},
-					])
+					.send({
+						users: [
+							{
+								email: fakeUserEmail,
+								birth_date: new Date('2001-01-01'),
+								first_name: 'John',
+								last_name: 'Doe',
+							},
+						],
+					})
 					.expect(201);
 
 				expect(response.body).toEqual([
@@ -239,19 +246,6 @@ describe('Users Data (e2e)', () => {
 						updated: expect.any(String),
 						first_name: 'John',
 						last_name: 'Doe',
-						email_verified: true,
-						files_visibility_groups: [],
-						full_name: 'John Doe',
-						email: fakeUserEmail,
-						birth_date: '2001-01-01T00:00:00.000Z',
-						age: expect.any(Number),
-						is_minor: false,
-						gender: USER_GENDER[0],
-						last_seen: expect.any(String),
-						logs: [],
-						permissions: [],
-						roles: [],
-						verified: expect.any(String),
 					},
 				]);
 			});
@@ -262,52 +256,33 @@ describe('Users Data (e2e)', () => {
 		describe('400 : Bad Request', () => {
 			it('when the user id is not a number', async () => {
 				const response = await request(server)
-					.patch('/users')
+					.patch('/users/abc')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							id: 'abc',
-						},
-					])
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'abc'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'abc', property: 'id' }),
 				});
 			});
 
 			it('when the user email is already used', async () => {
 				const response = await request(server)
-					.patch('/users')
+					.patch('/users/1')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							id: 1,
-							email: 'unverified@email.com',
-						},
-					])
+					.send({
+						email: 'unverified@email.com',
+					})
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Email.IsAlreadyUsed('unverified@email.com'),
+					...new i18nBadRequestException('validations.email.invalid.used', { email: 'unverified@email.com' }),
 				});
 			});
 		});
 
 		describe('401 : Unauthorized', () => {
 			it('when the user is not authenticated', async () => {
-				const response = await request(server)
-					.patch('/users')
-					.send([
-						{
-							id: 1,
-						},
-					])
-					.expect(401);
+				const response = await request(server).patch('/users/1').expect(401);
 
 				expect(response.body).toEqual({
 					message: 'Unauthorized',
@@ -317,58 +292,43 @@ describe('Users Data (e2e)', () => {
 
 			it('when the user try to change its own birth date', async () => {
 				const response = await request(server)
-					.patch('/users')
+					.patch('/users/1')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							id: 1,
-							birth_date: new Date('2001-01-01'),
-						},
-					])
+					.send({
+						birth_date: new Date('2001-01-01'),
+					})
 					.expect(401);
 
 				expect(response.body).toEqual({
-					error: 'Unauthorized',
-					statusCode: 401,
-					message: t.Errors.User.CannotUpdateBirthDateOrName(),
+					...new i18nUnauthorizedException('validations.user.cannot_update'),
 				});
 			});
 
 			it('when the user try to change its own first name', async () => {
 				const response = await request(server)
-					.patch('/users')
+					.patch('/users/1')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							id: 1,
-							first_name: 'John',
-						},
-					])
+					.send({
+						first_name: 'John',
+					})
 					.expect(401);
 
 				expect(response.body).toEqual({
-					error: 'Unauthorized',
-					statusCode: 401,
-					message: t.Errors.User.CannotUpdateBirthDateOrName(),
+					...new i18nUnauthorizedException('validations.user.cannot_update'),
 				});
 			});
 
 			it('when the user try to change its own last name', async () => {
 				const response = await request(server)
-					.patch('/users')
+					.patch('/users/1')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							id: 1,
-							last_name: 'Smith',
-						},
-					])
+					.send({
+						last_name: 'Smith',
+					})
 					.expect(401);
 
 				expect(response.body).toEqual({
-					error: 'Unauthorized',
-					statusCode: 401,
-					message: t.Errors.User.CannotUpdateBirthDateOrName(),
+					...new i18nUnauthorizedException('validations.user.cannot_update'),
 				});
 			});
 		});
@@ -376,13 +336,8 @@ describe('Users Data (e2e)', () => {
 		describe('403 : Forbidden', () => {
 			it('when the user is not authorized', async () => {
 				const response = await request(server)
-					.patch('/users')
+					.patch('/users/1')
 					.set('Authorization', `Bearer ${tokenUnauthorized}`)
-					.send([
-						{
-							id: 1,
-						},
-					])
 					.expect(403);
 
 				expect(response.body).toEqual({
@@ -396,19 +351,13 @@ describe('Users Data (e2e)', () => {
 		describe('404 : Not Found', () => {
 			it('when the user does not exist', async () => {
 				const response = await request(server)
-					.patch('/users')
+					.patch('/users/9999')
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							id: 9999,
-						},
-					])
+					.send({})
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					message: t.Errors.Id.NotFound(User, 9999),
-					statusCode: 404,
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 9999 }),
 				});
 			});
 		});
@@ -420,43 +369,28 @@ describe('Users Data (e2e)', () => {
 
 				// -> we are updating a user that is not the authenticated one => expect 200
 				const response = await request(server)
-					.patch('/users')
+					.patch(`/users/${user.id}`)
 					.set('Authorization', `Bearer ${tokenRoot}`)
-					.send([
-						{
-							id: user.id,
-							birth_date: new Date('1990-01-01').toISOString(),
-							email: 'john.doe@example.fr',
-						},
-					])
+					.send({
+						birth_date: new Date('1990-01-01').toISOString(),
+						email: 'john.doe@example.fr',
+					})
 					.expect(200);
 
-				expect(response.body).toEqual([
-					{
-						id: expect.any(Number),
-						created: expect.any(String),
-						updated: expect.any(String),
-						first_name: 'John',
-						last_name: 'Doe',
-						full_name: 'John Doe',
-						email: 'john.doe@example.fr',
-						email_verified: true,
-						gender: USER_GENDER[0],
-						birth_date: '1990-01-01T00:00:00.000Z',
-						age: expect.any(Number),
-						is_minor: false,
-						last_seen: expect.any(String),
-						nickname: null,
-						parent_contact: null,
-						phone: null,
-						banner: null,
-						picture: null,
-						promotion: null,
-						pronouns: null,
-						secondary_email: null,
-						verified: expect.any(String),
-					},
-				]);
+				expect(response.body).toEqual({
+					id: expect.any(Number),
+					created: expect.any(String),
+					updated: expect.any(String),
+					first_name: 'John',
+					last_name: 'Doe',
+					full_name: 'John Doe',
+					birth_date: '1990-01-01T00:00:00.000Z',
+					age: expect.any(Number),
+					is_minor: false,
+					nickname: null,
+					promotion: null,
+					last_seen: expect.any(String),
+				});
 
 				// restore user
 				await em.persistAndFlush(user);
@@ -473,9 +407,7 @@ describe('Users Data (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'abc'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'abc', property: 'id' }),
 				});
 			});
 		});
@@ -520,8 +452,12 @@ describe('Users Data (e2e)', () => {
 		});
 
 		describe('200 : Ok', () => {
-			it('when the use delete itself', async () => {
+			it('when the user delete itself', async () => {
 				const user = await em.findOne(User, { email: fakeUserEmail });
+
+				// Verify user before deleting it (otherwise it can't delete itself)
+				user.verified = new Date();
+				await em.persistAndFlush(user);
 
 				const auth: res = await request(server).post('/auth/login').send({
 					email: user.email,
@@ -535,8 +471,7 @@ describe('Users Data (e2e)', () => {
 					.expect(200);
 
 				expect(response.body).toEqual({
-					statusCode: 200,
-					message: t.Success.Entity.Deleted(User),
+					...new OutputMessageDTO('validations.user.success.deleted', { name: 'John Doe' }),
 				});
 			});
 		});
@@ -551,9 +486,7 @@ describe('Users Data (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'abc'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'abc', property: 'id' }),
 				});
 			});
 		});
@@ -605,9 +538,7 @@ describe('Users Data (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					message: t.Errors.Id.NotFound(User, 9999),
-					statusCode: 404,
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 9999 }),
 				});
 			});
 		});
@@ -625,9 +556,6 @@ describe('Users Data (e2e)', () => {
 					updated: expect.any(String),
 					first_name: 'unverified',
 					last_name: 'user',
-					email_verified: false,
-					picture: null,
-					banner: null,
 					email: 'unverified@email.com',
 					birth_date: '2000-01-01T00:00:00.000Z',
 					nickname: null,
@@ -637,11 +565,10 @@ describe('Users Data (e2e)', () => {
 					last_seen: expect.any(String),
 					secondary_email: null,
 					phone: null,
-					parent_contact: null,
+					parents_phone: null,
 					full_name: 'unverified user',
 					age: expect.any(Number),
 					is_minor: false,
-					verified: null,
 				});
 			});
 
@@ -657,9 +584,6 @@ describe('Users Data (e2e)', () => {
 					updated: expect.any(String),
 					first_name: 'root',
 					last_name: 'root',
-					email_verified: true,
-					picture: null,
-					banner: null,
 					email: 'ae.info@utbm.fr',
 					birth_date: '2000-01-01T00:00:00.000Z',
 					nickname: 'noot noot',
@@ -669,11 +593,10 @@ describe('Users Data (e2e)', () => {
 					last_seen: expect.any(String),
 					secondary_email: null,
 					phone: null,
-					parent_contact: null,
+					parents_phone: null,
 					full_name: 'root root',
 					age: expect.any(Number),
 					is_minor: false,
-					verified: expect.any(String),
 				});
 			});
 		});
@@ -688,9 +611,7 @@ describe('Users Data (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'abc'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'abc', property: 'id' }),
 				});
 			});
 		});
@@ -729,9 +650,7 @@ describe('Users Data (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					message: t.Errors.Id.NotFound(User, 9999),
-					statusCode: 404,
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 9999 }),
 				});
 			});
 		});
@@ -749,9 +668,6 @@ describe('Users Data (e2e)', () => {
 					updated: expect.any(String),
 					first_name: 'root',
 					last_name: 'root',
-					email_verified: true,
-					picture: null,
-					banner: null,
 					birth_date: expect.any(String),
 					nickname: 'noot noot',
 					promotion: 21,
@@ -759,33 +675,28 @@ describe('Users Data (e2e)', () => {
 					full_name: 'root root',
 					age: expect.any(Number),
 					is_minor: false,
-					verified: expect.any(String),
 				});
 			});
 
 			it('when the user is asking for another user', async () => {
 				const user = await request(server)
-					.get('/users/1/data/public')
-					.set('Authorization', `Bearer ${tokenSubscriber}`)
+					.get('/users/2/data/public')
+					.set('Authorization', `Bearer ${tokenRoot}`)
 					.expect(200);
 
 				expect(user.body).toEqual({
-					id: 1,
+					id: 2,
 					created: expect.any(String),
 					updated: expect.any(String),
-					first_name: 'root',
-					last_name: 'root',
-					email_verified: true,
-					picture: null,
-					banner: null,
+					first_name: 'unverified',
+					last_name: 'user',
 					birth_date: expect.any(String),
-					nickname: 'noot noot',
-					promotion: 21,
+					nickname: null,
+					promotion: null,
 					last_seen: expect.any(String),
-					full_name: 'root root',
+					full_name: 'unverified user',
 					age: expect.any(Number),
 					is_minor: false,
-					verified: expect.any(String),
 				});
 			});
 		});
@@ -800,9 +711,7 @@ describe('Users Data (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'abc'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'abc', property: 'id' }),
 				});
 			});
 		});
@@ -841,9 +750,7 @@ describe('Users Data (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					message: t.Errors.Id.NotFounds(User, [9999]),
-					statusCode: 404,
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 9999 }),
 				});
 			});
 		});
@@ -859,7 +766,7 @@ describe('Users Data (e2e)', () => {
 					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					user: 1,
+					user_id: 1,
 					email: false,
 					secondary_email: false,
 					birth_date: true,
@@ -867,7 +774,7 @@ describe('Users Data (e2e)', () => {
 					pronouns: false,
 					promotion: true,
 					phone: false,
-					parent_contact: false,
+					parents_phone: false,
 				});
 			});
 
@@ -881,7 +788,7 @@ describe('Users Data (e2e)', () => {
 					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					user: 3,
+					user_id: 3,
 					email: false,
 					secondary_email: false,
 					birth_date: true,
@@ -889,7 +796,7 @@ describe('Users Data (e2e)', () => {
 					pronouns: false,
 					promotion: true,
 					phone: false,
-					parent_contact: false,
+					parents_phone: false,
 				});
 			});
 		});
@@ -907,9 +814,7 @@ describe('Users Data (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'abc'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'abc', property: 'id' }),
 				});
 			});
 		});
@@ -954,14 +859,12 @@ describe('Users Data (e2e)', () => {
 						pronouns: false,
 						promotion: true,
 						phone: false,
-						parent_contact: false,
+						parents_phone: false,
 					})
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					message: t.Errors.Id.NotFound(User, 9999),
-					statusCode: 404,
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 9999 }),
 				});
 			});
 		});
@@ -979,7 +882,7 @@ describe('Users Data (e2e)', () => {
 						pronouns: false,
 						promotion: true,
 						phone: false,
-						parent_contact: false,
+						parents_phone: false,
 					})
 					.expect(200);
 
@@ -987,7 +890,7 @@ describe('Users Data (e2e)', () => {
 					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					user: 1,
+					user_id: 1,
 					email: true,
 					secondary_email: true,
 					birth_date: true,
@@ -995,7 +898,7 @@ describe('Users Data (e2e)', () => {
 					pronouns: false,
 					promotion: true,
 					phone: false,
-					parent_contact: false,
+					parents_phone: false,
 				});
 			});
 
@@ -1011,7 +914,7 @@ describe('Users Data (e2e)', () => {
 						pronouns: false,
 						promotion: true,
 						phone: false,
-						parent_contact: false,
+						parents_phone: false,
 					})
 					.expect(200);
 
@@ -1019,7 +922,7 @@ describe('Users Data (e2e)', () => {
 					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					user: 3,
+					user_id: 3,
 					email: false,
 					secondary_email: false,
 					birth_date: true,
@@ -1027,7 +930,7 @@ describe('Users Data (e2e)', () => {
 					pronouns: false,
 					promotion: true,
 					phone: false,
-					parent_contact: false,
+					parents_phone: false,
 				});
 			});
 		});
@@ -1042,9 +945,7 @@ describe('Users Data (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'abc'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'abc', property: 'id' }),
 				});
 			});
 		});
@@ -1083,9 +984,7 @@ describe('Users Data (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					message: t.Errors.Id.NotFound(User, 9999),
-					statusCode: 404,
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 9999 }),
 				});
 			});
 		});
@@ -1150,9 +1049,7 @@ describe('Users Data (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, 'abc'),
+					...new i18nBadRequestException('validations.id.invalid.format', { value: 'abc', property: 'id' }),
 				});
 			});
 		});
@@ -1191,9 +1088,7 @@ describe('Users Data (e2e)', () => {
 					.expect(404);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					message: t.Errors.Id.NotFound(User, 9999),
-					statusCode: 404,
+					...new i18nNotFoundException('validations.user.not_found.id', { id: 9999 }),
 				});
 			});
 		});
@@ -1213,7 +1108,7 @@ describe('Users Data (e2e)', () => {
 						name: 'ROOT',
 						revoked: false,
 						expires: '9999-12-31T00:00:00.000Z',
-						user: 1,
+						user_id: 1,
 					},
 				]);
 			});

@@ -7,15 +7,16 @@ import { MikroORM } from '@mikro-orm/core';
 import { JwtService } from '@nestjs/jwt';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { TestingModule, Test } from '@nestjs/testing';
+import { I18nContext, I18nService, I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
 
 import { AppModule } from '@app.module';
-import { TranslateService } from '@modules/translate/translate.service';
+import { VALIDATION_PIPE_OPTIONS } from '@env';
+import { I18nHttpExceptionFilter } from '@modules/base/http-errors';
 
 let module_fixture: TestingModule;
 let jwt: JwtService;
 let app: NestExpressApplication;
 let server: Awaited<ReturnType<NestExpressApplication['listen']>>;
-let t: TranslateService;
 
 /** Should be forked using om.em.fork() for each test suite */
 let orm: MikroORM;
@@ -33,10 +34,14 @@ beforeAll(async () => {
 
 	app = module_fixture.createNestApplication();
 	app.enableCors({ origin: '*' });
+	app.useGlobalPipes(new I18nValidationPipe(VALIDATION_PIPE_OPTIONS));
+	app.useGlobalFilters(new I18nValidationExceptionFilter({ detailedErrors: false }), new I18nHttpExceptionFilter());
 
 	orm = module_fixture.get<MikroORM>(MikroORM);
-	t = module_fixture.get<TranslateService>(TranslateService);
 	jwt = module_fixture.get<JwtService>(JwtService);
+
+	const i18nService = app.get(I18nService);
+	jest.spyOn(I18nContext, 'current').mockImplementation(() => new I18nContext('en-US', i18nService));
 
 	server = await app.listen(5325);
 	await app.init();
@@ -49,4 +54,4 @@ afterAll(async () => {
 	server.close();
 });
 
-export { module_fixture, server, orm, t, jwt };
+export { module_fixture, server, orm, jwt };

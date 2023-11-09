@@ -4,11 +4,13 @@ import { join } from 'path';
 import request from 'supertest';
 
 import { env } from '@env';
-import { TokenDTO } from '@modules/auth/dto/token.dto';
+import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nBadRequestException, i18nNotFoundException } from '@modules/base/http-errors';
 import { PromotionPicture } from '@modules/promotions/entities/promotion-picture.entity';
 import { Promotion } from '@modules/promotions/entities/promotion.entity';
 
-import { server, t, orm } from '..';
+import { server, orm } from '..';
 
 describe('Promotions (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -21,7 +23,7 @@ describe('Promotions (e2e)', () => {
 
 	beforeAll(async () => {
 		em = orm.em.fork();
-		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
+		type res = Omit<request.Response, 'body'> & { body: OutputTokenDTO };
 
 		const resA: res = await request(server).post('/auth/login').send({
 			email: 'unauthorized@email.com',
@@ -80,8 +82,7 @@ describe('Promotions (e2e)', () => {
 					created: expect.any(String),
 					updated: expect.any(String),
 					number: 1,
-					picture: null,
-					users: 0,
+					users_count: 0,
 				});
 			});
 		});
@@ -130,8 +131,7 @@ describe('Promotions (e2e)', () => {
 					created: expect.any(String),
 					updated: expect.any(String),
 					number: expect.any(Number),
-					picture: null,
-					users: expect.any(Number),
+					users_count: expect.any(Number),
 				});
 			});
 		});
@@ -174,8 +174,7 @@ describe('Promotions (e2e)', () => {
 					created: expect.any(String),
 					updated: expect.any(String),
 					number: expect.any(Number),
-					picture: null,
-					users: expect.any(Number),
+					users_count: expect.any(Number),
 				});
 			});
 		});
@@ -189,9 +188,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Promotion, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'number', value: 'invalid' }),
 				});
 			});
 		});
@@ -228,9 +225,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound('Promotion', 999999),
+					...new i18nNotFoundException('validations.promotion.invalid.not_found', { number: 999999 }),
 				});
 			});
 		});
@@ -246,8 +241,7 @@ describe('Promotions (e2e)', () => {
 					created: expect.any(String),
 					updated: expect.any(String),
 					number: 21,
-					picture: null,
-					users: 1,
+					users_count: 1,
 				});
 			});
 		});
@@ -261,9 +255,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Promotion, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'number', value: 'invalid' }),
 				});
 			});
 		});
@@ -300,9 +292,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Promotion, 999999),
+					...new i18nNotFoundException('validations.promotion.invalid.not_found', { number: 999999 }),
 				});
 			});
 		});
@@ -335,9 +325,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Promotion, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'number', value: 'invalid' }),
 				});
 			});
 		});
@@ -374,9 +362,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Promotion, 999999),
+					...new i18nNotFoundException('validations.promotion.invalid.not_found', { number: 999999 }),
 				});
 			});
 
@@ -386,9 +372,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Promotion.LogoNotFound(21),
+					...new i18nNotFoundException('validations.promotion.invalid.no_logo', { number: 21 }),
 				});
 			});
 		});
@@ -435,9 +419,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					message: t.Errors.File.NotProvided(),
-					statusCode: 400,
+					...new i18nBadRequestException('validations.file.invalid.not_provided'),
 				});
 			});
 
@@ -448,9 +430,7 @@ describe('Promotions (e2e)', () => {
 					.attach('file', fileNotAnImage, 'file.txt');
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.File.InvalidMimeType(['image/*']),
+					...new i18nBadRequestException('validations.file.invalid.unauthorized_mime_type', { mime_types: 'image/*' }),
 				});
 			});
 
@@ -461,9 +441,7 @@ describe('Promotions (e2e)', () => {
 					.attach('file', filePictureNotSquare, 'file.png');
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Image.InvalidAspectRatio('1:1'),
+					...new i18nBadRequestException('validations.image.invalid.aspect_ratio', { aspect_ratio: '1:1' }),
 				});
 			});
 
@@ -474,9 +452,7 @@ describe('Promotions (e2e)', () => {
 					.attach('file', filePictureSquare, 'file.png');
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Promotion, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'number', value: 'invalid' }),
 				});
 			});
 		});
@@ -514,40 +490,33 @@ describe('Promotions (e2e)', () => {
 					.attach('file', filePictureSquare, 'file.png');
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Promotion, 999999),
+					...new i18nNotFoundException('validations.promotion.invalid.not_found', { number: 999999 }),
 				});
 			});
 		});
 
-		describe('200 : Ok', () => {
+		describe('201 : Created', () => {
 			it('when the promotion exists and set the logo', async () => {
 				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
-					.attach('file', filePictureSquare, 'file.png');
+					.attach('file', filePictureSquare, 'file.png')
+					.expect(201);
 
 				// expect registered data to be returned
 				expect(response.body).toEqual({
-					id: 21,
+					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					number: 21,
-					picture: {
-						id: expect.any(Number),
-						created: expect.any(String),
-						updated: expect.any(String),
-						filename: expect.any(String),
-						mimetype: 'image/webp',
-						size: 117280,
-					},
+					filename: expect.any(String),
+					picture_promotion_id: 21,
+					mimetype: 'image/webp',
+					size: 117280,
 				});
 
 				// expect the file to be created on disk
-				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', (response.body as Promotion).picture.filename))).toBe(
-					true,
-				);
+				const logo = await em.findOne(PromotionPicture, { picture_promotion: 21 });
+				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', logo.filename))).toBe(true);
 			});
 
 			it('when the promotion has a logo and update the logo', async () => {
@@ -557,33 +526,28 @@ describe('Promotions (e2e)', () => {
 				const response = await request(server)
 					.post('/promotions/21/logo')
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
-					.attach('file', filePictureSquare, 'file.png');
+					.attach('file', filePictureSquare, 'file.png')
+					.expect(201);
 
 				// expect registered data to be returned
 				expect(response.body).toEqual({
-					id: 21,
+					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					number: 21,
-					picture: {
-						id: expect.any(Number),
-						created: expect.any(String),
-						updated: expect.any(String),
-						filename: expect.any(String),
-						description: null,
-						mimetype: 'image/webp',
-						size: 117280,
-						visibility: null,
-					},
+					filename: expect.any(String),
+					picture_promotion_id: 21,
+					description: null,
+					mimetype: 'image/webp',
+					size: 117280,
 				});
 
 				// expect the old file to be deleted from disk
 				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', oldLogo.filename))).toBe(false);
 
+				const newLogo = await em.findOne(PromotionPicture, { picture_promotion: 21 });
+
 				// expect the new file to be created on disk
-				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', (response.body as Promotion).picture.filename))).toBe(
-					true,
-				);
+				expect(existsSync(join(env.PROMOTION_BASE_PATH, 'logo', newLogo.filename))).toBe(true);
 			});
 		});
 	});
@@ -596,9 +560,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					statusCode: 400,
-					error: 'Bad Request',
-					message: t.Errors.Id.Invalid(Promotion, 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'number', value: 'invalid' }),
 				});
 			});
 		});
@@ -635,9 +597,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(Promotion, 999999),
+					...new i18nNotFoundException('validations.promotion.invalid.not_found', { number: 999999 }),
 				});
 			});
 
@@ -647,9 +607,7 @@ describe('Promotions (e2e)', () => {
 					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
 
 				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Promotion.LogoNotFound(20),
+					...new i18nNotFoundException('validations.promotion.invalid.no_logo', { number: 20 }),
 				});
 			});
 		});
@@ -670,14 +628,11 @@ describe('Promotions (e2e)', () => {
 				// Get the logo filename
 				const response = await request(server)
 					.delete('/promotions/21/logo')
-					.set('Authorization', `Bearer ${tokenPromotionModerator}`);
+					.set('Authorization', `Bearer ${tokenPromotionModerator}`)
+					.expect(200);
 
 				expect(response.body).toEqual({
-					id: 21,
-					created: expect.any(String),
-					updated: expect.any(String),
-					number: 21,
-					picture: undefined,
+					...new OutputMessageDTO('validations.promotion.success.deleted_logo', { number: 21 }),
 				});
 
 				// expect the file to be deleted from disk

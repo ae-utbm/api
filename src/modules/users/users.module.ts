@@ -6,7 +6,6 @@ import { AuthService } from '@modules/auth/auth.service';
 import { EmailsService } from '@modules/emails/emails.service';
 import { FilesService } from '@modules/files/files.service';
 import { ImagesService } from '@modules/files/images.service';
-import { TranslateService } from '@modules/translate/translate.service';
 import { UserVisibility } from '@modules/users/entities/user-visibility.entity';
 import { User } from '@modules/users/entities/user.entity';
 
@@ -17,16 +16,7 @@ import { UsersFilesService } from './services/users-files.service';
 
 @Module({
 	imports: [MikroOrmModule.forFeature([User, UserVisibility])],
-	providers: [
-		AuthService,
-		EmailsService,
-		FilesService,
-		ImagesService,
-		JwtService,
-		TranslateService,
-		UsersDataService,
-		UsersFilesService,
-	],
+	providers: [AuthService, EmailsService, FilesService, ImagesService, JwtService, UsersDataService, UsersFilesService],
 	controllers: [UsersDataController, UsersFilesController],
 	exports: [UsersDataService, UsersFilesService],
 })

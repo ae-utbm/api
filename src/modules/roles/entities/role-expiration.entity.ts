@@ -1,22 +1,19 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { BaseEntity } from '@modules/_mixin/entities/base.entity';
+import { BaseEntity } from '@modules/base/entities/base.entity';
 import { User } from '@modules/users/entities/user.entity';
 
 import { Role } from './role.entity';
 
 @Entity({ tableName: 'roles_expirations' })
 export class RoleExpiration extends BaseEntity {
-	/** Specify which user is attached to that role */
-	@ManyToOne(() => User)
+	@ManyToOne(() => User, { serializedName: 'user_id', serializer: (u: User) => u.id })
 	user: User;
 
-	/** Specify which role is attached to that user */
-	@ManyToOne(() => Role)
+	@ManyToOne(() => Role, { serializedName: 'role_id', serializer: (r: Role) => r.id })
 	role: Role;
 
-	/** Specify when the role should expires */
 	@Property({ name: 'expires_at' })
 	@ApiProperty()
 	expires: Date;

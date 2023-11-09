@@ -1,5 +1,6 @@
 import { hashSync } from 'bcrypt';
 
+import { i18nNotFoundException } from '@modules/base/http-errors';
 import { Permission } from '@modules/permissions/entities/permission.entity';
 import { Role } from '@modules/roles/entities/role.entity';
 import { User } from '@modules/users/entities/user.entity';
@@ -93,6 +94,30 @@ describe('UsersDataService (unit)', () => {
 			]);
 
 			expect(res).toBe(false);
+		});
+	});
+
+	describe('.findOne()', () => {
+		it('should throw if no user is found', async () => {
+			await expect(usersDataService.findOne(999999, false)).rejects.toThrow(
+				new i18nNotFoundException('validations.user.not_found.id', { id: 999999 }),
+			);
+
+			await expect(usersDataService.findOne('email@email.com', false)).rejects.toThrow(
+				new i18nNotFoundException('validations.user.not_found.email', { email: 'email@email.com' }),
+			);
+		});
+	});
+
+	describe('.findVisibilities()', () => {
+		it('should throw if no user visibilities are found', async () => {
+			await expect(usersDataService.findVisibilities(999999)).rejects.toThrow(
+				new i18nNotFoundException('validations.user.not_found.id', { id: 999999 }),
+			);
+
+			await expect(usersDataService.findVisibilities([99999, 9999])).rejects.toThrow(
+				new i18nNotFoundException('validations.users.not_found.ids', { ids: [99999, 9999].join("', '") }),
+			);
 		});
 	});
 });

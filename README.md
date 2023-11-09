@@ -16,12 +16,12 @@ This repository contains the source code of the API used by the [Sith 4](https:/
 ## Table of contents
 
 - [Installation](#installation)
-	- [Project](#project)
-	- [Environment variables](#environment-variables)
-	- [Database](#database)
-		- [PostgreSQL Installation](#postgresql-installation)
-		- [Configuration](#configuration)
-		- [First time setup](#first-time-setup)
+  - [Project](#project)
+  - [Environment variables](#environment-variables)
+  - [Database](#database)
+    - [PostgreSQL Installation](#postgresql-installation)
+    - [Configuration](#configuration)
+    - [First time setup](#first-time-setup)
 - [Launch](#launch)
 - [Tests](#tests)
 - [Linting](#linting)
@@ -79,13 +79,13 @@ brew services start postgresql@13 # start postgresql service
 
 After the installation, you can use [pgAdmin](https://www.pgadmin.org/) to create a server with the following parameters:
 
-| `.env`               |      pgAdmin 4       | value                                                                                     |
-| :------------------: | :------------------: | :---------------------------------------------------------------------------------------- |
-|      `DB_HOST`       |         Host         | `127.0.0.1`                                                                               |
-|      `DB_PORT`       |         Port         | `5432`                                                                                    |
-|    `DB_USERNAME`     |       Username       | Should be the username you used to install postgresql or any user you have created for it |
-|    `DB_PASSWORD`     |       Password       | leave it empty, unless you have set a password for your postgresql user                   |
-|    `DB_DATABASE`     | Maintenance database | `postgres`                                                                                |
+|    `.env`     |      pgAdmin 4       | value                                                                                     |
+| :-----------: | :------------------: | :---------------------------------------------------------------------------------------- |
+|   `DB_HOST`   |         Host         | `127.0.0.1`                                                                               |
+|   `DB_PORT`   |         Port         | `5432`                                                                                    |
+| `DB_USERNAME` |       Username       | Should be the username you used to install postgresql or any user you have created for it |
+| `DB_PASSWORD` |       Password       | leave it empty, unless you have set a password for your postgresql user                   |
+| `DB_DATABASE` | Maintenance database | `postgres`                                                                                |
 
 > **Note**  
 > You can also use [TablePlus](https://tableplus.com/) to manage your databases as a lightweight (but more limited, in the free edition) alternative to pgAdmin.
@@ -121,16 +121,21 @@ pnpm run start:prod
 ```
 
 ## Tests
+
 Both unit and e2e tests are available and run with [Jest](https://jestjs.io/). You can run them with the following command:
 
 ```bash
-# unit tests
+# all tests
 pnpm test
+
+# unique test file
+pnpm test -- "auth.e2e-spec.ts"
 ```
 
 > After running the tests, a coverage report is generated in the `./coverage` folder.
 
 ## Linting
+
 This project uses [ESLint](https://eslint.org/) and [Prettier](https://prettier.io/) to lint the code. You can run the linter with the following command:
 
 ```bash

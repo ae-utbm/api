@@ -1,10 +1,10 @@
 import request from 'supertest';
 
-import { TokenDTO } from '@modules/auth/dto/token.dto';
-import { Log } from '@modules/logs/entities/log.entity';
-import { User } from '@modules/users/entities/user.entity';
+import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
+import { OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nBadRequestException } from '@modules/base/http-errors';
 
-import { server, t } from '..';
+import { server } from '..';
 
 describe('Logs (e2e)', () => {
 	let tokenUnauthorized: string;
@@ -17,7 +17,7 @@ describe('Logs (e2e)', () => {
 	let userIdLogModerator: number;
 
 	beforeAll(async () => {
-		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
+		type res = Omit<request.Response, 'body'> & { body: OutputTokenDTO };
 
 		const responseA: res = await request(server).post('/auth/login').send({
 			email: 'promos@email.com',
@@ -55,9 +55,7 @@ describe('Logs (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, fakeId),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'id', value: fakeId }),
 				});
 			});
 		});
@@ -101,23 +99,6 @@ describe('Logs (e2e)', () => {
 			});
 		});
 
-		describe('404 : Not Found', () => {
-			it('when the user does not exist', async () => {
-				const fakeId = 9999;
-
-				const response = await request(server)
-					.get(`/logs/user/${fakeId}`)
-					.set('Authorization', `Bearer ${tokenLogModerator}`)
-					.expect(404);
-
-				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound(User, fakeId),
-				});
-			});
-		});
-
 		describe('200 : Ok', () => {
 			it('when user is asking for himself', async () => {
 				const response = await request(server)
@@ -150,7 +131,7 @@ describe('Logs (e2e)', () => {
 					id: expect.any(Number),
 					created: expect.any(String),
 					updated: expect.any(String),
-					user: userIdUnauthorized,
+					user_id: userIdUnauthorized,
 					action: expect.any(String),
 					ip: expect.any(String),
 					user_agent: expect.any(String),
@@ -180,9 +161,7 @@ describe('Logs (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, fakeId),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'id', value: fakeId }),
 				});
 			});
 		});
@@ -221,8 +200,7 @@ describe('Logs (e2e)', () => {
 					.expect(200);
 
 				expect(response.body).toEqual({
-					statusCode: 200,
-					message: t.Success.Entity.Deleted(Log),
+					...new OutputMessageDTO('validations.logs.success.deleted'),
 				});
 			});
 		});

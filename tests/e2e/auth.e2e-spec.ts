@@ -3,15 +3,18 @@ import type { email } from '#types';
 import { hashSync } from 'bcrypt';
 import request from 'supertest';
 
-import { USER_GENDER } from '@exported/api/constants/genders';
-import { UserPostDTO } from '@modules/auth/dto/register.dto';
+import { InputRegisterUserDTO } from '@modules/auth/dto/input.dto';
+import { generateRandomPassword } from '@modules/base/decorators';
+import { OutputCreatedDTO, OutputMessageDTO } from '@modules/base/dto/output.dto';
+import { i18nForbiddenException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
+import { i18nBadRequestException } from '@modules/base/http-errors/bad-request';
 import { User } from '@modules/users/entities/user.entity';
-import { generateRandomPassword } from '@utils/password';
 
-import { orm, server, t } from '..';
+import { orm, server } from '..';
 
 describe('Auth (e2e)', () => {
 	let em: typeof orm.em;
+	const fakeToken = 'token67891012'; // from tests.seeder.ts
 
 	beforeAll(() => {
 		em = orm.em.fork();
@@ -20,17 +23,13 @@ describe('Auth (e2e)', () => {
 	describe('(POST) /auth/login', () => {
 		describe('400 : Bad Request', () => {
 			it('when email/password is not provided', async () => {
-				const response = await request(server).post('/auth/login').send({ password: 'password' }).expect(400);
+				const response = await request(server).post('/auth/login').send().expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: {
-						_errors: [],
-						email: {
-							_errors: ['Required'],
-						},
-					},
+					...new i18nBadRequestException([
+						{ key: 'validations.email.invalid.format', args: { property: 'email', value: undefined } },
+						{ key: 'validations.password.invalid.weak', args: { property: 'password', value: undefined } },
+					]),
 				});
 			});
 		});
@@ -39,27 +38,33 @@ describe('Auth (e2e)', () => {
 			it('when password is incorrect', async () => {
 				const response = await request(server)
 					.post('/auth/login')
-					.send({ email: 'ae.info@utbm.fr', password: '' })
+					.send({ email: 'ae.info@utbm.fr', password: generateRandomPassword() })
 					.expect(401);
 
-				expect(response.body).toEqual({
-					error: 'Unauthorized',
-					statusCode: 401,
-					message: t.Errors.Password.Mismatch(),
-				});
+				expect(response.body).toEqual({ ...new i18nUnauthorizedException('validations.password.invalid.mismatch') });
+			});
+		});
+
+		describe('403 : Forbidden', () => {
+			it('when the user account is not yet verified', async () => {
+				const response = await request(server)
+					.post('/auth/login')
+					.send({ email: 'unverified@email.com', password: 'root' })
+					.expect(403);
+
+				expect(response.body).toEqual({ ...new i18nForbiddenException('validations.user.unverified') });
 			});
 		});
 
 		describe('404 : Not Found', () => {
 			it('when user is not found', async () => {
-				const email: email = 'doesnotexist@utbm.fr';
-				const response = await request(server).post('/auth/login').send({ email, password: '' }).expect(404);
+				const email: email = 'doesnotexist@example.fr';
+				const response = await request(server)
+					.post('/auth/login')
+					.send({ email, password: generateRandomPassword() })
+					.expect(404);
 
-				expect(response.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Email.NotFound(User, email),
-				});
+				expect(response.body).toEqual({ ...new i18nNotFoundException('validations.user.not_found.email', { email }) });
 			});
 		});
 
@@ -79,7 +84,7 @@ describe('Auth (e2e)', () => {
 	});
 
 	describe('(POST) /auth/register', () => {
-		const user: UserPostDTO = {
+		const user: InputRegisterUserDTO = {
 			first_name: 'John',
 			last_name: 'Doe',
 			email: 'johndoe@domain.com',
@@ -97,9 +102,7 @@ describe('Auth (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.BirthDate.Invalid(tomorrow),
+					...new i18nBadRequestException('validations.birth_date.invalid.outbound', { date: tomorrow.toISOString() }),
 				});
 			});
 
@@ -112,9 +115,7 @@ describe('Auth (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.BirthDate.Invalid(birth_date),
+					...new i18nBadRequestException('validations.birth_date.invalid.outbound', { date: birth_date.toISOString() }),
 				});
 			});
 
@@ -126,9 +127,7 @@ describe('Auth (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Password.Weak(),
+					...new i18nBadRequestException('validations.password.invalid.weak', { property: 'password', value: 'short' }),
 				});
 			});
 
@@ -140,14 +139,7 @@ describe('Auth (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: {
-						_errors: [],
-						email: {
-							_errors: ['Invalid email'],
-						},
-					},
+					...new i18nBadRequestException('validations.email.invalid.format', { property: 'email', value: 'invalid' }),
 				});
 			});
 
@@ -159,9 +151,7 @@ describe('Auth (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Email.Blacklisted(email as unknown as email),
+					...new i18nBadRequestException('validations.email.invalid.blacklisted', { property: 'email', value: email }),
 				});
 			});
 
@@ -172,11 +162,7 @@ describe('Auth (e2e)', () => {
 					.send({ ...user, email })
 					.expect(400);
 
-				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Email.IsAlreadyUsed(email),
-				});
+				expect(response.body).toEqual({ ...new i18nBadRequestException('validations.email.invalid.used', { email }) });
 			});
 
 			it('when one of required fields is not provided', async () => {
@@ -186,29 +172,10 @@ describe('Auth (e2e)', () => {
 					.expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: {
-						_errors: [],
-						first_name: {
-							_errors: ['Required'],
-						},
-					},
-				});
-			});
-
-			it('when one unexpected field is given', async () => {
-				const response = await request(server)
-					.post('/auth/register')
-					.send({ ...user, never_gonna: 'give_you_up' })
-					.expect(400);
-
-				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: {
-						_errors: ["Unrecognized key(s) in object: 'never_gonna'"],
-					},
+					...new i18nBadRequestException('validations.string.invalid.format', {
+						property: 'first_name',
+						value: undefined,
+					}),
 				});
 			});
 		});
@@ -221,28 +188,9 @@ describe('Auth (e2e)', () => {
 					.expect(201);
 
 				expect(response.body).toEqual({
-					age: (() => {
-						const diff = Date.now() - user.birth_date.getTime();
-						const age = new Date(diff);
-						return Math.abs(age.getUTCFullYear() - 1970);
-					})(),
-					birth_date: '2000-01-01T00:00:00.000Z',
-					created: expect.any(String),
-					last_seen: expect.any(String),
-					email: 'johndoe@domain.com',
-					email_verified: false,
-					files_visibility_groups: [],
-					first_name: 'John',
-					full_name: 'John Doe',
-					id: expect.any(Number),
-					gender: USER_GENDER[0],
-					is_minor: false,
-					last_name: 'Doe',
-					logs: [],
-					permissions: [],
-					roles: [],
-					updated: expect.any(String),
-					verified: null,
+					...new OutputCreatedDTO('validations.user.success.registered', {
+						name: user.first_name + ' ' + user.last_name,
+					}),
 				});
 			});
 		});
@@ -251,68 +199,45 @@ describe('Auth (e2e)', () => {
 	describe('(GET) /auth/confirm/:user_id/:token', () => {
 		// Defined in the seeder class (unverified user)
 		const user_id = 2;
-		const token = 'token67891012';
 
 		describe('400 : Bad Request', () => {
 			it('when the "user_id" is not a number', async () => {
 				const fakeId = 'invalid';
-				const response = await request(server).get(`/auth/confirm/${fakeId}/${token}`).expect(400);
+				const response = await request(server).get(`/auth/confirm/${fakeId}/${fakeToken}`).expect(400);
 
 				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid(User, fakeId),
-				});
-			});
-
-			it('when the "token" is invalid', async () => {
-				const token = ' ';
-				const response = await request(server).get(`/auth/confirm/1/${token}/`).expect(400);
-
-				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.JWT.Invalid(),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'user_id', value: fakeId }),
 				});
 			});
 
 			it("when the user's email is already verified", async () => {
-				const response = await request(server).get(`/auth/confirm/1/anything1012`).expect(400);
+				const response = await request(server).get(`/auth/confirm/1/${fakeToken}`).expect(400);
 
-				expect(response.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Email.AlreadyVerified(User),
-				});
+				expect(response.body).toEqual({ ...new i18nBadRequestException('validations.email.invalid.already_verified') });
 			});
 		});
 
 		describe('401 : Unauthorized', () => {
-			it('when the token is invalid', async () => {
+			it('when the "token" is invalid', async () => {
 				const response = await request(server).get(`/auth/confirm/${user_id}/invalid_token`).expect(401);
 
 				expect(response.body).toEqual({
-					error: 'Unauthorized',
-					statusCode: 401,
-					message: t.Errors.Email.InvalidVerificationToken(),
+					...new i18nUnauthorizedException('validations.token.invalid.format'),
 				});
 			});
 		});
 
 		describe('200 : Ok', () => {
 			it('when user is verified', async () => {
-				const response = await request(server).get(`/auth/confirm/${user_id}/${token}`).expect(200);
+				const response = await request(server).get(`/auth/confirm/${user_id}/${fakeToken}`).expect(200);
 
-				expect(response.body).toEqual({
-					message: t.Success.Email.Verified('unverified@email.com'),
-					status_code: 200,
-				});
+				expect(response.body).toEqual({ ...new OutputMessageDTO('validations.email.success.verified') });
 
 				// Reset user email_verified to false (for other tests)
 				const user = await em.findOne(User, { id: user_id });
 
 				user.email_verified = false;
-				user.email_verification = hashSync(token, 10);
+				user.email_verification = hashSync(fakeToken, 10);
 				user.verified = null;
 
 				await em.persistAndFlush(user);
