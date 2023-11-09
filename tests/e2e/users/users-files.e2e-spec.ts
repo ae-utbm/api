@@ -327,7 +327,10 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 3028,
 					updated: expect.any(String),
-					picture_user_id: 4,
+					owner: {
+						id: 4,
+						kind: 'user',
+					},
 					visibility_id: 1,
 				});
 
@@ -350,7 +353,10 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 3028,
 					updated: expect.any(String),
-					picture_user_id: 4,
+					owner: {
+						id: 4,
+						kind: 'user',
+					},
 					visibility_id: 1,
 				});
 
@@ -381,7 +387,10 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 3028,
 					updated: expect.any(String),
-					picture_user_id: 1,
+					owner: {
+						id: 1,
+						kind: 'user',
+					},
 					visibility_id: 1,
 				});
 
@@ -692,7 +701,10 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 9498,
 					updated: expect.any(String),
-					banner_user_id: 4,
+					owner: {
+						id: 4,
+						kind: 'user',
+					},
 					visibility_id: 1,
 				});
 
@@ -723,7 +735,10 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 9498,
 					updated: expect.any(String),
-					banner_user_id: 4,
+					owner: {
+						id: 4,
+						kind: 'user',
+					},
 					visibility_id: 1,
 				});
 
@@ -746,7 +761,10 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 9498,
 					updated: expect.any(String),
-					banner_user_id: 1,
+					owner: {
+						id: 1,
+						kind: 'user',
+					},
 					visibility_id: 1,
 				});
 

@@ -1,11 +1,5 @@
 import type { email } from '#types';
-import type {
-	OutputUserBannerDto,
-	OutputUserPictureDto,
-	OutputUserRoleDto,
-	OutputUserVisibilityDto,
-	OutputBaseUserDto,
-} from '#types/api';
+import type { OutputUserRoleDto, OutputUserVisibilityDto, OutputBaseUserDto } from '#types/api';
 
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -13,7 +7,6 @@ import { OutputUserDto, PERMISSION_NAMES, GENDERS } from '#types/api';
 import { USER_GENDER } from '@exported/api/constants/genders';
 import { PERMISSIONS_NAMES } from '@exported/api/constants/perms';
 import { OutputBaseDTO } from '@modules/base/dto/output.dto';
-import { OutputFileDTO } from '@modules/files/dto/output.dto';
 
 export class OutputBaseUserDTO extends OutputBaseDTO implements OutputBaseUserDto {
 	@ApiProperty()
@@ -129,14 +122,4 @@ export class OutputUserVisibilityDTO implements OutputUserVisibilityDto {
 
 	@ApiProperty({ type: Boolean, default: false })
 	parents_phone: boolean;
-}
-
-export class OutputUserPictureDTO extends OutputFileDTO implements OutputUserPictureDto {
-	@ApiProperty({ minimum: 1 })
-	picture_user_id: number;
-}
-
-export class OutputUserBannerDTO extends OutputFileDTO implements OutputUserBannerDto {
-	@ApiProperty({ minimum: 1 })
-	banner_user_id: number;
 }

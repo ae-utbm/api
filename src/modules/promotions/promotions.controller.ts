@@ -9,6 +9,7 @@ import { OutputMessageDTO } from '@modules/base/dto/output.dto';
 import { i18nBadRequestException } from '@modules/base/http-errors';
 import { ApiDownloadFile } from '@modules/files/decorators/download.decorator';
 import { ApiUploadFile } from '@modules/files/decorators/upload.decorator';
+import { OutputFileDTO } from '@modules/files/dto/output.dto';
 import { FilesService } from '@modules/files/files.service';
 import { Request } from '@modules/users/entities/user.entity';
 
@@ -57,9 +58,12 @@ export class PromotionsController {
 	@ApiOperation({ summary: 'Update the promotion logo' })
 	@ApiUploadFile()
 	@ApiParam({ name: 'number', description: 'The promotion number (eg: 21)' })
-	@ApiOkResponse({ type: OutputPromotionDTO })
+	@ApiOkResponse({ type: OutputFileDTO })
 	@ApiNotOkResponses({ 400: 'Invalid file', 404: 'Promotion not found' })
-	async editLogo(@UploadedFile() file: Express.Multer.File, @Param() params: InputPromotionNumberParamDTO) {
+	async editLogo(
+		@UploadedFile() file: Express.Multer.File,
+		@Param() params: InputPromotionNumberParamDTO,
+	): Promise<OutputFileDTO> {
 		if (!file) throw new i18nBadRequestException('validations.file.invalid.not_provided');
 
 		return this.promotionsService.updateLogo(params.number, file);

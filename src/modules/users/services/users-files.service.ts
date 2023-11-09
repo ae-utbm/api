@@ -6,10 +6,10 @@ import { Injectable } from '@nestjs/common';
 import { env } from '@env';
 import { OutputMessageDTO } from '@modules/base/dto/output.dto';
 import { i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
+import { OutputFileDTO } from '@modules/files/dto/output.dto';
 import { ImagesService } from '@modules/files/images.service';
 
 import { UsersDataService } from './users-data.service';
-import { OutputUserBannerDTO, OutputUserPictureDTO } from '../dto/output.dto';
 import { UserBanner } from '../entities/user-banner.entity';
 import { UserPicture } from '../entities/user-picture.entity';
 import { User } from '../entities/user.entity';
@@ -30,7 +30,7 @@ export class UsersFilesService {
 	 * @returns {Promise<User>} The updated user
 	 */
 	@CreateRequestContext()
-	async updatePicture(req_user: User, owner_id: number, file: Express.Multer.File): Promise<OutputUserPictureDTO> {
+	async updatePicture(req_user: User, owner_id: number, file: Express.Multer.File): Promise<OutputFileDTO> {
 		const user = await this.orm.em.findOne(User, { id: owner_id }, { populate: ['picture'] });
 		if (!user) throw new i18nNotFoundException('validations.user.not_found.id', { id: owner_id });
 
@@ -78,7 +78,7 @@ export class UsersFilesService {
 			});
 
 		await this.orm.em.persistAndFlush(user);
-		return user.picture.toObject() as unknown as OutputUserPictureDTO;
+		return user.picture.toObject() as unknown as OutputFileDTO;
 	}
 
 	@CreateRequestContext()
@@ -103,7 +103,7 @@ export class UsersFilesService {
 	}
 
 	@CreateRequestContext()
-	async updateBanner(id: number, file: Express.Multer.File): Promise<OutputUserBannerDTO> {
+	async updateBanner(id: number, file: Express.Multer.File): Promise<OutputFileDTO> {
 		const user = await this.orm.em.findOne(User, { id }, { populate: ['banner'] });
 		if (!user) throw new i18nNotFoundException('validations.user.not_found.id', { id });
 
@@ -136,7 +136,7 @@ export class UsersFilesService {
 			});
 
 		await this.orm.em.persistAndFlush(user);
-		return user.banner.toObject() as unknown as OutputUserBannerDTO;
+		return user.banner.toObject() as unknown as OutputFileDTO;
 	}
 
 	@CreateRequestContext()

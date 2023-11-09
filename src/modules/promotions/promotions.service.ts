@@ -7,9 +7,10 @@ import { Cron } from '@nestjs/schedule';
 import { env } from '@env';
 import { OutputMessageDTO } from '@modules/base/dto/output.dto';
 import { i18nNotFoundException } from '@modules/base/http-errors';
+import { OutputFileDTO } from '@modules/files/dto/output.dto';
 import { ImagesService } from '@modules/files/images.service';
 
-import { OutputPromotionPictureDTO, OutputPromotionDTO } from './dto/output.dto';
+import { OutputPromotionDTO } from './dto/output.dto';
 import { PromotionPicture } from './entities/promotion-picture.entity';
 import { Promotion } from './entities/promotion.entity';
 import { OutputBaseUserDTO } from '../users/dto/output.dto';
@@ -90,7 +91,7 @@ export class PromotionsService {
 	}
 
 	@CreateRequestContext()
-	async updateLogo(number: number, file: Express.Multer.File): Promise<OutputPromotionPictureDTO> {
+	async updateLogo(number: number, file: Express.Multer.File): Promise<OutputFileDTO> {
 		const promotion = await this.orm.em.findOne(Promotion, { number }, { populate: ['picture'] });
 
 		if (!promotion) throw new i18nNotFoundException('validations.promotion.invalid.not_found', { number });
@@ -120,7 +121,7 @@ export class PromotionsService {
 			});
 
 		await this.orm.em.persistAndFlush(promotion);
-		return promotion.picture.toObject() as unknown as OutputPromotionPictureDTO;
+		return promotion.picture.toObject() as unknown as OutputFileDTO;
 	}
 
 	@CreateRequestContext()

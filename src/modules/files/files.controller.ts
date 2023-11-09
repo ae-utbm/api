@@ -1,14 +1,12 @@
-import type { RequestWithUser } from '#types/api';
-
-import { Controller, Get, Param, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { z } from 'zod';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
-import { TranslateService } from '@modules/translate/translate.service';
-import { User } from '@modules/users/entities/user.entity';
-import { validate } from '@utils/validate';
+import { ApiNotOkResponses } from '@modules/base/decorators';
+import { InputIdParamDTO } from '@modules/base/dto/input.dto';
+import { Request } from '@modules/users/entities/user.entity';
 
+import { OutputFileDTO } from './dto/output.dto';
 import { FilesService } from './files.service';
 
 @ApiTags('Files')
@@ -16,16 +14,19 @@ import { FilesService } from './files.service';
 @UseGuards(AuthGuard('jwt'))
 @ApiBearerAuth()
 export class FilesController {
-	constructor(private readonly filesService: FilesService, private readonly t: TranslateService) {}
+	constructor(private readonly filesService: FilesService) {}
 
 	@Get(':id/data')
-	async getFile(@Req() req: RequestWithUser, @Param('id') id: number) {
-		validate(z.coerce.number().int().min(1), id, this.t.Errors.Id.Invalid('File', id));
-
-		const file = await this.filesService.findOne(id);
-		await file.visibility?.init();
-
-		if (await this.filesService.canReadFile(file, req.user as User)) return file.toObject();
-		throw new UnauthorizedException(this.t.Errors.File.Unauthorized(file.visibility?.name));
+	@ApiOperation({ summary: 'Get file data' })
+	@ApiParam({ name: 'id', description: 'The file ID' })
+	@ApiOkResponse({ type: OutputFileDTO })
+	@ApiNotOkResponses({
+		400: 'Invalid ID',
+		401: 'Not in file visibility group',
+		404: 'File not found',
+	})
+	async getFile(@Req() req: Request, @Param() params: InputIdParamDTO): Promise<OutputFileDTO> {
+		const file = await this.filesService.findOne(params.id);
+		return this.filesService.getAsData(file, req.user.id);
 	}
 }

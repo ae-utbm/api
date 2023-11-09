@@ -9,8 +9,8 @@ export class PromotionPicture extends File<Promotion> {
 	@OneToOne(() => Promotion, (promotion) => promotion.picture, {
 		nullable: true,
 		owner: true,
-		serializedName: 'picture_promotion_id',
-		serializer: (p: Promotion) => p.id,
+		serializedName: 'owner',
+		serializer: (p: Promotion) => ({ kind: 'promotion', id: p?.id }),
 	})
 	picture_promotion: Promotion;
 

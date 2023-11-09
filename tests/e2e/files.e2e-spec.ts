@@ -1,11 +1,12 @@
 import request from 'supertest';
 
-import { TokenDTO } from '@modules/auth/dto/token.dto';
+import { OutputTokenDTO } from '@modules/auth/dto/output.dto';
+import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedException } from '@modules/base/http-errors';
 import { FileVisibilityGroup } from '@modules/files/entities/file-visibility.entity';
 import { File } from '@modules/files/entities/file.entity';
 import { UserPicture } from '@modules/users/entities/user-picture.entity';
 
-import { orm, server, t } from '..';
+import { orm, server } from '..';
 
 describe('Files (e2e)', () => {
 	let em: typeof orm.em;
@@ -17,7 +18,7 @@ describe('Files (e2e)', () => {
 	let userIdSubscriber: number;
 
 	beforeAll(async () => {
-		type res = Omit<request.Response, 'body'> & { body: TokenDTO };
+		type res = Omit<request.Response, 'body'> & { body: OutputTokenDTO };
 
 		em = orm.em.fork();
 
@@ -63,9 +64,7 @@ describe('Files (e2e)', () => {
 					.expect(400);
 
 				expect(res.body).toEqual({
-					error: 'Bad Request',
-					statusCode: 400,
-					message: t.Errors.Id.Invalid('File', 'invalid'),
+					...new i18nBadRequestException('validations.id.invalid.format', { property: 'id', value: 'invalid' }),
 				});
 			});
 		});
@@ -87,9 +86,9 @@ describe('Files (e2e)', () => {
 					.expect(401);
 
 				expect(res.body).toEqual({
-					error: 'Unauthorized',
-					message: t.Errors.File.Unauthorized(file.visibility?.name),
-					statusCode: 401,
+					...new i18nUnauthorizedException('validations.user.invalid.not_in_file_visibility_group', {
+						group_name: file.visibility.name,
+					}),
 				});
 			});
 		});
@@ -102,9 +101,7 @@ describe('Files (e2e)', () => {
 					.expect(404);
 
 				expect(res.body).toEqual({
-					error: 'Not Found',
-					statusCode: 404,
-					message: t.Errors.Id.NotFound('File', 9999),
+					...new i18nNotFoundException('validations.file.invalid.not_found.by_id', { id: 9999 }),
 				});
 			});
 		});
@@ -121,9 +118,12 @@ describe('Files (e2e)', () => {
 					filename: 'test.png',
 					mimetype: 'image/png',
 					size: 123,
-					visibility: file.visibility.id,
+					visibility_id: file.visibility.id,
 					description: 'foo bar',
-					picture_user: userIdSubscriber,
+					owner: {
+						kind: 'user',
+						id: userIdSubscriber,
+					},
 					created: expect.any(String),
 					updated: expect.any(String),
 				});

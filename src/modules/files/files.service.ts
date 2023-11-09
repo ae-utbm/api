@@ -11,6 +11,7 @@ import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedExcepti
 import { User } from '@modules/users/entities/user.entity';
 import { UsersDataService } from '@modules/users/services/users-data.service';
 
+import { OutputFileDTO } from './dto/output.dto';
 import { FileVisibilityGroup } from './entities/file-visibility.entity';
 import { File, FileKind } from './entities/file.entity';
 
@@ -39,9 +40,18 @@ export class FilesService {
 		return new StreamableFile(this.toReadable(file));
 	}
 
+	async getAsData(file: File<unknown>, user_id: number): Promise<OutputFileDTO> {
+		if (!(await this.canReadFile(file, user_id)))
+			throw new i18nUnauthorizedException('validations.user.invalid.not_in_file_visibility_group', {
+				group_name: file.visibility?.name,
+			});
+
+		return file.toObject() as unknown as OutputFileDTO;
+	}
+
 	async findOne(id: number): Promise<FileKind> {
 		const file = (await this.orm.em.findOne(File, { id })) as unknown as Loaded<FileKind, string>;
-		if (!file) throw new i18nNotFoundException('validations.file.invalid.not_found', { id });
+		if (!file) throw new i18nNotFoundException('validations.file.invalid.not_found.by_id', { id });
 
 		return file;
 	}
@@ -147,7 +157,7 @@ export class FilesService {
 			accessSync(file.path);
 		} catch {
 			if (silent) return;
-			throw new i18nNotFoundException('validations.file.invalid.not_found', {
+			throw new i18nNotFoundException('validations.file.invalid.not_found.on_disk', {
 				filename: file.filename,
 			});
 		}
@@ -164,7 +174,7 @@ export class FilesService {
 		try {
 			accessSync(file.path);
 		} catch {
-			throw new i18nNotFoundException('validations.file.invalid.not_found', {
+			throw new i18nNotFoundException('validations.file.invalid.not_found.on_disk', {
 				filename: file.filename,
 			});
 		}
