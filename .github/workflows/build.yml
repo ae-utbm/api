@@ -1,0 +1,25 @@
+name: build
+
+on:
+  push:
+    branches:
+      - main
+      - features/**
+      - fixes/**
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      gitops-version:
+        description: 'GitOps version to use'
+        required: true
+        default: 'main'
+        type: string
+
+jobs:
+  build:
+    uses: ae-utbm/gitops/.github/workflows/pnpm-image-build-publish.yml@features/initial-setup
+    with:
+      # Replace theses values to the ones according your project
+      pnpm-build-script: 'build:prod'
+      pnpm-test-script: 'coverage:test'
+      node-version: '18'
