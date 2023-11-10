@@ -20,6 +20,5 @@ jobs:
     uses: ae-utbm/gitops/.github/workflows/pnpm-image-build-publish.yml@features/initial-setup
     with:
       # Replace theses values to the ones according your project
-      pnpm-build-script: 'build'
-      pnpm-test-script: 'coverage:test'
+      pnpm-lint-script: 'lint'
       node-version: '18'
