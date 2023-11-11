@@ -95,7 +95,7 @@ export class OutputUserDTO extends OutputBaseDTO implements OutputUserDto {
 	verified?: Date;
 }
 
-export class OutputUserVisibilityDTO implements OutputUserVisibilityDto {
+export class OutputUserVisibilityDTO extends OutputBaseDTO implements OutputUserVisibilityDto {
 	@ApiProperty({ minimum: 1 })
 	user_id: number;
 
