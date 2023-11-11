@@ -37,7 +37,10 @@
   "file": {
     "invalid": {
       "not_provided": "File not provided",
-      "not_found": "File '{filename}' cannot be found on disk",
+      "not_found": {
+        "on_disk": "File '{filename}' cannot be found on disk",
+        "by_id": "File with ID '{id}' not found"
+      },
       "no_mime_type": "File has no mime type",
       "unauthorized_mime_type": "File has an unauthorized mime type, valid mime types are ['{mime_types}']",
       "infected": "File is infected with virus"

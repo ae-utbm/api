@@ -42,7 +42,9 @@ describe('FilesService (unit)', () => {
 		it('should throw when the file cannot be accessed', () => {
 			expect(() => {
 				filesService.toReadable(fake_file);
-			}).toThrow(new i18nNotFoundException('validations.file.invalid.not_found', { filename: fake_file.filename }));
+			}).toThrow(
+				new i18nNotFoundException('validations.file.invalid.not_found.on_disk', { filename: fake_file.filename }),
+			);
 		});
 	});
 
@@ -54,7 +56,9 @@ describe('FilesService (unit)', () => {
 		it('should throw when asked if the file does not exist', () => {
 			expect(() => {
 				filesService.deleteFromDisk(fake_file, false);
-			}).toThrow(new i18nNotFoundException('validations.file.invalid.not_found', { filename: fake_file.filename }));
+			}).toThrow(
+				new i18nNotFoundException('validations.file.invalid.not_found.on_disk', { filename: fake_file.filename }),
+			);
 		});
 	});
 

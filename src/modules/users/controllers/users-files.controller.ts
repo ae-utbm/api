@@ -12,9 +12,9 @@ import { OutputMessageDTO } from '@modules/base/dto/output.dto';
 import { i18nBadRequestException } from '@modules/base/http-errors';
 import { ApiDownloadFile } from '@modules/files/decorators/download.decorator';
 import { ApiUploadFile } from '@modules/files/decorators/upload.decorator';
+import { OutputFileDTO } from '@modules/files/dto/output.dto';
 import { FilesService } from '@modules/files/files.service';
 
-import { OutputUserBannerDTO, OutputUserPictureDTO } from '../dto/output.dto';
 import { Request } from '../entities/user.entity';
 import { UsersFilesService } from '../services/users-files.service';
 
@@ -30,14 +30,14 @@ export class UsersFilesController {
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Update user profile picture' })
 	@ApiParam({ name: 'id', description: 'The user ID' })
-	@ApiOkResponse({ description: 'The updated user picture', type: OutputUserPictureDTO })
+	@ApiOkResponse({ description: 'The updated user picture', type: OutputFileDTO })
 	@ApiNotOkResponses({ 400: 'Invalid user ID or missing uploaded file', 404: 'User not found' })
 	@ApiUploadFile()
 	async editPicture(
 		@Req() req: Request,
 		@Param() params: InputIdParamDTO,
 		@UploadedFile() file: Express.Multer.File,
-	): Promise<OutputUserPictureDTO> {
+	): Promise<OutputFileDTO> {
 		if (!file) throw new i18nBadRequestException('validations.file.invalid.not_provided');
 		return this.usersFilesService.updatePicture(req.user, params.id, file);
 	}
@@ -68,13 +68,13 @@ export class UsersFilesController {
 	@GuardSelfOrPermissions('id', ['CAN_EDIT_USER'])
 	@ApiOperation({ summary: 'Update user profile banner' })
 	@ApiParam({ name: 'id', description: 'The user ID' })
-	@ApiOkResponse({ description: 'The updated user banner', type: OutputUserBannerDTO })
+	@ApiOkResponse({ description: 'The updated user banner', type: OutputFileDTO })
 	@ApiNotOkResponses({ 400: 'Invalid user ID or missing uploaded file', 404: 'User not found' })
 	@ApiUploadFile()
 	async editBanner(
 		@Param() params: InputIdParamDTO,
 		@UploadedFile() file: Express.Multer.File,
-	): Promise<OutputUserBannerDTO> {
+	): Promise<OutputFileDTO> {
 		if (!file) throw new i18nBadRequestException('validations.file.invalid.not_provided');
 		return this.usersFilesService.updateBanner(params.id, file);
 	}

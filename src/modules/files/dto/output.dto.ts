@@ -31,6 +31,9 @@ export class OutputFileDTO implements OutputFileDto {
 
 	@ApiProperty()
 	description?: string;
+
+	@ApiProperty()
+	owner: { kind: 'user' | 'promotion'; id: number };
 }
 
 export class OutputFileVisibilityGroupDTO extends OutputBaseDTO implements OutputFileVisibilityGroupDto {

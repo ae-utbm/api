@@ -9,8 +9,8 @@ export class UserBanner extends File<User> {
 	@OneToOne(() => User, (user) => user.banner, {
 		nullable: true,
 		owner: true,
-		serializedName: 'banner_user_id',
-		serializer: (u: User) => u.id,
+		serializedName: 'owner',
+		serializer: (u: User) => ({ kind: 'user', id: u?.id }),
 	})
 	banner_user: User;
 

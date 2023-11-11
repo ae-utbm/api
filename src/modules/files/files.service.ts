@@ -3,7 +3,7 @@ import { accessSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { Readable } from 'stream';
 
-import { MikroORM, CreateRequestContext } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext, Loaded } from '@mikro-orm/core';
 import { Injectable, StreamableFile } from '@nestjs/common';
 import { fromBuffer, MimeType } from 'file-type';
 
@@ -11,8 +11,9 @@ import { i18nBadRequestException, i18nNotFoundException, i18nUnauthorizedExcepti
 import { User } from '@modules/users/entities/user.entity';
 import { UsersDataService } from '@modules/users/services/users-data.service';
 
+import { OutputFileDTO } from './dto/output.dto';
 import { FileVisibilityGroup } from './entities/file-visibility.entity';
-import { File } from './entities/file.entity';
+import { File, FileKind } from './entities/file.entity';
 
 export type WriteFileOptions = {
 	directory: string;
@@ -37,6 +38,22 @@ export class FilesService {
 			});
 
 		return new StreamableFile(this.toReadable(file));
+	}
+
+	async getAsData(file: File<unknown>, user_id: number): Promise<OutputFileDTO> {
+		if (!(await this.canReadFile(file, user_id)))
+			throw new i18nUnauthorizedException('validations.user.invalid.not_in_file_visibility_group', {
+				group_name: file.visibility?.name,
+			});
+
+		return file.toObject() as unknown as OutputFileDTO;
+	}
+
+	async findOne(id: number): Promise<FileKind> {
+		const file = (await this.orm.em.findOne(File, { id })) as unknown as Loaded<FileKind, string>;
+		if (!file) throw new i18nNotFoundException('validations.file.invalid.not_found.by_id', { id });
+
+		return file;
 	}
 
 	/**
@@ -135,12 +152,12 @@ export class FilesService {
 	 * @param {File} file The file to delete
 	 * @param {boolean} silent If true, the function will not throw an error if the file doesn't exist
 	 */
-	deleteFromDisk(file: File<unknown>, silent: boolean = true) {
+	deleteFromDisk<T>(file: File<T>, silent: boolean = true) {
 		try {
 			accessSync(file.path);
 		} catch {
 			if (silent) return;
-			throw new i18nNotFoundException('validations.file.invalid.not_found', {
+			throw new i18nNotFoundException('validations.file.invalid.not_found.on_disk', {
 				filename: file.filename,
 			});
 		}
@@ -157,7 +174,7 @@ export class FilesService {
 		try {
 			accessSync(file.path);
 		} catch {
-			throw new i18nNotFoundException('validations.file.invalid.not_found', {
+			throw new i18nNotFoundException('validations.file.invalid.not_found.on_disk', {
 				filename: file.filename,
 			});
 		}

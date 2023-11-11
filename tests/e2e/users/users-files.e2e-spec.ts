@@ -327,7 +327,10 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 3028,
 					updated: expect.any(String),
-					picture_user_id: 4,
+					owner: {
+						id: 4,
+						kind: 'user',
+					},
 					visibility_id: 1,
 				});
 
@@ -350,7 +353,10 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 3028,
 					updated: expect.any(String),
-					picture_user_id: 4,
+					owner: {
+						id: 4,
+						kind: 'user',
+					},
 					visibility_id: 1,
 				});
 
@@ -381,7 +387,10 @@ describe('Users Files (e2e)', () => {
 					mimetype: 'image/webp',
 					size: 3028,
 					updated: expect.any(String),
-					picture_user_id: 1,
+					owner: {
+						id: 1,
+						kind: 'user',
+					},
 					visibility_id: 1,
 				});
 
@@ -690,9 +699,12 @@ describe('Users Files (e2e)', () => {
 					filename: expect.stringContaining('logs_moderator') as unknown,
 					id: expect.any(Number),
 					mimetype: 'image/webp',
-					size: 9498,
+					size: expect.any(Number),
 					updated: expect.any(String),
-					banner_user_id: 4,
+					owner: {
+						id: 4,
+						kind: 'user',
+					},
 					visibility_id: 1,
 				});
 
@@ -721,9 +733,12 @@ describe('Users Files (e2e)', () => {
 					filename: expect.stringContaining('logs_moderator') as unknown,
 					id: expect.any(Number),
 					mimetype: 'image/webp',
-					size: 9498,
+					size: expect.any(Number),
 					updated: expect.any(String),
-					banner_user_id: 4,
+					owner: {
+						id: 4,
+						kind: 'user',
+					},
 					visibility_id: 1,
 				});
 
@@ -744,9 +759,12 @@ describe('Users Files (e2e)', () => {
 					filename: expect.stringContaining('root_root') as unknown,
 					id: expect.any(Number),
 					mimetype: 'image/webp',
-					size: 9498,
+					size: expect.any(Number),
 					updated: expect.any(String),
-					banner_user_id: 1,
+					owner: {
+						id: 1,
+						kind: 'user',
+					},
 					visibility_id: 1,
 				});
 

@@ -509,7 +509,10 @@ describe('Promotions (e2e)', () => {
 					created: expect.any(String),
 					updated: expect.any(String),
 					filename: expect.any(String),
-					picture_promotion_id: 21,
+					owner: {
+						id: 21,
+						kind: 'promotion',
+					},
 					mimetype: 'image/webp',
 					size: 117280,
 				});
@@ -535,7 +538,10 @@ describe('Promotions (e2e)', () => {
 					created: expect.any(String),
 					updated: expect.any(String),
 					filename: expect.any(String),
-					picture_promotion_id: 21,
+					owner: {
+						id: 21,
+						kind: 'promotion',
+					},
 					description: null,
 					mimetype: 'image/webp',
 					size: 117280,

@@ -9,8 +9,8 @@ export class UserPicture extends File<User> {
 	@OneToOne(() => User, (user) => user.picture, {
 		nullable: true,
 		owner: true,
-		serializedName: 'picture_user_id',
-		serializer: (u: User) => u.id,
+		serializedName: 'owner',
+		serializer: (u: User) => ({ kind: 'user', id: u?.id }),
 	})
 	picture_user: User;
 
