@@ -17,7 +17,7 @@ on:
 
 jobs:
   build:
-    uses: ae-utbm/gitops/.github/workflows/pnpm-image-build-publish.yml@c983a1dcd4b5277a5f4a40be31e478435d1c2afe
+    uses: ae-utbm/gitops/.github/workflows/pnpm-image-build-publish.yml@features/initial-setup
     with:
       # Replace theses values to the ones according your project
       pnpm-lint-script: 'lint'
