@@ -699,7 +699,7 @@ describe('Users Files (e2e)', () => {
 					filename: expect.stringContaining('logs_moderator') as unknown,
 					id: expect.any(Number),
 					mimetype: 'image/webp',
-					size: 9498,
+					size: expect.any(Number),
 					updated: expect.any(String),
 					owner: {
 						id: 4,
@@ -733,7 +733,7 @@ describe('Users Files (e2e)', () => {
 					filename: expect.stringContaining('logs_moderator') as unknown,
 					id: expect.any(Number),
 					mimetype: 'image/webp',
-					size: 9498,
+					size: expect.any(Number),
 					updated: expect.any(String),
 					owner: {
 						id: 4,
@@ -759,7 +759,7 @@ describe('Users Files (e2e)', () => {
 					filename: expect.stringContaining('root_root') as unknown,
 					id: expect.any(Number),
 					mimetype: 'image/webp',
-					size: 9498,
+					size: expect.any(Number),
 					updated: expect.any(String),
 					owner: {
 						id: 1,

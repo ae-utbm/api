@@ -110,7 +110,7 @@ export class UsersFilesService {
 		const fileInfos = await this.imagesService.writeOnDisk(file.buffer, {
 			directory: join(env.USERS_BASE_PATH, 'banners'),
 			filename: user.full_name.replaceAll(' ', '_'),
-			aspect_ratio: '16:9',
+			aspect_ratio: '3:1',
 		});
 
 		// Remove old file if present
