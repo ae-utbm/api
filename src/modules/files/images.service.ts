@@ -17,7 +17,7 @@ export class ImagesService extends FilesService {
 	async validateAspectRatio(buffer: Buffer, aspect_ratio: aspect_ratio): Promise<boolean> {
 		const { width, height } = await sharp(buffer).metadata();
 		const [aspectWidth, aspectHeight] = aspect_ratio.split(':').map((s) => parseInt(s, 10));
-		return Math.abs(width / height - aspectWidth / aspectHeight) < Number.EPSILON;
+		return Math.trunc((width / height) * 100) / 100 === Math.trunc((aspectWidth / aspectHeight) * 100) / 100;
 	}
 
 	async convertToWebp(buffer: Buffer): Promise<Buffer> {
