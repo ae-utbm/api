@@ -16,8 +16,15 @@ type WriteImageOptions = WriteFileOptions & {
 export class ImagesService extends FilesService {
 	async validateAspectRatio(buffer: Buffer, aspect_ratio: aspect_ratio): Promise<boolean> {
 		const { width, height } = await sharp(buffer).metadata();
-		const [aspectWidth, aspectHeight] = aspect_ratio.split(':').map((s) => parseInt(s, 10));
-		return Math.trunc((width / height) * 100) / 100 === Math.trunc((aspectWidth / aspectHeight) * 100) / 100;
+
+		const gcd = (...arr: number[]): number => {
+			const _gcd = (x: number, y: number) => (!y ? x : gcd(y, x % y));
+			return [...arr].reduce((a, b) => _gcd(a, b));
+		};
+
+		const gcdResult = gcd(width, height);
+
+		return `${width / gcdResult}:${height / gcdResult}` === aspect_ratio;
 	}
 
 	async convertToWebp(buffer: Buffer): Promise<Buffer> {
