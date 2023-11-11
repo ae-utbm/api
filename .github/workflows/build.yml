@@ -17,8 +17,10 @@ on:
 
 jobs:
   build:
+    name: Build
     uses: ae-utbm/gitops/.github/workflows/pnpm-image-build-publish.yml@features/initial-setup
     with:
       # Replace theses values to the ones according your project
-      pnpm-lint-script: 'lint'
+      lint-script: 'lint'
+      build-script: 'build'
       node-version: '18'
